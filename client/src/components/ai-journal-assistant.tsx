@@ -117,8 +117,8 @@ export function AiJournalAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full relative">
-      <div className="absolute top-0 left-0 right-0 bottom-[60px] overflow-y-auto px-1 sm:px-4 py-1 sm:py-2 space-y-1.5 sm:space-y-4">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-full relative">
+      <div className="absolute top-0 left-0 right-0 bottom-[50px] overflow-y-auto px-1 sm:px-4 py-1 sm:py-2 space-y-1.5 sm:space-y-4">
         {messages.map((message, idx) => (
           <div
             key={idx}
@@ -167,14 +167,14 @@ export function AiJournalAssistant() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-1.5 sm:p-4">
-        <div className="flex gap-1.5 sm:gap-2">
+      <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-1">
+        <div className="flex gap-1">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 min-h-[45px] sm:min-h-[60px] max-h-[120px] rounded-md border border-input bg-background px-2 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 min-h-[40px] max-h-[80px] rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Button
             onClick={sendMessage}
