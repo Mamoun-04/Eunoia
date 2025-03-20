@@ -376,15 +376,24 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     achievement => selectedCategory === 'all' || achievement.category === selectedCategory
   );
 
-  const unlockedCount = ACHIEVEMENTS.filter(a => a.checkUnlocked(entries)).length;
-  const tierCounts = useMemo(() => {
-    return ACHIEVEMENTS.reduce((acc, achievement) => {
-      if (achievement.checkUnlocked(entries)) {
-        acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
-      }
+  const achievementStats = useMemo(() => {
+    const unlocked = ACHIEVEMENTS.filter(a => a.checkUnlocked(entries));
+    const tierCounts = unlocked.reduce((acc, achievement) => {
+      acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
       return acc;
     }, {} as Record<AchievementTier, number>);
-  }, [entries]); // Add entries dependency to recalculate when entries change
+    
+    return {
+      unlockedCount: unlocked.length,
+      tierCounts,
+      progressMap: ACHIEVEMENTS.reduce((acc, achievement) => {
+        acc[achievement.id] = achievement.getProgress(entries);
+        return acc;
+      }, {} as Record<string, number>)
+    };
+  }, [entries]);
+
+  const { unlockedCount, tierCounts, progressMap } = achievementStats;
 
   const categories: { id: Achievement['category'] | 'all'; label: string }[] = [
     { id: 'all', label: 'All Achievements' },
@@ -469,7 +478,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredAchievements.map(achievement => {
               const isUnlocked = achievement.checkUnlocked(entries);
-              const progress = achievement.getProgress(entries);
+              const progress = progressMap[achievement.id];
 
               const tierStyle = {
                 diamond: {
