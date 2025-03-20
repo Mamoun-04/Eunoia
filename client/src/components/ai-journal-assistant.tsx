@@ -112,29 +112,8 @@ export function AiJournalAssistant() {
   const currentPrompt = messages[messages.length - 1]?.prompt;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-16rem)]">
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {currentPrompt && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-lg p-4 bg-muted/50 border">
-              <div className="space-y-4">
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-semibold text-sm text-primary">Recommended Prompt</h3>
-                  <p className="text-foreground/90">{currentPrompt}</p>
-                </div>
-                <Button
-                  onClick={handleStartJournaling}
-                  className="w-full"
-                  variant="default"
-                  size="sm"
-                >
-                  Use This Prompt
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, idx) => (
           <div
@@ -153,6 +132,16 @@ export function AiJournalAssistant() {
               {idx === messages.length - 1 && message.role === 'assistant'
                 ? formatMessage(displayedContent)
                 : formatMessage(message.content)}
+              {message.role === 'assistant' && message.prompt && (
+                <Button
+                  onClick={handleStartJournaling}
+                  className="w-full mt-4"
+                  variant="default"
+                  size="sm"
+                >
+                  Use This Prompt
+                </Button>
+              )}
             </div>
           </div>
         ))}
