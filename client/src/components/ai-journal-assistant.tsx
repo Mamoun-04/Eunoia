@@ -67,8 +67,7 @@ export function AiJournalAssistant() {
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
 
-      const promptMatch = data.message.match(/Prompt:\s*(.*?)(?:\n|$)/i);
-      if (promptMatch) {
+      if (data.message.toLowerCase().includes('prompt:')) {
         setSuggestedPrompt(data.message);
       }
     } catch (error) {
@@ -91,12 +90,12 @@ export function AiJournalAssistant() {
   const formatMessage = (content: string) => {
     const paragraphs = content.split('\n\n');
     return paragraphs.map((paragraph, idx) => {
-      const promptMatch = paragraph.match(/^Prompt:\s*(.*?)$/im);
-      if (promptMatch) {
+      if (paragraph.toLowerCase().includes('prompt:')) {
+        const [label, ...promptContent] = paragraph.split(':');
         return (
           <div key={idx} className="bg-primary/10 p-4 rounded-lg my-4">
-            <div className="font-semibold text-primary">Prompt:</div>
-            <div>{promptMatch[1]}</div>
+            <div className="font-semibold text-primary">{label}:</div>
+            <div>{promptContent.join(':')}</div>
           </div>
         );
       }
@@ -145,9 +144,11 @@ export function AiJournalAssistant() {
         {suggestedPrompt && !showEditor && (
           <Button
             onClick={() => {
-              const promptText = suggestedPrompt?.split('\n\nPrompt:')?.pop()?.trim() || suggestedPrompt || '';
+              const lastMessage = messages[messages.length - 1].content;
+              const promptMatch = lastMessage.match(/Prompt:\s*(.*?)(?:\n|$)/);
+              const title = promptMatch ? promptMatch[1].trim() : lastMessage.split('\n')[0];
               setShowEditor(true);
-              form.setValue('title', promptText);
+              form.setValue('title', title);
             }}
             className="w-full mb-4"
             variant="secondary"
