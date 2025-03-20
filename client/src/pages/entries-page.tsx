@@ -115,64 +115,76 @@ export default function EntriesPage() {
             </p>
           </div>
 
-          <div className="mb-8 space-y-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="mb-8 space-y-8">
+            <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
             </div>
-            <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2"> {/* Changed to 1 column for mobile */}
-              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <PenSquareIcon className="h-5 w-5" />
-                  <span className="font-medium">Total Entries</span>
+            
+            {/* Top Section - Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+                <div className="flex items-center gap-3 mb-4 text-muted-foreground">
+                  <PenSquareIcon className="h-6 w-6" />
+                  <span className="font-medium text-lg">Total Entries</span>
                 </div>
-                <div className="text-5xl font-bold text-primary">{entries.length}</div>
+                <div className="text-6xl font-bold text-primary tracking-tight">{entries.length}</div>
               </div>
 
-              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <BookIcon className="h-5 w-5" />
-                  <span className="font-medium">Total Words</span>
+              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+                <div className="flex items-center gap-3 mb-4 text-muted-foreground">
+                  <BookIcon className="h-6 w-6" />
+                  <span className="font-medium text-lg">Total Words</span>
                 </div>
-                <div className="text-5xl font-bold text-primary">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
+                <div className="text-6xl font-bold text-primary tracking-tight">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
               </div>
 
-              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Changed to 1 column for mobile */}
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <ClockIcon className="h-5 w-5" />
-                  <span className="font-medium">Time Journaling</span>
+              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+                <div className="flex items-center gap-3 mb-4 text-muted-foreground">
+                  <ClockIcon className="h-6 w-6" />
+                  <span className="font-medium text-lg">Time Journaling</span>
                 </div>
-                <div className="text-5xl font-bold text-primary">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
+                <div className="text-6xl font-bold text-primary tracking-tight">0<span className="text-2xl ml-2 text-muted-foreground">min</span></div>
+              </div>
+
+              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+                <div className="flex items-center gap-3 mb-4 text-muted-foreground">
+                  <AwardIcon className="h-6 w-6" />
+                  <span className="font-medium text-lg">Daily Streak</span>
+                </div>
+                <div className="text-6xl font-bold text-primary tracking-tight">1</div>
               </div>
             </div>
 
-            <div className="bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Removed col-span for mobile */}
-              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                <AwardIcon className="h-5 w-5" />
-                <span>Mood Distribution</span>
+            {/* Middle Section - Mood Distribution */}
+            <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+              <div className="flex items-center gap-3 mb-6 text-muted-foreground">
+                <AwardIcon className="h-6 w-6" />
+                <span className="font-medium text-lg">Mood Distribution</span>
               </div>
-              <div className="flex flex-col gap-2 md:flex-row md:justify-around items-center"> {/* Stacked on mobile */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 {Object.entries(entries.reduce((acc, entry) => ({
                   ...acc,
                   [entry.mood]: (acc[entry.mood] || 0) + 1
                 }), {} as Record<string, number>)).map(([mood, count]) => (
-                  <div key={mood} className="text-center md:w-1/3"> {/* Added width for better spacing on larger screens */}
-                    <div className="text-2xl mb-1">{
+                  <div key={mood} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-black/20">
+                    <div className="text-4xl mb-2">{
                       mood === 'very_happy' ? '😄' :
                       mood === 'happy' ? '😊' :
                       mood === 'neutral' ? '😐' :
                       mood === 'sad' ? '😕' : '😢'
                     }</div>
-                    <div className="text-xl font-bold text-primary">{count}</div>
-                    <div className="text-sm text-muted-foreground">{mood.replace('_', ' ')}</div>
+                    <div className="text-2xl font-bold text-primary">{count}</div>
+                    <div className="text-sm text-muted-foreground capitalize">{mood.replace('_', ' ')}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Removed col-span for mobile */}
-              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                <AwardIcon className="h-5 w-5" />
-                <span>Daily Streak & Achievements</span>
+            {/* Bottom Section - Achievements */}
+            <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+              <div className="flex items-center gap-3 mb-6 text-muted-foreground">
+                <AwardIcon className="h-6 w-6" />
+                <span className="font-medium text-lg">Achievements</span>
               </div>
               <div className="flex flex-col gap-4">
                 <div className="flex items-end gap-8">
