@@ -1,0 +1,60 @@
+**"Build a modern, aesthetically pleasing journaling app called 'Eunoia' designed for mindful reflection, mood tracking, and secure, private entries. The app should prioritize a seamless user experience with an elegant, easy-on-the-eyes interface, offering both light and dark modes. Use a simple yet modern color scheme with smooth animations and soft gradients for a calming visual effect. The typography should blend classic and contemporary styles, integrating the following fonts: Helvetica, Hello Paris, The Seasons, Shrikhand, Cinzel, and Playfair Display.
+
+Core Features:
+1. Onboarding Screens
+A welcoming onboarding flow similar to the Clearful app, introducing users to the app’s core benefits.
+Smooth animations with Lottie for an engaging first-time experience.
+Screens should explain features such as journaling, mood tracking, security, and guided prompts.
+A 'Continue' button for navigation through onboarding.
+2. Paywall & Subscription Screen
+Display a 7-day free trial followed by subscription options:
+Yearly Plan: $89.99/year
+Monthly Plan: $14.99/month
+A clear timeline showing the trial period, renewal date, and cancellation options.
+Features a "Start My Free Trial" button with a one-tap subscribe and cancel anytime feature.
+FAQs section explaining how subscriptions work.
+3. Main App Layout
+Bottom Navigation Bar with the following tabs:
+Today (Shows daily prompts and quick entry access)
+Entries (List of past journal entries with search functionality)
+Library (Categorized journal topics for guided writing)
+Insights (Mood tracking graphs and personal analytics)
+Settings (Customization, privacy, and subscription management)
+Library Grid Layout displaying journal topics such as:
+Work & Career
+Gratitude
+Creativity
+Daily Reflection
+Health & Wellness
+Memories
+Emotions
+Goals & Planning
+Personal Growth
+Reflection
+Floating “New Entry” Button for quick journaling.
+4. Mood Tracker
+Users select their mood via an emoji-based selector.
+Moods should range from very sad to very happy, displayed in a horizontal mood slider.
+Weekly and monthly mood graphs to track emotional trends.
+Insights page showing "Mood Over Time" and comparisons to previous weeks.
+Smooth transitions between mood selection and journaling.
+5. Home Screen Widget
+A minimalist home screen widget that displays:
+Daily journaling prompt ("Let's make today a great day!")
+A quick access button to start journaling instantly.
+The widget should support light and dark modes and integrate smoothly with iOS and Android.
+6. Secure & Private Journaling
+End-to-end encryption for all journal entries.
+Optional Face ID / Passcode lock for privacy.
+Local storage with Cloud Sync (optional) for multi-device access.
+7. Light & Dark Mode
+Elegant color palettes that adjust dynamically.
+Soft beige, deep navy, and warm brown tones in light mode.
+Dark grays and soft glowing accents in dark mode for readability.
+Typography should be easy on the eyes with a modern, luxurious feel.
+8. Tech Stack & Development
+Use React Native for cross-platform support.
+Integrate Lottie animations for smooth onboarding.
+Implement RevenueCat or Stripe for handling subscriptions.
+Utilize Recharts for mood tracking analytics.
+Ensure the UI follows modern design principles, emphasizing minimalism, usability, and visual harmony. The final app should feel premium, relaxing, and effortless to navigate."**
