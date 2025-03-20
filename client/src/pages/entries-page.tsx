@@ -93,28 +93,71 @@ export default function EntriesPage() {
           </div>
 
           <div className="mb-8 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
-              <Button variant="outline" size="sm" onClick={() => toast({ title: "Coming soon", description: "This feature is under development" })}>
-                Suggest Improvement
-              </Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-1 bg-[#020733] rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="col-span-1 bg-[#001133] rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <PenSquareIcon className="h-5 w-5" />
-                  <span>Total Entries</span>
+                  <span className="font-medium">Total Entries</span>
                 </div>
-                <div className="text-4xl font-bold text-[#4169FF]">{entriesThisMonth}</div>
+                <div className="text-5xl font-bold text-[#4169FF]">{entriesThisMonth}</div>
               </div>
               
-              <div className="col-span-1 bg-[#020733] rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+              <div className="col-span-1 bg-[#001133] rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <BookIcon className="h-5 w-5" />
-                  <span>Total Words</span>
+                  <span className="font-medium">Total Words</span>
                 </div>
-                <div className="text-4xl font-bold text-[#4169FF]">{totalWords.toLocaleString()}</div>
+                <div className="text-5xl font-bold text-[#4169FF]">{totalWords.toLocaleString()}</div>
               </div>
+
+              <div className="col-span-2 bg-[#001133] rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+                  <ClockIcon className="h-5 w-5" />
+                  <span className="font-medium">Time Journaling</span>
+                </div>
+                <div className="text-5xl font-bold text-[#4169FF]">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
+              </div>
+
+              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+                  <AwardIcon className="h-5 w-5" />
+                  <span className="font-medium">Daily Streak</span>
+                </div>
+                <div className="flex gap-8 mt-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-sm text-muted-foreground">Current</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-sm text-muted-foreground">Best</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+                  <AwardIcon className="h-5 w-5" />
+                  <span className="font-medium">Weekly Streak</span>
+                </div>
+                <div className="flex gap-8 mt-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-sm text-muted-foreground">Current</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-sm text-muted-foreground">Best</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => toast({ title: "Coming soon", description: "This feature is under development" })} className="w-full">
+              Suggest Improvement to Insights
+            </Button>
 
               <div className="col-span-2 bg-[#020733] rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4 text-muted-foreground">
