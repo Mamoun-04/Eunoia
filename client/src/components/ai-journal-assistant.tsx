@@ -19,7 +19,7 @@ export function AIJournalAssistant() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +68,7 @@ export function AIJournalAssistant() {
   };
 
   const startNewEntry = (prompt: string) => {
-    navigate(`/?prompt=${encodeURIComponent(prompt)}`);
+    setLocation(`/?prompt=${encodeURIComponent(prompt)}`);
   };
 
   return (
