@@ -119,11 +119,10 @@ export function AIJournalAssistant() {
                     </div>
                   </div>
                 </motion.div>
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex justify-start"
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-start"
                 >
                   <div className="bg-muted p-4 rounded-2xl">
                     <div className="flex gap-2">
