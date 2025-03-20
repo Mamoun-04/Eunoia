@@ -5,6 +5,111 @@ import { Entry } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { data: entries = [] } = useQuery<Entry[]>({
+    queryKey: ["/api/entries"],
+  });
+
+  const totalWords = entries.reduce((acc, entry) => {
+    return acc + entry.content.split(/\s+/).length;
+  }, 0);
+
+  const badges = [
+    {
+      id: "first_steps",
+      name: "First Steps",
+      description: "Write your first journal entry",
+      emoji: "📝",
+      progress: entries.length > 0 ? 100 : 0,
+      requirement: "Write 1 entry",
+    },
+    {
+      id: "philosopher",
+      name: "Philosopher",
+      description: "Maintain a 5-day journaling streak",
+      emoji: "🎯",
+      progress: 20,
+      requirement: "5-day streak",
+    },
+    {
+      id: "wordsmith",
+      name: "Wordsmith",
+      description: "Write over 1000 words total",
+      emoji: "✍️",
+      progress: Math.min((totalWords / 1000) * 100, 100),
+      requirement: "1000 words",
+    },
+    {
+      id: "dedicated_writer",
+      name: "Dedicated Writer",
+      description: "Write entries for 10 consecutive days",
+      emoji: "📅",
+      progress: 10,
+      requirement: "10-day streak",
+    },
+    {
+      id: "novelist",
+      name: "Novelist",
+      description: "Write over 5000 words total",
+      emoji: "📚",
+      progress: Math.min((totalWords / 5000) * 100, 100),
+      requirement: "5000 words",
+    }
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Achievements</DialogTitle>
+          <DialogDescription>
+            Track your journaling milestones and earn badges
+          </DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <div className="space-y-4">
+            {badges.map((badge) => (
+              <div
+                key={badge.id}
+                className="relative bg-card p-4 rounded-lg border transition-all"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">{badge.emoji}</span>
+                  <div>
+                    <h3 className="font-semibold">{badge.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {badge.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-500"
+                      style={{ width: `${badge.progress}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    <span className="text-xs text-muted-foreground">
+                      Progress: {badge.progress}% complete
+                    </span>
+                    {badge.progress === 100 && (
+                      <span className="text-xs font-medium text-green-500">
+                        Achieved!
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 type Badge = {
   id: string;
