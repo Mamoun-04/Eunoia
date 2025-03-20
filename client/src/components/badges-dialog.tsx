@@ -481,7 +481,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
         {/* Main achievements grid */}
         <div className="flex-1 overflow-y-auto py-4 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredAchievements.map(achievement => {
                 const isUnlocked = achievement.checkUnlocked(entries);
                 const progress = achievementStats.progressMap[achievement.id];

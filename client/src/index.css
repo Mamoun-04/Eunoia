@@ -149,9 +149,9 @@
 
 .achievement-categories {
   display: flex;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
@@ -160,20 +160,38 @@
   background: var(--background);
   backdrop-filter: blur(8px);
   z-index: 10;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.achievement-categories::-webkit-scrollbar {
+  display: none;
 }
 
 .achievement-category-button {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 2rem;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 9999px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
   transition: all 0.2s;
-  min-width: 200px;
+  min-width: auto;
   justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .achievement-categories {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  
+  .achievement-category-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+  }
 }
 
 .achievement-category-button:hover {
