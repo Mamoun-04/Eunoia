@@ -51,7 +51,8 @@ export function AiJournalAssistant() {
 
   const handleStartJournaling = (prompt: string) => {
     setShowEditor(true);
-    form.setValue('content', `Prompt: ${prompt}\n\n`);
+    form.setValue('prompt', prompt);
+    form.setValue('content', '');
   };
 
   const sendMessage = async () => {

@@ -16,6 +16,7 @@ import { MoodSelector } from "./mood-selector";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 
 type Props = {
@@ -102,7 +103,11 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
                 <FormItem>
                   <FormLabel>Prompt</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your prompt..." {...field} />
+                    <Textarea
+                      readOnly
+                      className="min-h-[80px] bg-muted"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
