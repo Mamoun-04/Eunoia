@@ -32,7 +32,6 @@ export default function HomePage() {
   const navigation = [
     { name: "Today", href: "/", icon: CalendarDays },
     { name: "Entries", href: "/entries", icon: PenSquare },
-    { name: "AI Chat", href: "/assistant", icon: MessageSquare },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
