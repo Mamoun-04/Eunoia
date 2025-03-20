@@ -40,7 +40,7 @@ export default function EntriesPage() {
 
   // Calculate stats
   const currentMonth = format(new Date(), 'MMMM yyyy');
-  const entriesThisMonth = entries.filter(entry => 
+  const entriesThisMonth = entries.filter(entry =>
     format(new Date(entry.createdAt), 'MMMM yyyy') === currentMonth
   ).length;
 
@@ -104,7 +104,7 @@ export default function EntriesPage() {
                 </div>
                 <div className="text-5xl font-bold text-[#4169FF]">{entriesThisMonth}</div>
               </div>
-              
+
               <div className="col-span-1 bg-[#001133] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <BookIcon className="h-5 w-5" />
@@ -155,37 +155,36 @@ export default function EntriesPage() {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => toast({ title: "Coming soon", description: "This feature is under development" })} className="w-full">
+            <Button variant="outline" size="sm"  className="w-full">
               Suggest Improvement to Insights
             </Button>
 
-              <div className="col-span-2 bg-[#020733] rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                  <ClockIcon className="h-5 w-5" />
-                  <span>Time Journaling</span>
-                </div>
-                <div className="text-4xl font-bold text-[#4169FF]">0 <span className="text-lg text-muted-foreground">minutes</span></div>
+            <div className="col-span-2 bg-[#020733] rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                <ClockIcon className="h-5 w-5" />
+                <span>Time Journaling</span>
               </div>
+              <div className="text-4xl font-bold text-[#4169FF]">0 <span className="text-lg text-muted-foreground">minutes</span></div>
+            </div>
 
-              <div className="col-span-1 bg-[#1A1A1A] rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                  <AwardIcon className="h-5 w-5" />
-                  <span>Daily Streak</span>
-                </div>
-                <div className="flex items-end gap-8">
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">Current</div>
-                    <div className="flex items-end">
-                      <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
-                      <div className="ml-2">1</div>
-                    </div>
+            <div className="col-span-1 bg-[#1A1A1A] rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                <AwardIcon className="h-5 w-5" />
+                <span>Daily Streak</span>
+              </div>
+              <div className="flex items-end gap-8">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Current</div>
+                  <div className="flex items-end">
+                    <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                    <div className="ml-2">1</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">Best</div>
-                    <div className="flex items-end">
-                      <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
-                      <div className="ml-2">1</div>
-                    </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Best</div>
+                  <div className="flex items-end">
+                    <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                    <div className="ml-2">1</div>
                   </div>
                 </div>
               </div>
