@@ -119,6 +119,23 @@ export function AiJournalAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
+      {currentPrompt && !showEditor && (
+        <div className="border-b p-4 bg-muted/30">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-semibold text-lg text-primary">Today's Journaling Prompt</h3>
+              <p className="text-foreground/90">{currentPrompt}</p>
+            </div>
+            <Button
+              onClick={handleStartJournaling}
+              className="w-full sm:w-auto"
+              variant="default"
+            >
+              Start New Entry Using This Prompt
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, idx) => (
           <div
@@ -155,23 +172,6 @@ export function AiJournalAssistant() {
       </div>
 
       <div className="border-t p-4">
-        {currentPrompt && !showEditor && (
-          <div className="bg-primary/10 p-4 rounded-lg mb-4">
-            <p className="font-semibold text-primary">Today's Prompt</p>
-            <p>{currentPrompt}</p>
-          </div>
-        )}
-        {currentPrompt && !showEditor && (
-          <div className="flex gap-2 mb-4">
-            <Button
-              onClick={handleStartJournaling}
-              className="w-full"
-              variant="default"
-            >
-              Start an entry with this prompt
-            </Button>
-          </div>
-        )}
         <div className="flex gap-2">
           <textarea
             value={input}
