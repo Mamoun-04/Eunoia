@@ -269,20 +269,6 @@ export default function EntriesPage() {
           })}
         </nav>
       </div>
-
-      {/* Floating AI Assistant Button */}
-      <Button
-        onClick={() => setShowAiAssistant(true)}
-        className="fixed bottom-20 right-4 lg:bottom-4 h-12 w-12 rounded-full shadow-lg"
-        size="icon"
-      >
-        <MessageSquare className="h-5 w-5" />
-      </Button>
-
-      <AiJournalAssistant 
-        open={showAiAssistant} 
-        onOpenChange={setShowAiAssistant} 
-      />
     </div>
   );
 }

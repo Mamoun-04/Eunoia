@@ -1,4 +1,6 @@
 import { Switch, Route } from "wouter";
+import { useState } from "react";
+import { AiJournalAssistant } from "@/components/ai-journal-assistant";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,11 +25,14 @@ function Router() {
 }
 
 function App() {
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router />
         <Toaster />
+        <AiJournalAssistant />
       </AuthProvider>
     </QueryClientProvider>
   );
