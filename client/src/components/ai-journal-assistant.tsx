@@ -62,7 +62,7 @@ export function AiJournalAssistant() {
   return (
     <div className={`fixed z-50 ${isFullscreen ? 'inset-0' : 'bottom-4 right-4 sm:bottom-8 sm:right-8'}`}>
       {isOpen ? (
-        <Card className={`${isFullscreen ? 'fixed inset-0 w-full h-full' : 'w-[90vw] h-[80vh] sm:w-[350px] sm:h-[500px]'} flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300`}>
+        <Card className={`${isFullscreen ? 'fixed inset-0 w-full h-full' : 'w-[90vw] h-[80vh] sm:w-[350px] sm:h-[500px]'} flex flex-col bg-background transition-all duration-300`}>
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold">AI Journal Assistant</h3>
             <div className="flex gap-2">
