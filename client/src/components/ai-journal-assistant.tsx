@@ -61,10 +61,16 @@ export function AiJournalAssistant() {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ message: input }),
       });
 
+      if (response.status === 401) {
+        throw new Error('Please log in to continue');
+      }
       if (!response.ok) throw new Error('Failed to get AI response');
 
       const data = await response.json();
