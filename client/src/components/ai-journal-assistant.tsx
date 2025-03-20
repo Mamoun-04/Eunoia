@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
@@ -76,7 +75,7 @@ export function AiJournalAssistant() {
 
       const data = await response.json();
       const parts = data.message.split('\n\nPrompt:');
-      
+
       // Add the response message
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -116,8 +115,8 @@ export function AiJournalAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 space-y-4">
         {messages.map((message, idx) => (
           <div
             key={idx}
@@ -126,7 +125,7 @@ export function AiJournalAssistant() {
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-4 ${
+              className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${
                 message.role === 'user'
                   ? 'bg-primary text-primary-foreground'
                   : message.isPrompt
