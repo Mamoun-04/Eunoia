@@ -72,7 +72,7 @@ export function AiJournalAssistant() {
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
 
       //Extract and set prompt if available
-      const promptMatch = data.message.match(/Prompt:\s*(.*?)(?:\n|$)/);
+      const promptMatch = data.message.match(/As a journaling prompt[,:]?\s*(.*?)(?=\n|$)/i);
       if (promptMatch) {
         setCurrentPrompt(promptMatch[1].trim());
       }
