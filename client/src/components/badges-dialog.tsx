@@ -1,9 +1,10 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Entry } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Entry } from "@shared/schema";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { useQuery } from "@tanstack/react-query";
 
 interface BadgesDialogProps {
   open: boolean;
@@ -36,7 +37,7 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
     },
     {
       id: "dedicated_writer",
-      name: "Dedicated Writer",
+      name: "Dedicated Writer", 
       description: "Write entries for 10 consecutive days",
       emoji: "📅",
       requirement: "10-day streak",
@@ -71,20 +72,20 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
           if (diffDays === 1) streak++;
         }
         return (streak / 10) * 100;
-      },
-    },
+      }
+    }
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "sm:max-w-[425px] rounded-2xl bg-background/95 border-none shadow-xl flex flex-col",
-          "max-h-[80vh]",
+          "sm:max-w-[425px] rounded-2xl bg-background/95 border-none shadow-xl",
+          "max-h-[80vh] flex flex-col",
           isMobile ? 'w-[95%] p-4' : ''
         )}
       >
-        <DialogHeader className="bg-background/95 backdrop-blur-sm py-4 border-b">
+        <DialogHeader className="bg-background/95 backdrop-blur-sm py-4 border-b sticky top-0 z-10">
           <DialogTitle className="text-2xl font-[Playfair Display] text-center">
             Achievements
           </DialogTitle>
@@ -92,12 +93,11 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
             Track your journaling milestones and earn badges
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-y-auto flex-1 pt-4">
-          <div className="grid grid-cols-1 gap-4 px-4 pb-4">
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 gap-4 p-4">
             {BADGES.map((badge) => {
               const isUnlocked = badge.checkUnlocked(entries);
               const progress = badge.getProgress(entries);
-
               return (
                 <motion.div
                   key={badge.id}
@@ -129,7 +129,7 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
               );
             })}
           </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
