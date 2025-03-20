@@ -1,4 +1,37 @@
 
+@keyframes shine {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes unlock {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-shine:before {
+  animation: shine 2s infinite;
+}
+
+.animate-unlock {
+  animation: unlock 0.6s ease-out;
+}
+
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
