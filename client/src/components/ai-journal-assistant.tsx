@@ -32,10 +32,9 @@ export function AiJournalAssistant() {
         setDisplayedContent('');
         let i = 0;
         const typeInterval = setInterval(() => {
-          if (i < lastMessage.content.length) {
-            setDisplayedContent(prev => prev + lastMessage.content.charAt(i));
-            i++;
-          } else {
+          setDisplayedContent(lastMessage.content.slice(0, i + 1));
+          i++;
+          if (i >= lastMessage.content.length) {
             clearInterval(typeInterval);
             setIsTyping(false);
           }
