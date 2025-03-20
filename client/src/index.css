@@ -1,4 +1,35 @@
 
+@keyframes card-unlock {
+  0% { transform: scale(0.95); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-card-unlock {
+  animation: card-unlock 0.6s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&display=swap');
 
 @keyframes glow {

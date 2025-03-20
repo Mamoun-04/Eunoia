@@ -55,44 +55,44 @@ type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 // Color definitions for achievement tiers
 const tierColors = {
   bronze: {
-    background: 'from-amber-800/30 to-amber-700/10',
-    border: 'border-amber-700/30',
-    text: 'text-amber-700',
-    badge: 'border border-amber-800/50 bg-amber-800/20 text-amber-800/90',
-    emoji: 'bg-amber-800/10',
+    background: 'from-amber-900/40 to-amber-700/20 hover:from-amber-800/50 hover:to-amber-600/30',
+    border: 'border-amber-700/40',
+    text: 'text-amber-600',
+    badge: 'border border-amber-800/50 bg-amber-800/30 text-amber-700',
+    emoji: 'bg-amber-800/20 animate-pulse-slow',
     barColor: 'bg-amber-700'
   },
   silver: {
-    background: 'from-slate-400/30 to-slate-300/10',
-    border: 'border-slate-400/30',
-    text: 'text-slate-500',
-    badge: 'border border-slate-500/50 bg-slate-400/20 text-slate-500/90',
-    emoji: 'bg-slate-400/10',
+    background: 'from-slate-400/40 to-slate-300/20 hover:from-slate-300/50 hover:to-slate-200/30',
+    border: 'border-slate-400/40 backdrop-blur',
+    text: 'text-slate-400',
+    badge: 'border border-slate-400/50 bg-slate-400/30 text-slate-300',
+    emoji: 'bg-slate-400/20 animate-pulse-slow',
     barColor: 'bg-slate-400'
   },
   gold: {
-    background: 'from-yellow-500/30 to-yellow-400/10',
-    border: 'border-yellow-500/30',
-    text: 'text-yellow-600',
-    badge: 'border border-yellow-600/50 bg-yellow-500/20 text-yellow-600/90',
-    emoji: 'bg-yellow-500/10',
+    background: 'from-yellow-500/40 to-amber-400/20 hover:from-yellow-400/50 hover:to-amber-300/30',
+    border: 'border-yellow-500/40',
+    text: 'text-yellow-500',
+    badge: 'border border-yellow-500/50 bg-yellow-500/30 text-yellow-400',
+    emoji: 'bg-yellow-500/20 animate-pulse-slow',
     barColor: 'bg-yellow-500'
   },
   platinum: {
-    background: 'from-blue-400/30 to-sky-300/10',
-    border: 'border-blue-400/30',
-    text: 'text-blue-500',
-    badge: 'border border-blue-500/50 bg-blue-400/20 text-blue-500/90',
-    emoji: 'bg-blue-400/10',
+    background: 'from-blue-400/40 via-sky-300/30 to-blue-200/20 hover:from-blue-300/50 hover:to-sky-200/30',
+    border: 'border-blue-400/40 shadow-lg',
+    text: 'text-blue-400',
+    badge: 'border border-blue-400/50 bg-blue-400/30 text-blue-300',
+    emoji: 'bg-blue-400/20 animate-pulse-slow',
     barColor: 'bg-blue-400'
   },
   diamond: {
-    background: 'from-indigo-400/30 to-purple-300/10',
-    border: 'border-indigo-400/30',
-    text: 'text-indigo-500',
-    badge: 'border border-indigo-500/50 bg-indigo-400/20 text-indigo-500/90',
-    emoji: 'bg-indigo-400/10',
-    shimmer: 'animate-shimmer bg-gradient-to-r from-transparent via-indigo-300/20 to-transparent',
+    background: 'from-indigo-400/40 via-purple-300/30 to-indigo-200/20 hover:from-indigo-300/50 hover:to-purple-200/30',
+    border: 'border-indigo-400/40 shadow-xl',
+    text: 'text-indigo-400',
+    badge: 'border border-indigo-400/50 bg-indigo-400/30 text-indigo-300',
+    emoji: 'bg-indigo-400/20 animate-pulse-slow',
+    shimmer: 'animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent',
     barColor: 'bg-indigo-400'
   }
 };

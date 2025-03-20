@@ -557,12 +557,13 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
                 exit={{ opacity: 0, y: -20 }}
                 key={achievement.id}
                 className={cn(
-                  "p-6 rounded-2xl transition-all duration-300",
+                  "p-6 rounded-2xl transition-all duration-500",
                   `bg-gradient-to-br ${tierStyle.background}`,
                   tierStyle.border,
-                  "shadow-lg hover:shadow-xl",
-                  "relative overflow-hidden",
-                  !isUnlocked && "opacity-70 hover:opacity-90 grayscale-[30%]"
+                  "shadow-lg hover:shadow-2xl transform hover:-translate-y-1",
+                  "relative overflow-hidden backdrop-blur-sm",
+                  isUnlocked && "animate-card-unlock",
+                  !isUnlocked && "opacity-60 hover:opacity-80 grayscale-[40%] hover:grayscale-[20%]"
                 )}
               >
                 {achievement.tier === 'diamond' && isUnlocked && (
