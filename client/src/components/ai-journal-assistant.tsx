@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,6 @@ interface Message {
 
 export function AiJournalAssistant() {
   const [location] = useLocation();
-  // Only show on main pages
-  const allowedPages = ['/', '/entries', '/library'];
-  if (!allowedPages.includes(location)) return null;
-  
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
@@ -32,6 +29,10 @@ export function AiJournalAssistant() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Only show on main pages
+  const allowedPages = ['/', '/entries', '/library'];
+  if (!allowedPages.includes(location)) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
