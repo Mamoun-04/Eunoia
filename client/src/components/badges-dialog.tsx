@@ -369,7 +369,8 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const [selectedCategory, setSelectedCategory] = useState<Achievement['category'] | 'all'>('all');
   const { data: entries = [] } = useQuery({ 
     queryKey: ['entries'],
-    queryFn: () => [] as Entry[]
+    staleTime: 0,
+    cacheTime: 0
   });
 
   const filteredAchievements = ACHIEVEMENTS.filter(
