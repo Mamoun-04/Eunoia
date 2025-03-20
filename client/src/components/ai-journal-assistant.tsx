@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useForm } from "react-hook-form";
 
 interface Message {
@@ -10,6 +11,7 @@ interface Message {
 }
 
 export function AiJournalAssistant() {
+  const isMobile = useIsMobile();
   const form = useForm();
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
