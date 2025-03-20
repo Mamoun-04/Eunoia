@@ -120,10 +120,10 @@ export default function EntriesPage() {
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
             </div>
-            
+
             {/* Top Section - Metrics Grid */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+              <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
                 <div className="flex items-center gap-3 mb-4 text-muted-foreground">
                   <PenSquareIcon className="h-6 w-6" />
                   <span className="font-medium text-lg">Total Entries</span>
@@ -131,7 +131,7 @@ export default function EntriesPage() {
                 <div className="text-4xl font-bold text-primary tracking-tight">{entries.length}</div>
               </div>
 
-              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+              <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
                 <div className="flex items-center gap-3 mb-4 text-muted-foreground">
                   <BookIcon className="h-6 w-6" />
                   <span className="font-medium text-base">Total Words</span>
@@ -139,7 +139,7 @@ export default function EntriesPage() {
                 <div className="text-4xl font-bold text-primary tracking-tight">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
               </div>
 
-              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+              <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
                 <div className="flex items-center gap-3 mb-4 text-muted-foreground">
                   <ClockIcon className="h-6 w-6" />
                   <span className="font-medium text-base">Time Journaling</span>
@@ -147,7 +147,7 @@ export default function EntriesPage() {
                 <div className="text-4xl font-bold text-primary tracking-tight">0<span className="text-xl ml-2 text-muted-foreground">min</span></div>
               </div>
 
-              <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
+              <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
                 <div className="flex items-center gap-3 mb-4 text-muted-foreground">
                   <AwardIcon className="h-6 w-6" />
                   <span className="font-medium text-base">Daily Streak</span>
@@ -157,7 +157,7 @@ export default function EntriesPage() {
             </div>
 
             {/* Middle Section - Mood Distribution */}
-            <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+            <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <div className="flex items-center gap-3 mb-6 text-muted-foreground">
                 <AwardIcon className="h-6 w-6" />
                 <span className="font-medium text-lg">Mood Distribution</span>
@@ -182,7 +182,7 @@ export default function EntriesPage() {
             </div>
 
             {/* Bottom Section - Achievements */}
-            <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+            <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <div className="flex items-center gap-3 mb-6 text-muted-foreground">
                 <AwardIcon className="h-6 w-6" />
                 <span className="font-medium text-lg">Achievements</span>
