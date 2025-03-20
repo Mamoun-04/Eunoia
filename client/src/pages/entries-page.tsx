@@ -23,6 +23,14 @@ import { format } from "date-fns";
 import { MetricCard } from "@/components/metrics-card";
 import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as PenSquareIcon } from "lucide-react"; // Added imports
 
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  requirement: string;
+  isUnlocked: boolean;
+}
 
 export default function EntriesPage() {
   const { logoutMutation } = useAuth();
@@ -50,6 +58,19 @@ export default function EntriesPage() {
   const totalWords = entries.reduce((acc, entry) => {
     return acc + entry.content.split(/\s+/).length;
   }, 0);
+
+  const BADGES: Badge[] = [
+    {
+      id: "first_entry",
+      name: "First Steps",
+      description: "Write your first journal entry",
+      emoji: "📝",
+      requirement: "Write 1 entry",
+      isUnlocked: entries.length > 0,
+    },
+    // Add more badges here as needed
+  ];
+
 
   return (
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
@@ -98,7 +119,7 @@ export default function EntriesPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
             </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2"> {/* Changed to 1 column for mobile */}
               <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <PenSquareIcon className="h-5 w-5" />
@@ -115,28 +136,26 @@ export default function EntriesPage() {
                 <div className="text-5xl font-bold text-primary">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
               </div>
 
-              <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Changed to 1 column for mobile */}
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <ClockIcon className="h-5 w-5" />
                   <span className="font-medium">Time Journaling</span>
                 </div>
                 <div className="text-5xl font-bold text-primary">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
               </div>
-
-              
             </div>
 
-            <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
+            <div className="bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Removed col-span for mobile */}
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <AwardIcon className="h-5 w-5" />
                 <span>Mood Distribution</span>
               </div>
-              <div className="flex justify-around items-center">
+              <div className="flex flex-col gap-2 md:flex-row md:justify-around items-center"> {/* Stacked on mobile */}
                 {Object.entries(entries.reduce((acc, entry) => ({
                   ...acc,
                   [entry.mood]: (acc[entry.mood] || 0) + 1
                 }), {} as Record<string, number>)).map(([mood, count]) => (
-                  <div key={mood} className="text-center">
+                  <div key={mood} className="text-center md:w-1/3"> {/* Added width for better spacing on larger screens */}
                     <div className="text-2xl mb-1">{
                       mood === 'very_happy' ? '😄' :
                       mood === 'happy' ? '😊' :
@@ -150,7 +169,7 @@ export default function EntriesPage() {
               </div>
             </div>
 
-            <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
+            <div className="bg-[#111111] rounded-2xl p-6 shadow-lg"> {/* Removed col-span for mobile */}
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <AwardIcon className="h-5 w-5" />
                 <span>Daily Streak & Achievements</span>
@@ -186,11 +205,13 @@ export default function EntriesPage() {
                   onClick={() => setShowBadges(true)}
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Unlocked: 
-                  <span className="ml-1" title="First Entry">📝</span>
-                  <span className="ml-1 opacity-50" title="5-day Streak (Philosopher)">🎯</span>
-                  <span className="ml-1 opacity-50" title="10-day Streak (Sage)">🏆</span>
-                  <span className="ml-1 opacity-50" title="30-day Streak (Enlightened)">👑</span>
+                  Unlocked:
+                  {BADGES.filter(badge => badge.isUnlocked).map(badge => (
+                    <span key={badge.id} className="ml-1" title={badge.name}>{badge.emoji}</span>
+                  ))}
+                  {BADGES.filter(badge => !badge.isUnlocked).map(badge => (
+                    <span key={badge.id} className="ml-1 opacity-50" title={badge.name}>{badge.emoji}</span>
+                  ))}
                 </button>
                 <BadgesDialog open={showBadges} onOpenChange={setShowBadges} />
               </div>
