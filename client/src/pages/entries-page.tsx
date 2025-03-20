@@ -89,35 +89,44 @@ export default function EntriesPage() {
             </p>
           </div>
 
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Insights</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Entries</div>
-                  <div className="text-3xl font-bold">{entriesThisMonth}</div>
-                  <div className="text-sm text-muted-foreground">this month</div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Words Written</div>
-                  <div className="text-3xl font-bold">{totalWords.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">total</div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Daily Streak</div>
-                  <div className="text-3xl font-bold flex items-center gap-2">
-                    <span>1</span>
-                    <Award className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="text-sm text-muted-foreground">Keep it up!</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
+              <Button variant="outline" size="sm" onClick={() => toast({ title: "Coming soon", description: "This feature is under development" })}>
+                Suggest Improvement
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                icon={<PenSquare className="h-6 w-6" />}
+                label="Entries"
+                value={entriesThisMonth}
+                subtitle="this month"
+                onClick={() => toast({ title: "Monthly Entries", description: `You've written ${entriesThisMonth} entries this month` })}
+              />
+              <MetricCard
+                icon={<Book className="h-6 w-6" />}
+                label="Words Written"
+                value={totalWords.toLocaleString()}
+                subtitle="total"
+                onClick={() => toast({ title: "Word Count", description: `You've written ${totalWords.toLocaleString()} words in total` })}
+              />
+              <MetricCard
+                icon={<Clock className="h-6 w-6" />}
+                label="Time Writing"
+                value="30"
+                subtitle="minutes today"
+                onClick={() => toast({ title: "Writing Time", description: "You've spent 30 minutes writing today" })}
+              />
+              <MetricCard
+                icon={<Award className="h-6 w-6" />}
+                label="Daily Streak"
+                value="1"
+                subtitle="Keep it up!"
+                onClick={() => toast({ title: "Daily Streak", description: "You're on a 1 day streak. Keep writing daily!" })}
+              />
+            </div>
+          </div>
 
           {/* Recent Entries */}
           <div className="space-y-4">

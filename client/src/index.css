@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,6 +12,11 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+:root {
+  --font-playfair: 'Playfair Display', serif;
+  --font-helvetica: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .rdp {
