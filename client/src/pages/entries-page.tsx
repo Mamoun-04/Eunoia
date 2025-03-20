@@ -19,6 +19,9 @@ import {
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { MetricCard } from "@/components/metrics-card";
+import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as PenSquareIcon } from "lucide-react"; // Added imports
+
 
 export default function EntriesPage() {
   const { logoutMutation } = useAuth();
@@ -98,28 +101,28 @@ export default function EntriesPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
-                icon={<PenSquare className="h-6 w-6" />}
+                icon={<PenSquareIcon className="h-6 w-6" />}
                 label="Entries"
                 value={entriesThisMonth}
                 subtitle="this month"
                 onClick={() => toast({ title: "Monthly Entries", description: `You've written ${entriesThisMonth} entries this month` })}
               />
               <MetricCard
-                icon={<Book className="h-6 w-6" />}
+                icon={<BookIcon className="h-6 w-6" />}
                 label="Words Written"
                 value={totalWords.toLocaleString()}
                 subtitle="total"
                 onClick={() => toast({ title: "Word Count", description: `You've written ${totalWords.toLocaleString()} words in total` })}
               />
               <MetricCard
-                icon={<Clock className="h-6 w-6" />}
+                icon={<ClockIcon className="h-6 w-6" />}
                 label="Time Writing"
                 value="30"
                 subtitle="minutes today"
                 onClick={() => toast({ title: "Writing Time", description: "You've spent 30 minutes writing today" })}
               />
               <MetricCard
-                icon={<Award className="h-6 w-6" />}
+                icon={<AwardIcon className="h-6 w-6" />}
                 label="Daily Streak"
                 value="1"
                 subtitle="Keep it up!"
