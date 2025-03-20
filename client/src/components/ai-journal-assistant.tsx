@@ -11,7 +11,10 @@ interface Message {
 }
 
 export function AiJournalAssistant() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([{
+    role: 'assistant',
+    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings. You can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights. What would you like to discuss today?"
+  }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
