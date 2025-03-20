@@ -59,7 +59,7 @@ export function AIJournalAssistant() {
       const data = await response.json();
       
       if (!data || !data.content) {
-        throw new Error('Invalid response: Missing content');
+        throw new Error('The AI assistant is currently unavailable. Please try again in a moment.');
       }
 
       setMessages(prev => [...prev, {
@@ -67,6 +67,7 @@ export function AIJournalAssistant() {
         content: data.content,
         prompt: data.prompt
       }]);
+      scrollToBottom();
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [...prev, {
