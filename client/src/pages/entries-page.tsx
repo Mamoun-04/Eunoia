@@ -97,7 +97,7 @@ export default function EntriesPage() {
               <h2 className="text-2xl font-[Playfair Display] font-bold">Insights</h2>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <PenSquareIcon className="h-5 w-5" />
                   <span className="font-medium">Total Entries</span>
@@ -105,7 +105,7 @@ export default function EntriesPage() {
                 <div className="text-5xl font-bold text-primary">{entries.length}</div>
               </div>
 
-              <div className="col-span-1 bg-muted rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <BookIcon className="h-5 w-5" />
                   <span className="font-medium">Total Words</span>
@@ -113,7 +113,7 @@ export default function EntriesPage() {
                 <div className="text-5xl font-bold text-primary">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
               </div>
 
-              <div className="col-span-2 bg-muted rounded-2xl p-6 shadow-lg">
+              <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <ClockIcon className="h-5 w-5" />
                   <span className="font-medium">Time Journaling</span>
@@ -121,7 +121,7 @@ export default function EntriesPage() {
                 <div className="text-5xl font-bold text-primary">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
               </div>
 
-              <div className="col-span-1 bg-muted rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <AwardIcon className="h-5 w-5" />
                   <span className="font-medium">Daily Streak</span>
@@ -138,7 +138,7 @@ export default function EntriesPage() {
                 </div>
               </div>
 
-              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <AwardIcon className="h-5 w-5" />
                   <span className="font-medium">Weekly Streak</span>
