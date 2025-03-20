@@ -1,7 +1,6 @@
 
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
 import { AIJournalAssistant } from "@/components/ai-journal-assistant";
+import { useAuth } from "@/hooks/use-auth";
 import {
   LogOut,
   Settings,
@@ -10,6 +9,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function AssistantPage() {
   const { logoutMutation } = useAuth();
@@ -18,24 +18,20 @@ export default function AssistantPage() {
   const navigation = [
     { name: "Today", href: "/", icon: CalendarDays },
     { name: "Entries", href: "/entries", icon: PenSquare },
-    { name: "Assistant", href: "/assistant", icon: BookOpen },
+    { name: "Library", href: "/library", icon: BookOpen },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 w-64 p-4 border-r">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold px-4">Eunoia</h1>
-          <p className="text-sm text-muted-foreground px-4">Your Insights</p>
-        </div>
-
+        <h1 className="text-2xl font-bold px-4">AI Assistant</h1>
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => (
             <Link key={item.name} href={item.href}>
               <Button
-                variant={location === item.href ? "default" : "ghost"}
+                variant="ghost"
                 className="w-full justify-start gap-2"
               >
                 <item.icon className="h-5 w-5" />
@@ -44,7 +40,6 @@ export default function AssistantPage() {
             </Link>
           ))}
         </nav>
-
         <Button
           variant="ghost"
           className="mt-auto w-full justify-start gap-2"
@@ -57,7 +52,9 @@ export default function AssistantPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-4 lg:p-8">
-        <AIJournalAssistant />
+        <div className="max-w-4xl mx-auto">
+          <AIJournalAssistant />
+        </div>
       </div>
 
       {/* Mobile Bottom Navigation */}
