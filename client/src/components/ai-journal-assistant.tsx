@@ -8,7 +8,10 @@ interface Message {
 }
 
 export function AIJournalAssistant() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([{
+    type: "assistant",
+    content: "Hello! I'm your AI journaling assistant. I can help you reflect on your thoughts, explore your feelings, or brainstorm writing ideas. What would you like to discuss today?"
+  }]);
   const [input, setInput] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
