@@ -1,8 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Send, Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
 
 interface Message {
@@ -13,16 +11,39 @@ interface Message {
 export function AiJournalAssistant() {
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings. You can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights. What would you like to discuss today?"
+    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.\n\nWhat would you like to discuss today?"
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, displayedContent]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && !isTyping) {
+        setIsTyping(true);
+        setDisplayedContent('');
+        let i = 0;
+        const typeInterval = setInterval(() => {
+          if (i < lastMessage.content.length) {
+            setDisplayedContent(prev => prev + lastMessage.content.charAt(i));
+            i++;
+          } else {
+            clearInterval(typeInterval);
+            setIsTyping(false);
+          }
+        }, 20);
+        return () => clearInterval(typeInterval);
+      }
+    }
   }, [messages]);
 
   const sendMessage = async () => {
@@ -38,17 +59,14 @@ export function AiJournalAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: input
-        }),
+        body: JSON.stringify({ message: input }),
       });
 
       if (!response.ok) throw new Error('Failed to get AI response');
-
+      
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
       
-      // Check if the response contains a journaling prompt
       if (data.message.toLowerCase().includes('prompt:')) {
         setSuggestedPrompt(data.message);
       }
@@ -69,69 +87,93 @@ export function AiJournalAssistant() {
     }
   };
 
+  const formatMessage = (content: string) => {
+    const paragraphs = content.split('\n\n');
+    return paragraphs.map((paragraph, idx) => {
+      if (paragraph.toLowerCase().includes('prompt:')) {
+        const [label, ...promptContent] = paragraph.split(':');
+        return (
+          <div key={idx} className="bg-primary/10 p-4 rounded-lg my-4">
+            <div className="font-semibold text-primary">{label}:</div>
+            <div>{promptContent.join(':')}</div>
+          </div>
+        );
+      }
+      return <p key={idx} className="mb-4">{paragraph}</p>;
+    });
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] max-w-3xl mx-auto">
+    <div className="flex flex-col h-[calc(100vh-16rem)]">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
+        {messages.map((message, idx) => (
           <div
-            key={index}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            key={idx}
+            className={`flex ${
+              message.role === 'user' ? 'justify-end' : 'justify-start'
+            }`}
           >
             <div
-              className={`max-w-[80%] p-3 rounded-2xl ${
+              className={`max-w-[80%] rounded-lg p-4 ${
                 message.role === 'user'
-                  ? 'bg-primary text-primary-foreground ml-4'
-                  : 'bg-muted text-muted-foreground mr-4'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted'
               }`}
             >
-              {message.content}
+              {idx === messages.length - 1 && message.role === 'assistant'
+                ? formatMessage(displayedContent)
+                : formatMessage(message.content)}
             </div>
           </div>
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-muted p-3 rounded-2xl">
-              <Loader2 className="h-5 w-5 animate-spin" />
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex space-x-2">
+                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce" />
+                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.2s]" />
+                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.4s]" />
+              </div>
             </div>
           </div>
         )}
         <div ref={chatEndRef} />
       </div>
 
-      {suggestedPrompt && (
-        <div className="p-4 border-t">
+      <div className="border-t p-4">
+        {suggestedPrompt && !showEditor && (
           <Button
-            onClick={() => {
-              setShowEditor(true);
-              setSuggestedPrompt(null);
-            }}
-            variant="outline"
-            className="w-full"
+            onClick={() => setShowEditor(true)}
+            className="w-full mb-4"
+            variant="secondary"
           >
-            Start Writing with This Prompt
+            Start Journaling with This Prompt
           </Button>
-        </div>
-      )}
-
-      <div className="p-4 border-t">
+        )}
         <div className="flex gap-2">
-          <Input
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1"
+            className="flex-1 min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
-            <Send className="h-4 w-4" />
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !input.trim()}
+          >
+            Send
           </Button>
         </div>
       </div>
 
       {showEditor && (
         <JournalEditor
-          initialPrompt={suggestedPrompt || undefined}
-          onClose={() => setShowEditor(false)}
+          onClose={() => {
+            setShowEditor(false);
+            setSuggestedPrompt(null);
+          }}
+          initialCategory="reflection"
         />
       )}
     </div>
