@@ -12,7 +12,8 @@ import {
   PenSquare,
   BookOpen,
   Settings,
-  CalendarDays
+  CalendarDays,
+  MessageSquare
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
