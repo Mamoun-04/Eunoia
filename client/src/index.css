@@ -29,27 +29,6 @@
   0%, 100% {
     transform: scale(0) rotate(0deg);
     opacity: 0;
-
-.achievement-total-badge {
-  margin: 1rem 0;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  background: linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.achievement-total-badge:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
-}
-
-.achievement-card {
-  margin: 0.75rem 0;
-  padding: 1rem;
-  gap: 1rem;
-}
-
   }
   50% {
     transform: scale(1) rotate(180deg);
