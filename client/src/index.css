@@ -11,3 +11,20 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--primary) / 0.1);
+  margin: 0;
+}
+
+.rdp-day_selected:not([disabled]) {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.rdp-day_today:not(.rdp-day_outside) {
+  font-weight: bold;
+  border: 1px solid hsl(var(--primary));
+}
