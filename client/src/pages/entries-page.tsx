@@ -121,7 +121,7 @@ export default function EntriesPage() {
             </div>
             
             {/* Top Section - Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <div className="bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:translate-y-[-2px]">
                 <div className="flex items-center gap-3 mb-4 text-muted-foreground">
                   <PenSquareIcon className="h-6 w-6" />
@@ -161,13 +161,13 @@ export default function EntriesPage() {
                 <AwardIcon className="h-6 w-6" />
                 <span className="font-medium text-lg">Mood Distribution</span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+              <div className="grid grid-cols-5 gap-3 sm:gap-6">
                 {Object.entries(entries.reduce((acc, entry) => ({
                   ...acc,
                   [entry.mood]: (acc[entry.mood] || 0) + 1
                 }), {} as Record<string, number>)).map(([mood, count]) => (
                   <div key={mood} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-black/20">
-                    <div className="text-4xl mb-2">{
+                    <div className="text-2xl sm:text-4xl mb-2">{
                       mood === 'very_happy' ? '😄' :
                       mood === 'happy' ? '😊' :
                       mood === 'neutral' ? '😐' :
