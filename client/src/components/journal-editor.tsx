@@ -27,6 +27,7 @@ import {
 type Props = {
   onClose: () => void;
   initialCategory?: string;
+  initialPrompt?: string;
 };
 
 export function JournalEditor({ onClose, initialCategory }: Props) {
