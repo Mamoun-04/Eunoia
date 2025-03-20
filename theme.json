@@ -1,8 +1,9 @@
+
 {
   "variant": "professional",
   "primary": "hsl(26, 83%, 80%)",
-  "appearance": "light",
-  "radius": 0.5,
+  "appearance": "dark",
+  "radius": 0.75,
   "colors": {
     "light": {
       "background": "hsl(40, 36%, 95%)",
@@ -21,19 +22,21 @@
       }
     },
     "dark": {
-      "background": "hsl(222, 47%, 11%)",
-      "foreground": "hsl(40, 36%, 95%)",
-      "muted": "hsl(222, 20%, 20%)",
-      "muted-foreground": "hsl(40, 10%, 70%)",
-      "border": "hsl(222, 20%, 25%)",
-      "input": "hsl(222, 20%, 25%)",
-      "accent": "hsl(26, 83%, 20%)",
-      "accent-foreground": "hsl(40, 36%, 95%)",
+      "background": "hsl(0, 0%, 7%)",
+      "foreground": "hsl(0, 0%, 98%)",
+      "muted": "hsl(0, 0%, 15%)",
+      "muted-foreground": "hsl(0, 0%, 65%)",
+      "border": "hsl(0, 0%, 20%)",
+      "input": "hsl(0, 0%, 20%)",
+      "accent": "hsl(26, 83%, 95%)",
+      "accent-foreground": "hsl(0, 0%, 98%)",
+      "primary": "hsl(26, 83%, 80%)",
+      "primary-foreground": "hsl(0, 0%, 98%)",
       "sidebar": {
-        "background": "hsl(222, 47%, 13%)",
-        "foreground": "hsl(40, 36%, 95%)",
-        "muted": "hsl(222, 20%, 22%)",
-        "border": "hsl(222, 20%, 25%)"
+        "background": "hsl(0, 0%, 9%)",
+        "foreground": "hsl(0, 0%, 98%)",
+        "muted": "hsl(0, 0%, 15%)",
+        "border": "hsl(0, 0%, 20%)"
       }
     }
   }
