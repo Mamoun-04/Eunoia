@@ -36,7 +36,7 @@ export function AiJournalAssistant() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          messages: updatedMessages.slice(-10)
+          message: input
         }),
       });
 

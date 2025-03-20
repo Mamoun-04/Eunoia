@@ -93,34 +93,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoint
   app.post("/api/chat", requireAuth, async (req, res) => {
     try {
-      const { messages } = req.body;
-      const recentMessages = messages?.slice(-10) || [];
-      
-      // Define system message to encourage varied responses
-      const systemMessage = {
-        role: "system",
-        content: "You are an empathetic AI journaling assistant. Provide thoughtful, varied responses that help users reflect deeply on their thoughts and feelings. Never repeat the same response. If the user expresses emotions, acknowledge them specifically. Suggest relevant journaling prompts when appropriate."
-      };
+      const { message } = req.body;
 
-      // For now, generate dynamic mock responses based on context
-      const lastUserMessage = recentMessages[recentMessages.length - 1]?.content?.toLowerCase() || "";
-      
-      let response = "";
-      if (lastUserMessage.includes("sad") || lastUserMessage.includes("upset")) {
-        response = "I hear that you're feeling down. Would you like to explore what's contributing to these feelings? Sometimes writing about our emotions can help us understand them better. Consider this prompt: 'What would help me feel more supported right now?'";
-      } else if (lastUserMessage.includes("happy") || lastUserMessage.includes("good")) {
-        response = "It's wonderful that you're feeling positive! Let's explore these good feelings. What specific moments or experiences contributed to your current state of mind?";
-      } else if (lastUserMessage.includes("stress") || lastUserMessage.includes("anxious")) {
-        response = "Managing stress can be challenging. Let's take a moment to break this down. What's the primary source of your stress? Writing about it can help create a sense of control and clarity.";
-      } else if (recentMessages.length === 0) {
-        response = "Welcome to your journaling session. What's on your mind today? I'm here to help you explore your thoughts and feelings.";
-      } else {
-        response = "Could you tell me more about that? Sometimes writing about our experiences helps us see them from a new perspective.";
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
       }
 
-      res.json({ message: response });
+      const prompt = `You are a thoughtful journaling assistant. Help users reflect deeply on their thoughts and emotions through:
+1. Empathetic responses that acknowledge their feelings
+2. Open-ended questions that encourage deeper reflection
+3. Occasional journaling prompts for focused writing
+4. Mindfulness techniques when relevant
+
+Keep responses warm but concise, under 200 words. End with either:
+- A gentle question to explore further
+- A specific journaling prompt
+- A mindful observation
+
+User message: ${message}`;
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 300
+        })
+      });
+
+      const data = await response.json();
+      res.json({ message: data.choices[0].message.content });
     } catch (error) {
-      res.status(500).json({ message: "Failed to get AI response" });
+      console.error('OpenAI API error:', error);
+      res.status(500).json({ error: 'Failed to process chat message' });
     }
   });
 
