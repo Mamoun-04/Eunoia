@@ -1,9 +1,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface Message {
   type: "user" | "assistant";
@@ -41,7 +41,7 @@ export function AIJournalAssistant() {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -53,16 +53,15 @@ export function AIJournalAssistant() {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to get response from chat API: ${response.status}`);
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      let data;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        data = await response.json();
-      } else {
-        throw new Error("Invalid response format from server");
+      const data = await response.json();
+      
+      if (!data || typeof data.content !== 'string') {
+        throw new Error('Invalid response format');
       }
+
       setMessages(prev => [...prev, {
         type: "assistant",
         content: data.content,
@@ -70,10 +69,9 @@ export function AIJournalAssistant() {
       }]);
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       setMessages(prev => [...prev, {
         type: "assistant",
-        content: `Error: ${errorMessage}. Please check your OpenAI API key configuration.`
+        content: "I apologize, but I'm having trouble responding right now. Please try again in a moment."
       }]);
     } finally {
       setIsLoading(false);
@@ -81,7 +79,7 @@ export function AIJournalAssistant() {
   };
 
   const startNewEntry = (prompt: string) => {
-    setLocation(`/?prompt=${encodeURIComponent(prompt)}`);
+    navigate(`/?prompt=${encodeURIComponent(prompt)}`);
   };
 
   return (
