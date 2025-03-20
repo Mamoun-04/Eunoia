@@ -421,6 +421,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             Achievements Gallery
           </DialogTitle>
           <div className="flex justify-center gap-4 flex-wrap mb-4">
+        </DialogHeader>
             <div className="achievement-total-badge relative px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20">
               <span className="font-semibold text-foreground/90">
                 {achievementStats.unlockedCount} / {ACHIEVEMENTS.length} Achieved
