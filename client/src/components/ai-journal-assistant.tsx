@@ -141,7 +141,11 @@ export function AiJournalAssistant() {
       <div className="border-t p-4">
         {suggestedPrompt && !showEditor && (
           <Button
-            onClick={() => setShowEditor(true)}
+            onClick={() => {
+              const promptText = suggestedPrompt?.split('\n\nPrompt:')?.pop()?.trim() || suggestedPrompt || '';
+              setShowEditor(true);
+              form.setValue('title', promptText);
+            }}
             className="w-full mb-4"
             variant="secondary"
           >
