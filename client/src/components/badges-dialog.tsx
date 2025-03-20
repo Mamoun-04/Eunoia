@@ -460,7 +460,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </div>
 
         {/* Category filters - improved alignment */}
-        <div className="flex gap-3 px-4 py-3 mb-2 border-t border-b overflow-x-auto sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+        <div className="achievement-categories">
           {categories.map(category => {
             const Icon = CategoryIcon[category.id as keyof typeof CategoryIcon] || Star;
             return (
@@ -468,11 +468,8 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id as Achievement['category'] | 'all')}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full transition-all",
-                  "text-sm font-medium",
-                  selectedCategory === category.id
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "hover:bg-muted/80"
+                  "achievement-category-button",
+                  selectedCategory === category.id && "active"
                 )}
               >
                 <Icon className="w-4 h-4" />

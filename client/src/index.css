@@ -147,6 +147,48 @@
   pointer-events: none;
 }
 
+.achievement-categories {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  background: var(--background);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.achievement-category-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.achievement-category-button:hover {
+  background: var(--muted);
+}
+
+.achievement-category-button.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.achievement-tier-badge {
+  backdrop-filter: blur(8px);
+  transform-style: preserve-3d;
+}
+
 @layer base {
   * {
     @apply border-border;
