@@ -109,7 +109,7 @@ export default function EntriesPage() {
       <div className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold">Today</h1>
+            <h1 className="text-4xl font-bold font-[Playfair Display]">Today</h1>
             <p className="text-lg text-muted-foreground">
               {format(new Date(), 'MMMM d')}
             </p>
