@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
@@ -63,10 +62,10 @@ export function AiJournalAssistant() {
       });
 
       if (!response.ok) throw new Error('Failed to get AI response');
-      
+
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
-      
+
       if (data.message.toLowerCase().includes('prompt:')) {
         setSuggestedPrompt(data.message);
       }
