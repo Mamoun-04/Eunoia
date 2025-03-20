@@ -29,7 +29,10 @@ export default function LibraryPage() {
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 w-64 p-4 border-r">
-        <h1 className="text-2xl font-bold px-4">Journal Library</h1>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold px-4">Eunoia</h1>
+          <p className="text-sm text-muted-foreground px-4">Your Insights</p>
+        </div>
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => (
             <Link key={item.name} href={item.href}>
