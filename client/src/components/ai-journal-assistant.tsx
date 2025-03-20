@@ -58,8 +58,8 @@ export function AIJournalAssistant() {
 
       const data = await response.json();
       
-      if (!data || typeof data.content !== 'string') {
-        throw new Error('Invalid response format');
+      if (!data || !data.content) {
+        throw new Error('Invalid response: Missing content');
       }
 
       setMessages(prev => [...prev, {
@@ -78,8 +78,10 @@ export function AIJournalAssistant() {
     }
   };
 
+  const [, setLocation] = useLocation();
+  
   const startNewEntry = (prompt: string) => {
-    navigate(`/?prompt=${encodeURIComponent(prompt)}`);
+    setLocation(`/?prompt=${encodeURIComponent(prompt)}`);
   };
 
   return (
