@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {
   Dialog,
@@ -7,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 type Badge = {
   id: string;
@@ -66,11 +66,12 @@ type Props = {
 };
 
 export function BadgesDialog({ open, onOpenChange }: Props) {
+  const isMobile = useIsMobile();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Achievements</DialogTitle>
+      <DialogContent className={`sm:max-w-[425px] ${isMobile ? 'w-[95%] p-4' : ''}`}>
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl">Achievements</DialogTitle>
           <DialogDescription>
             Track your journaling milestones and earn badges
           </DialogDescription>
