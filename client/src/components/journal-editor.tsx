@@ -16,13 +16,7 @@ import { MoodSelector } from "./mood-selector";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 type Props = {
   onClose: () => void;
@@ -37,7 +31,7 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
       title: "",
       content: "",
       mood: "neutral",
-      category: initialCategory || categoryOptions[0],
+      prompt: initialCategory || "",
     },
   });
 
@@ -100,29 +94,16 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
               )}
             />
 
+
             <FormField
               control={form.control}
-              name="category"
+              name="prompt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categoryOptions.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Prompt</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your prompt..." {...field} />
+                  </FormControl>
                 </FormItem>
               )}
             />
