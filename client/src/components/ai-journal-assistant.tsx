@@ -25,7 +25,7 @@ export function AIJournalAssistant() {
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
   const sendMessage = async (content: string) => {
-    if (!content.trim()) return;
+    if (!content.trim() || isLoading) return;
 
     const newMessages = [
       ...messages,
@@ -36,12 +36,22 @@ export function AIJournalAssistant() {
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages }),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
       const data = await response.json();
       setMessages([...newMessages, {
         role: "assistant",
@@ -50,6 +60,10 @@ export function AIJournalAssistant() {
       }]);
     } catch (error) {
       console.error("Failed to send message:", error);
+      setMessages([...newMessages, {
+        role: "assistant",
+        content: "I apologize, but I'm having trouble responding right now. Please try again.",
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +106,19 @@ export function AIJournalAssistant() {
               ))}
               {isLoading && (
                 <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex justify-start"
+                >
+                  <div className="max-w-[80%] p-4 rounded-2xl bg-muted">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                    </div>
+                  </div>
+                </motion.div>
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
