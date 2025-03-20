@@ -27,24 +27,20 @@ export function AiJournalAssistant() {
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant') {
+      if (lastMessage.role === 'assistant' && !isTyping) {
         setIsTyping(true);
         setDisplayedContent('');
-        
-        const text = lastMessage.content;
-        const chars = text.split('');
-        let timer: NodeJS.Timeout;
-        
-        chars.forEach((char, index) => {
-          timer = setTimeout(() => {
-            setDisplayedContent(prev => prev + char);
-            if (index === chars.length - 1) {
-              setIsTyping(false);
-            }
-          }, 20 * index);
-        });
-
-        return () => clearTimeout(timer);
+        let i = 0;
+        const typeInterval = setInterval(() => {
+          if (i < lastMessage.content.length) {
+            setDisplayedContent(prev => prev + lastMessage.content.charAt(i));
+            i++;
+          } else {
+            clearInterval(typeInterval);
+            setIsTyping(false);
+          }
+        }, 20);
+        return () => clearInterval(typeInterval);
       }
     }
   }, [messages]);
@@ -61,16 +57,10 @@ export function AiJournalAssistant() {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input }),
       });
 
-      if (response.status === 401) {
-        throw new Error('Please log in to continue');
-      }
       if (!response.ok) throw new Error('Failed to get AI response');
 
       const data = await response.json();
