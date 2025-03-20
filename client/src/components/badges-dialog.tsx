@@ -458,11 +458,11 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           </div>
             // Define consistent tier styling
             const tierColor = {
-              'diamond': "from-blue-400/30 to-purple-500/30 border-blue-400/40",
-              'platinum': "from-emerald-400/30 to-emerald-500/30 border-emerald-400/40",
-              'gold': "from-yellow-400/30 to-yellow-500/30 border-yellow-400/40",
-              'silver': "from-slate-300/30 to-slate-400/30 border-slate-300/40",
-              'bronze': "from-orange-400/30 to-orange-600/30 border-orange-400/40"
+              diamond: "from-blue-400/30 to-purple-500/30 border-blue-400/40",
+              platinum: "from-emerald-400/30 to-emerald-500/30 border-emerald-400/40",
+              gold: "from-yellow-400/30 to-yellow-500/30 border-yellow-400/40",
+              silver: "from-slate-300/30 to-slate-400/30 border-slate-300/40",
+              bronze: "from-orange-400/30 to-orange-600/30 border-orange-400/40"
             }[tier];
             
             return (
