@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,7 @@ interface Message {
 export function AIJournalAssistant() {
   const [messages, setMessages] = useState<Message[]>([{
     type: "assistant",
-    content: "Hello! I'm your AI journaling assistant. I can help you reflect on your thoughts, explore your feelings, or brainstorm writing ideas. What would you like to discuss today?"
+    content: "Hello! How can I help you today?"
   }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -41,9 +40,7 @@ export function AIJournalAssistant() {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: messages.concat(userMessage).map(msg => ({
             role: msg.type === "user" ? "user" : "assistant",
@@ -57,7 +54,7 @@ export function AIJournalAssistant() {
       }
 
       const data = await response.json();
-      
+
       if (!data || !data.content) {
         throw new Error('The AI assistant is currently unavailable. Please try again in a moment.');
       }
@@ -72,7 +69,7 @@ export function AIJournalAssistant() {
       console.error("Chat error:", error);
       setMessages(prev => [...prev, {
         type: "assistant",
-        content: "I apologize, but I'm having trouble responding right now. Please try again in a moment."
+        content: "Sorry, I'm having trouble responding. Please try again."
       }]);
     } finally {
       setIsLoading(false);
@@ -80,7 +77,7 @@ export function AIJournalAssistant() {
   };
 
   const [, setLocation] = useLocation();
-  
+
   const startNewEntry = (prompt: string) => {
     setLocation(`/?prompt=${encodeURIComponent(prompt)}`);
   };
