@@ -1,5 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Entry } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
