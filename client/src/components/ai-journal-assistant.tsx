@@ -115,18 +115,18 @@ export function AiJournalAssistant() {
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
       {currentPrompt && (
-        <div className="border-b p-4 bg-muted/30">
-          <div className="max-w-2xl mx-auto space-y-4">
+        <div className="absolute right-4 top-4 w-72 rounded-lg border bg-card p-4 shadow-lg">
+          <div className="space-y-4">
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-lg text-primary">Today's Journaling Prompt</h3>
+              <h3 className="font-semibold text-lg text-primary">Recommended Prompt</h3>
               <p className="text-foreground/90">{currentPrompt}</p>
             </div>
             <Button
               onClick={handleStartJournaling}
-              className="w-full sm:w-auto"
+              className="w-full"
               variant="default"
             >
-              Start New Entry Using This Prompt
+              Use This Prompt
             </Button>
           </div>
         </div>
