@@ -121,39 +121,7 @@ export default function EntriesPage() {
                 <div className="text-5xl font-bold text-primary">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
               </div>
 
-              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <AwardIcon className="h-5 w-5" />
-                  <span className="font-medium">Daily Streak</span>
-                </div>
-                <div className="flex gap-8 mt-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">1</div>
-                    <div className="text-sm text-muted-foreground">Current</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">1</div>
-                    <div className="text-sm text-muted-foreground">Best</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <AwardIcon className="h-5 w-5" />
-                  <span className="font-medium">Weekly Streak</span>
-                </div>
-                <div className="flex gap-8 mt-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">1</div>
-                    <div className="text-sm text-muted-foreground">Current</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">1</div>
-                    <div className="text-sm text-muted-foreground">Best</div>
-                  </div>
-                </div>
-              </div>
+              
             </div>
 
             <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
