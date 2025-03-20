@@ -128,11 +128,11 @@ export default function EntriesPage() {
                 </div>
                 <div className="flex gap-8 mt-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-3xl font-bold text-primary">1</div>
                     <div className="text-sm text-muted-foreground">Current</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-3xl font-bold text-primary">1</div>
                     <div className="text-sm text-muted-foreground">Best</div>
                   </div>
                 </div>
@@ -145,11 +145,11 @@ export default function EntriesPage() {
                 </div>
                 <div className="flex gap-8 mt-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-3xl font-bold text-primary">1</div>
                     <div className="text-sm text-muted-foreground">Current</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-[#4169FF]">1</div>
+                    <div className="text-3xl font-bold text-primary">1</div>
                     <div className="text-sm text-muted-foreground">Best</div>
                   </div>
                 </div>
