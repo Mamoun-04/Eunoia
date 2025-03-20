@@ -27,20 +27,24 @@ export function AiJournalAssistant() {
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && !isTyping) {
+      if (lastMessage.role === 'assistant') {
         setIsTyping(true);
         setDisplayedContent('');
-        let i = 0;
-        const typeInterval = setInterval(() => {
-          if (i < lastMessage.content.length) {
-            setDisplayedContent(prev => prev + lastMessage.content.charAt(i));
-            i++;
+        
+        const text = lastMessage.content;
+        let currentIndex = 0;
+        
+        const typeText = () => {
+          if (currentIndex < text.length) {
+            setDisplayedContent(text.substring(0, currentIndex + 1));
+            currentIndex++;
+            setTimeout(typeText, 20);
           } else {
-            clearInterval(typeInterval);
             setIsTyping(false);
           }
-        }, 20);
-        return () => clearInterval(typeInterval);
+        };
+        
+        typeText();
       }
     }
   }, [messages]);
