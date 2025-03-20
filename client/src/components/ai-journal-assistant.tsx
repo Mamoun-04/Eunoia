@@ -32,19 +32,19 @@ export function AiJournalAssistant() {
         setDisplayedContent('');
         
         const text = lastMessage.content;
-        let currentIndex = 0;
+        const chars = text.split('');
+        let timer: NodeJS.Timeout;
         
-        const typeText = () => {
-          if (currentIndex < text.length) {
-            setDisplayedContent(text.substring(0, currentIndex + 1));
-            currentIndex++;
-            setTimeout(typeText, 20);
-          } else {
-            setIsTyping(false);
-          }
-        };
-        
-        typeText();
+        chars.forEach((char, index) => {
+          timer = setTimeout(() => {
+            setDisplayedContent(prev => prev + char);
+            if (index === chars.length - 1) {
+              setIsTyping(false);
+            }
+          }, 20 * index);
+        });
+
+        return () => clearTimeout(timer);
       }
     }
   }, [messages]);
