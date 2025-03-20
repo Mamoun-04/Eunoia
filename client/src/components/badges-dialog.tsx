@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Flame, PenSquare, Calendar, Star, Palette, Trophy } from 'lucide-react';
@@ -377,12 +377,14 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   );
 
   const unlockedCount = ACHIEVEMENTS.filter(a => a.checkUnlocked(entries)).length;
-  const tierCounts = ACHIEVEMENTS.reduce((acc, achievement) => {
-    if (achievement.checkUnlocked(entries)) {
-      acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<AchievementTier, number>);
+  const tierCounts = useMemo(() => {
+    return ACHIEVEMENTS.reduce((acc, achievement) => {
+      if (achievement.checkUnlocked(entries)) {
+        acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<AchievementTier, number>);
+  }, [entries]); // Add entries dependency to recalculate when entries change
 
   const categories: { id: Achievement['category'] | 'all'; label: string }[] = [
     { id: 'all', label: 'All Achievements' },
