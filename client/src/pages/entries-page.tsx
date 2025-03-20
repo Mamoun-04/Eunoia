@@ -14,21 +14,100 @@ import {
   Settings,
   CalendarDays,
   PenSquare,
-  BookOpen
+  BookOpen,
+  Trophy,
+  TrendingUp,
+  BarChart,
+  Target
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { MetricCard } from "@/components/metrics-card";
-import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as PenSquareIcon } from "lucide-react"; // Added imports
+import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as PenSquareIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
-interface Badge {
+// Helper function to calculate streaks
+const calculateStreak = (entries: Entry[]) => {
+  if (entries.length === 0) return 0;
+  
+  const sortedDates = entries
+    .map(e => new Date(e.createdAt).toISOString().split('T')[0])
+    .sort()
+    .reverse();
+    
+  let streak = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const curr = new Date(sortedDates[i]);
+    const prev = new Date(sortedDates[i - 1]);
+    const diffDays = Math.floor((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) streak++;
+    else break;
+  }
+  
+  return streak;
+};
+
+// Define the tier types for achievements
+type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+
+// Color definitions for achievement tiers
+const tierColors = {
+  bronze: {
+    background: 'from-amber-800/30 to-amber-700/10',
+    border: 'border-amber-700/30',
+    text: 'text-amber-700',
+    badge: 'border border-amber-800/50 bg-amber-800/20 text-amber-800/90',
+    emoji: 'bg-amber-800/10',
+    barColor: 'bg-amber-700'
+  },
+  silver: {
+    background: 'from-slate-400/30 to-slate-300/10',
+    border: 'border-slate-400/30',
+    text: 'text-slate-500',
+    badge: 'border border-slate-500/50 bg-slate-400/20 text-slate-500/90',
+    emoji: 'bg-slate-400/10',
+    barColor: 'bg-slate-400'
+  },
+  gold: {
+    background: 'from-yellow-500/30 to-yellow-400/10',
+    border: 'border-yellow-500/30',
+    text: 'text-yellow-600',
+    badge: 'border border-yellow-600/50 bg-yellow-500/20 text-yellow-600/90',
+    emoji: 'bg-yellow-500/10',
+    barColor: 'bg-yellow-500'
+  },
+  platinum: {
+    background: 'from-blue-400/30 to-sky-300/10',
+    border: 'border-blue-400/30',
+    text: 'text-blue-500',
+    badge: 'border border-blue-500/50 bg-blue-400/20 text-blue-500/90',
+    emoji: 'bg-blue-400/10',
+    barColor: 'bg-blue-400'
+  },
+  diamond: {
+    background: 'from-indigo-400/30 to-purple-300/10',
+    border: 'border-indigo-400/30',
+    text: 'text-indigo-500',
+    badge: 'border border-indigo-500/50 bg-indigo-400/20 text-indigo-500/90',
+    emoji: 'bg-indigo-400/10',
+    shimmer: 'animate-shimmer bg-gradient-to-r from-transparent via-indigo-300/20 to-transparent',
+    barColor: 'bg-indigo-400'
+  }
+};
+
+// Define the interface for achievements
+interface Achievement {
   id: string;
   name: string;
   description: string;
   emoji: string;
   requirement: string;
-  isUnlocked: boolean;
+  tier: AchievementTier;
+  category: string;
+  checkUnlocked: (entries: Entry[]) => boolean;
+  getProgress: (entries: Entry[]) => number;
 }
 
 export default function EntriesPage() {
@@ -56,20 +135,15 @@ export default function EntriesPage() {
 
   // Calculate word count
   const totalWords = entries.reduce((acc, entry) => {
-    return acc + entry.content.split(/\s+/).length;
+    return acc + entry.content.split(/\s+/).filter(word => word.length > 0).length;
   }, 0);
-
-  const BADGES: Badge[] = [
-    {
-      id: "first_entry",
-      name: "First Steps",
-      description: "Write your first journal entry",
-      emoji: "📝",
-      requirement: "Write 1 entry",
-      isUnlocked: entries.length > 0,
-    },
-    // Add more badges here as needed
-  ];
+  
+  // Calculate current streak
+  const currentStreak = calculateStreak(entries);
+  
+  // Get next milestone for streaks
+  const streakMilestones = [3, 7, 14, 30, 90, 365];
+  const nextStreakMilestone = streakMilestones.find(m => m > currentStreak) || currentStreak;
 
 
   return (
@@ -182,49 +256,215 @@ export default function EntriesPage() {
 
             {/* Bottom Section - Achievements */}
             <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-              <div className="flex items-center gap-3 mb-6 text-muted-foreground">
-                <AwardIcon className="h-6 w-6" />
-                <span className="font-medium text-lg">Achievements</span>
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="flex items-end gap-8">
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">Current</div>
-                    <div className="flex items-end">
-                      <div className="w-2 h-16 bg-primary rounded-full"></div>
-                      <div className="ml-2">1</div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-2">Best</div>
-                    <div className="flex items-end">
-                      <div className="w-2 h-16 bg-primary rounded-full"></div>
-                      <div className="ml-2">1</div>
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <Trophy className="h-6 w-6" />
+                  <span className="font-medium text-lg">Achievements</span>
                 </div>
-                <div className="border-t border-muted pt-4">
-                  <div className="text-sm text-muted-foreground mb-2">Next Achievement</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🎯</span>
-                    <div>
-                      <div className="text-sm font-medium">Philosopher</div>
-                      <div className="text-xs text-muted-foreground">4 more days for 5-day streak</div>
-                    </div>
-                  </div>
-                </div>
-                <button
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
                   onClick={() => setShowBadges(true)}
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Unlocked:
-                  {BADGES.filter(badge => badge.isUnlocked).map(badge => (
-                    <span key={badge.id} className="ml-1" title={badge.name}>{badge.emoji}</span>
-                  ))}
-                  {BADGES.filter(badge => !badge.isUnlocked).map(badge => (
-                    <span key={badge.id} className="ml-1 opacity-50" title={badge.name}>{badge.emoji}</span>
-                  ))}
-                </button>
+                  View All
+                </Button>
+              </div>
+              
+              <div className="flex flex-col gap-6">
+                {/* Streak Achievement Progress */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-amber-700" />
+                      <span className="font-medium text-base">Streak Progress</span>
+                    </div>
+                    <Badge className={cn(
+                      currentStreak >= 30 ? tierColors.gold.badge :
+                      currentStreak >= 14 ? tierColors.silver.badge :
+                      tierColors.bronze.badge
+                    )}>
+                      {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div 
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          currentStreak >= 90 ? tierColors.platinum.barColor :
+                          currentStreak >= 30 ? tierColors.gold.barColor :
+                          currentStreak >= 14 ? tierColors.silver.barColor :
+                          tierColors.bronze.barColor
+                        )}
+                        style={{ width: `${Math.min((currentStreak / nextStreakMilestone) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {currentStreak}/{nextStreakMilestone}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="text-xs text-muted-foreground">
+                      {currentStreak >= nextStreakMilestone 
+                        ? "Achievement complete!" 
+                        : `${nextStreakMilestone - currentStreak} more days for next achievement`}
+                    </div>
+                    <div className="text-xs font-medium">
+                      {currentStreak >= 365 ? "Diamond" :
+                       currentStreak >= 90 ? "Platinum" :
+                       currentStreak >= 30 ? "Gold" :
+                       currentStreak >= 14 ? "Silver" : "Bronze"}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Words Achievement Progress */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookIcon className="h-5 w-5 text-slate-500" />
+                      <span className="font-medium text-base">Word Count</span>
+                    </div>
+                    <Badge className={cn(
+                      totalWords >= 10000 ? tierColors.gold.badge :
+                      totalWords >= 5000 ? tierColors.silver.badge :
+                      tierColors.bronze.badge
+                    )}>
+                      {totalWords.toLocaleString()} words
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      {totalWords >= 1000 && (
+                        <div 
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            totalWords >= 50000 ? tierColors.platinum.barColor :
+                            totalWords >= 10000 ? tierColors.gold.barColor :
+                            totalWords >= 5000 ? tierColors.silver.barColor :
+                            tierColors.bronze.barColor
+                          )}
+                          style={{ 
+                            width: totalWords >= 100000 ? '100%' : 
+                                  totalWords >= 50000 ? `${(totalWords / 100000) * 100}%` : 
+                                  totalWords >= 10000 ? `${(totalWords / 50000) * 100}%` : 
+                                  totalWords >= 5000 ? `${(totalWords / 10000) * 100}%` : 
+                                  totalWords >= 1000 ? `${(totalWords / 5000) * 100}%` : 
+                                  `${(totalWords / 1000) * 100}%`
+                          }}
+                        />
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {totalWords >= 100000 ? '100K+' :
+                       totalWords >= 50000 ? `${Math.round(totalWords/1000)}/100K` :
+                       totalWords >= 10000 ? `${Math.round(totalWords/1000)}/50K` :
+                       totalWords >= 5000 ? `${Math.round(totalWords/1000)}/10K` :
+                       totalWords >= 1000 ? `${Math.round(totalWords/1000)}/5K` : `${totalWords}/1K`}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="text-xs text-muted-foreground">
+                      {totalWords >= 100000 
+                        ? "Literary Legend achieved!" 
+                        : totalWords >= 50000
+                        ? `${(100000 - totalWords).toLocaleString()} more words to Diamond` 
+                        : totalWords >= 10000
+                        ? `${(50000 - totalWords).toLocaleString()} more words to Platinum` 
+                        : totalWords >= 5000
+                        ? `${(10000 - totalWords).toLocaleString()} more words to Gold` 
+                        : totalWords >= 1000
+                        ? `${(5000 - totalWords).toLocaleString()} more words to Silver` 
+                        : `${(1000 - totalWords).toLocaleString()} more words to Bronze`}
+                    </div>
+                    <div className="text-xs font-medium">
+                      {totalWords >= 100000 ? "Diamond" :
+                       totalWords >= 50000 ? "Platinum" :
+                       totalWords >= 10000 ? "Gold" :
+                       totalWords >= 5000 ? "Silver" : 
+                       totalWords >= 1000 ? "Bronze" : "In progress"}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Entry Frequency Progress */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BarChart className="h-5 w-5 text-yellow-600" />
+                      <span className="font-medium text-base">Entry Count</span>
+                    </div>
+                    <Badge className={cn(
+                      entries.length >= 50 ? tierColors.gold.badge :
+                      entries.length >= 25 ? tierColors.silver.badge :
+                      tierColors.bronze.badge
+                    )}>
+                      {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div 
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          entries.length >= 100 ? tierColors.platinum.barColor :
+                          entries.length >= 50 ? tierColors.gold.barColor :
+                          entries.length >= 25 ? tierColors.silver.barColor :
+                          tierColors.bronze.barColor
+                        )}
+                        style={{ 
+                          width: entries.length >= 365 ? '100%' : 
+                                entries.length >= 100 ? `${(entries.length / 365) * 100}%` : 
+                                entries.length >= 50 ? `${(entries.length / 100) * 100}%` : 
+                                entries.length >= 25 ? `${(entries.length / 50) * 100}%` : 
+                                entries.length >= 10 ? `${(entries.length / 25) * 100}%` : 
+                                entries.length >= 5 ? `${(entries.length / 10) * 100}%` : 
+                                `${(entries.length / 5) * 100}%`
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {entries.length}/
+                      {entries.length >= 100 ? '365' :
+                       entries.length >= 50 ? '100' :
+                       entries.length >= 25 ? '50' :
+                       entries.length >= 10 ? '25' :
+                       entries.length >= 5 ? '10' : '5'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="text-xs text-muted-foreground">
+                      {entries.length >= 365 
+                        ? "Journal Oracle achieved!" 
+                        : entries.length >= 100
+                        ? `${365 - entries.length} more entries to Diamond` 
+                        : entries.length >= 50
+                        ? `${100 - entries.length} more entries to Platinum` 
+                        : entries.length >= 25
+                        ? `${50 - entries.length} more entries to Gold` 
+                        : entries.length >= 10
+                        ? `${25 - entries.length} more entries to Silver` 
+                        : entries.length >= 5
+                        ? `${10 - entries.length} more entries to next milestone` 
+                        : `${5 - entries.length} more entries to first milestone`}
+                    </div>
+                    <div className="text-xs font-medium">
+                      {entries.length >= 365 ? "Diamond" :
+                       entries.length >= 100 ? "Platinum" :
+                       entries.length >= 50 ? "Gold" :
+                       entries.length >= 25 ? "Silver" : 
+                       entries.length >= 5 ? "Bronze" : "In progress"}
+                    </div>
+                  </div>
+                </div>
+                
                 <BadgesDialog open={showBadges} onOpenChange={setShowBadges} />
               </div>
             </div>
