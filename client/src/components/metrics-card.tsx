@@ -11,7 +11,7 @@ type MetricProps = {
   onClick?: () => void;
 };
 
-function MetricCard({ icon, label, value, subtitle, onClick }: MetricProps) {
+export function MetricCard({ icon, label, value, subtitle, onClick }: MetricProps) {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
