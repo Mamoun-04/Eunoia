@@ -126,10 +126,26 @@ export default function EntriesPage() {
 
             <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                <ClockIcon className="h-5 w-5" />
-                <span>Time Journaling</span>
+                <AwardIcon className="h-5 w-5" />
+                <span>Mood Distribution</span>
               </div>
-              <div className="text-4xl font-bold text-primary">0 <span className="text-lg text-muted-foreground">minutes</span></div>
+              <div className="flex justify-around items-center">
+                {Object.entries(entries.reduce((acc, entry) => ({
+                  ...acc,
+                  [entry.mood]: (acc[entry.mood] || 0) + 1
+                }), {} as Record<string, number>)).map(([mood, count]) => (
+                  <div key={mood} className="text-center">
+                    <div className="text-2xl mb-1">{
+                      mood === 'very_happy' ? '😄' :
+                      mood === 'happy' ? '😊' :
+                      mood === 'neutral' ? '😐' :
+                      mood === 'sad' ? '😕' : '😢'
+                    }</div>
+                    <div className="text-xl font-bold text-primary">{count}</div>
+                    <div className="text-sm text-muted-foreground">{mood.replace('_', ' ')}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
