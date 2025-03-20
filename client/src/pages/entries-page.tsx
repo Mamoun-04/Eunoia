@@ -240,7 +240,7 @@ export default function EntriesPage() {
                   ...acc,
                   [entry.mood]: (acc[entry.mood] || 0) + 1
                 }), {} as Record<string, number>)).map(([mood, count]) => (
-                  <div key={mood} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-primary/10">
+                  <div key={mood} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 shadow-lg">
                     <div className="text-2xl sm:text-4xl mb-2">{
                       mood === 'very_happy' ? '😄' :
                       mood === 'happy' ? '😊' :
