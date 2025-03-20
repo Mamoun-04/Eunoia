@@ -14,8 +14,6 @@ import {
   Settings,
   CalendarDays,
   PenSquare,
-  BookOpen,
-  Award,
   MessageSquare
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -35,8 +33,6 @@ interface Badge {
 
 export default function EntriesPage() {
   const [showAiAssistant, setShowAiAssistant] = useState(false);
-
-export default function EntriesPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
   const [showBadges, setShowBadges] = useState(false);
