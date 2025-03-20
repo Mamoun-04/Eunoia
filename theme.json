@@ -2,13 +2,13 @@
 {
   "variant": "professional",
   "primary": "hsl(240, 100%, 50%)",
-  "appearance": "dark",
+  "appearance": "light",
   "radius": 0.75,
   "colors": {
     "light": {
-      "background": "hsl(60, 25%, 97%)",
+      "background": "hsl(0, 0%, 100%)",
       "foreground": "hsl(240, 100%, 15%)",
-      "muted": "hsl(60, 15%, 94%)",
+      "muted": "hsl(240, 20%, 95%)",
       "muted-foreground": "hsl(240, 20%, 40%)",
       "border": "hsl(240, 20%, 90%)",
       "input": "hsl(240, 20%, 90%)",
