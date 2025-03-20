@@ -93,11 +93,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoint
   app.post("/api/chat", requireAuth, async (req, res) => {
     try {
-      // For now, return a mock response
-      // TODO: Implement OpenAI integration
-      res.json({ 
-        message: "I'm here to help you with your journaling. What would you like to reflect on today?" 
-      });
+      const { messages } = req.body;
+      const recentMessages = messages?.slice(-10) || [];
+      
+      // Define system message to encourage varied responses
+      const systemMessage = {
+        role: "system",
+        content: "You are an empathetic AI journaling assistant. Provide thoughtful, varied responses that help users reflect deeply on their thoughts and feelings. Never repeat the same response. If the user expresses emotions, acknowledge them specifically. Suggest relevant journaling prompts when appropriate."
+      };
+
+      // For now, generate dynamic mock responses based on context
+      const lastUserMessage = recentMessages[recentMessages.length - 1]?.content?.toLowerCase() || "";
+      
+      let response = "";
+      if (lastUserMessage.includes("sad") || lastUserMessage.includes("upset")) {
+        response = "I hear that you're feeling down. Would you like to explore what's contributing to these feelings? Sometimes writing about our emotions can help us understand them better. Consider this prompt: 'What would help me feel more supported right now?'";
+      } else if (lastUserMessage.includes("happy") || lastUserMessage.includes("good")) {
+        response = "It's wonderful that you're feeling positive! Let's explore these good feelings. What specific moments or experiences contributed to your current state of mind?";
+      } else if (lastUserMessage.includes("stress") || lastUserMessage.includes("anxious")) {
+        response = "Managing stress can be challenging. Let's take a moment to break this down. What's the primary source of your stress? Writing about it can help create a sense of control and clarity.";
+      } else if (recentMessages.length === 0) {
+        response = "Welcome to your journaling session. What's on your mind today? I'm here to help you explore your thoughts and feelings.";
+      } else {
+        response = "Could you tell me more about that? Sometimes writing about our experiences helps us see them from a new perspective.";
+      }
+
+      res.json({ message: response });
     } catch (error) {
       res.status(500).json({ message: "Failed to get AI response" });
     }

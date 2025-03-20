@@ -26,7 +26,8 @@ export function AiJournalAssistant() {
     if (!input.trim()) return;
 
     const userMessage = { role: 'user' as const, content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
 
@@ -35,7 +36,7 @@ export function AiJournalAssistant() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          messages: [...messages, userMessage]
+          messages: updatedMessages.slice(-10)
         }),
       });
 
