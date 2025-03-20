@@ -118,7 +118,7 @@ export function AiJournalAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full">
-      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 space-y-2 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto px-1 sm:px-4 py-1 sm:py-2 space-y-1.5 sm:space-y-4">
         {messages.map((message, idx) => (
           <div
             key={idx}
@@ -127,7 +127,7 @@ export function AiJournalAssistant() {
             }`}
           >
             <div
-              className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-2 sm:p-4 ${
+              className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 break-words ${
                 message.role === 'user'
                   ? 'bg-primary text-primary-foreground'
                   : message.isPrompt
@@ -135,7 +135,7 @@ export function AiJournalAssistant() {
                   : 'bg-muted'
               }`}
             >
-              <div className="space-y-4">
+              <div className="space-y-2 sm:space-y-4 text-sm sm:text-base">
                 {idx === messages.length - 1 && message.role === 'assistant'
                   ? formatMessage(displayedContent)
                   : formatMessage(message.content)}
@@ -167,18 +167,19 @@ export function AiJournalAssistant() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="border-t p-2 sm:p-4">
-        <div className="flex gap-2">
+      <div className="border-t p-1.5 sm:p-4">
+        <div className="flex gap-1.5 sm:gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 min-h-[60px] sm:min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 min-h-[45px] sm:min-h-[60px] max-h-[120px] rounded-md border border-input bg-background px-2 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Button
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
+            className="px-3 sm:px-4 h-auto"
           >
             Send
           </Button>
