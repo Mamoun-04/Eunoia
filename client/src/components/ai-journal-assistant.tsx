@@ -67,7 +67,8 @@ export function AiJournalAssistant() {
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
 
-      if (data.message.toLowerCase().includes('prompt:')) {
+      const promptMatch = data.message.match(/Prompt:\s*(.*?)(?:\n|$)/i);
+      if (promptMatch) {
         setSuggestedPrompt(data.message);
       }
     } catch (error) {
@@ -90,12 +91,12 @@ export function AiJournalAssistant() {
   const formatMessage = (content: string) => {
     const paragraphs = content.split('\n\n');
     return paragraphs.map((paragraph, idx) => {
-      if (paragraph.toLowerCase().includes('prompt:')) {
-        const [label, ...promptContent] = paragraph.split(':');
+      const promptMatch = paragraph.match(/^Prompt:\s*(.*?)$/im);
+      if (promptMatch) {
         return (
           <div key={idx} className="bg-primary/10 p-4 rounded-lg my-4">
-            <div className="font-semibold text-primary">{label}:</div>
-            <div>{promptContent.join(':')}</div>
+            <div className="font-semibold text-primary">Prompt:</div>
+            <div>{promptMatch[1]}</div>
           </div>
         );
       }
