@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { JournalEditor } from './journal-editor';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useForm } from "react-hook-form";
