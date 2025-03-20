@@ -4,57 +4,44 @@ import { JournalEditor } from "@/components/journal-editor";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { MenuIcon, LogOut } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Link } from "wouter";
+import {
+  LogOut,
+  Settings,
+  CalendarDays,
+  PenSquare,
+  BookOpen
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
 
 export default function LibraryPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { logoutMutation } = useAuth();
+  const [location] = useLocation();
+
+  const navigation = [
+    { name: "Today", href: "/", icon: CalendarDays },
+    { name: "Entries", href: "/entries", icon: PenSquare },
+    { name: "Library", href: "/library", icon: BookOpen },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Mobile Menu */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-4 left-4 lg:hidden"
-          >
-            <MenuIcon className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <nav className="flex flex-col gap-4 mt-8">
-            <Link href="/">
-              <Button variant="ghost" className="w-full justify-start">
-                Home
-              </Button>
-            </Link>
-            <Link href="/library">
-              <Button variant="ghost" className="w-full justify-start">
-                Library
-              </Button>
-            </Link>
-          </nav>
-        </SheetContent>
-      </Sheet>
-
+    <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 w-64 p-4 border-r">
         <h1 className="text-2xl font-bold px-4">Journal Library</h1>
         <nav className="flex flex-col gap-2">
-          <Link href="/">
-            <Button variant="ghost" className="w-full justify-start">
-              Home
-            </Button>
-          </Link>
-          <Link href="/library">
-            <Button variant="ghost" className="w-full justify-start">
-              Library
-            </Button>
-          </Link>
+          {navigation.map((item) => (
+            <Link key={item.name} href={item.href}>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
+                <item.icon className="h-5 w-5" />
+                {item.name}
+              </Button>
+            </Link>
+          ))}
         </nav>
         <Button
           variant="ghost"
@@ -70,7 +57,7 @@ export default function LibraryPage() {
       <div className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8">Writing Topics</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categoryOptions.map((category) => (
               <Card
@@ -86,6 +73,27 @@ export default function LibraryPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
+        <nav className="flex justify-around p-2">
+          {navigation.map((item) => {
+            const isActive = location === item.href;
+            return (
+              <Link key={item.name} href={item.href}>
+                <Button
+                  variant={isActive ? "default" : "ghost"}
+                  size="icon"
+                  className="flex flex-col items-center gap-1 h-auto py-2"
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-xs">{item.name}</span>
+                </Button>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {selectedCategory && (

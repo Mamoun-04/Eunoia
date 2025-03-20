@@ -9,59 +9,34 @@ import { useState } from "react";
 import {
   LayoutGrid,
   LogOut,
-  MenuIcon,
   PenSquare,
-  BookOpen
+  BookOpen,
+  Settings,
+  CalendarDays
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SubscriptionDialog } from "@/components/subscription-dialog";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [location] = useLocation();
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
   });
 
   const navigation = [
-    { name: "Home", href: "/", icon: LayoutGrid },
+    { name: "Today", href: "/", icon: CalendarDays },
+    { name: "Entries", href: "/entries", icon: PenSquare },
     { name: "Library", href: "/library", icon: BookOpen },
+    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Mobile Navigation */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-4 left-4 lg:hidden"
-          >
-            <MenuIcon className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <nav className="flex flex-col gap-4 mt-8">
-            {navigation.map((item) => (
-              <Link key={item.name} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2"
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.name}
-                </Button>
-              </Link>
-            ))}
-          </nav>
-        </SheetContent>
-      </Sheet>
-
+    <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 w-64 p-4 border-r">
         <div className="flex flex-col gap-2">
@@ -153,6 +128,27 @@ export default function HomePage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
+        <nav className="flex justify-around p-2">
+          {navigation.map((item) => {
+            const isActive = location === item.href;
+            return (
+              <Link key={item.name} href={item.href}>
+                <Button
+                  variant={isActive ? "default" : "ghost"}
+                  size="icon"
+                  className="flex flex-col items-center gap-1 h-auto py-2"
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-xs">{item.name}</span>
+                </Button>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {isEditing && (
