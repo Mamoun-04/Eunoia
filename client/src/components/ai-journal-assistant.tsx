@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
@@ -6,22 +7,22 @@ import { useForm } from "react-hook-form";
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  prompt?: string;
 }
 
 export function AiJournalAssistant() {
   const form = useForm();
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.\n\nWhat would you like to discuss today?"
+    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.",
+    prompt: "What's on your mind today? Take a moment to check in with yourself."
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
-  const [currentPrompt, setCurrentPrompt] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +50,14 @@ export function AiJournalAssistant() {
     }
   }, [messages]);
 
+  const handleStartJournaling = () => {
+    setShowEditor(true);
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      form.setValue('content', `Prompt: ${lastMessage.prompt}\n\n`);
+    }
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -69,26 +78,19 @@ export function AiJournalAssistant() {
       if (!response.ok) throw new Error('Failed to get AI response');
 
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
-
-      // Extract and set prompt if available
-      const promptMatch = data.message.match(/(?:As a journaling prompt|Here's a prompt|Prompt:|Journaling prompt)[,:]?\s*(.*?)(?=\n|$)/i);
-      if (promptMatch) {
-        setCurrentPrompt(promptMatch[1].trim());
-      } else {
-        // If no specific prompt format found, try to extract the last sentence that looks like a prompt
-        const sentences = data.message.split(/[.!?]+\s+/);
-        const lastSentence = sentences[sentences.length - 1].trim();
-        if (lastSentence.includes('?') && lastSentence.length > 20) {
-          setCurrentPrompt(lastSentence);
-        }
-      }
-
+      const parts = data.message.split('\n\nPrompt:');
+      
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: parts[0].trim(),
+        prompt: parts[1]?.trim() || "What other thoughts or feelings come up for you right now?"
+      }]);
 
     } catch (error) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment." 
+        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
+        prompt: "While we wait, what brings you here today?"
       }]);
     } finally {
       setIsLoading(false);
@@ -103,26 +105,12 @@ export function AiJournalAssistant() {
   };
 
   const formatMessage = (content: string) => {
-    const paragraphs = content.split('\n\n');
-    return paragraphs.map((paragraph, idx) => {
-      if (paragraph.toLowerCase().includes('prompt:')) {
-        const [label, ...promptContent] = paragraph.split(':');
-        return (
-          <div key={idx} className="bg-primary/10 p-4 rounded-lg my-4">
-            <div className="font-semibold text-primary">{label}:</div>
-            <div>{promptContent.join(':')}</div>
-          </div>
-        );
-      }
-      return <p key={idx} className="mb-4">{paragraph}</p>;
-    });
+    return content.split('\n').map((paragraph, idx) => (
+      <p key={idx} className="mb-4">{paragraph}</p>
+    ));
   };
 
-  const handleStartJournaling = () => {
-    setShowEditor(true);
-    form.setValue('entry', currentPrompt);
-  };
-
+  const currentPrompt = messages[messages.length - 1]?.prompt;
 
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
@@ -200,7 +188,6 @@ export function AiJournalAssistant() {
         <JournalEditor
           onClose={() => {
             setShowEditor(false);
-            setCurrentPrompt(null);
           }}
           initialCategory="reflection"
         />
