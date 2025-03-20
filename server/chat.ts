@@ -1,7 +1,9 @@
 import type { Request, Response } from "express";
 import OpenAI from "openai";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export async function handleChat(req: Request, res: Response) {
   try {
