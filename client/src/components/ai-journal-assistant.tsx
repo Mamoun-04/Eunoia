@@ -116,7 +116,7 @@ export function AiJournalAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full">
-      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 space-y-2 sm:space-y-4">
         {messages.map((message, idx) => (
           <div
             key={idx}
@@ -125,7 +125,7 @@ export function AiJournalAssistant() {
             }`}
           >
             <div
-              className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${
+              className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-2 sm:p-4 ${
                 message.role === 'user'
                   ? 'bg-primary text-primary-foreground'
                   : message.isPrompt
@@ -165,14 +165,14 @@ export function AiJournalAssistant() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="border-t p-4">
+      <div className="border-t p-2 sm:p-4">
         <div className="flex gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 min-h-[60px] sm:min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Button
             onClick={sendMessage}
