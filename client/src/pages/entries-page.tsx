@@ -159,7 +159,7 @@ export default function EntriesPage() {
               Suggest Improvement to Insights
             </Button>
 
-            <div className="col-span-2 bg-muted rounded-xl p-6">
+            <div className="col-span-2 bg-[#111111] rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <ClockIcon className="h-5 w-5" />
                 <span>Time Journaling</span>
@@ -167,7 +167,7 @@ export default function EntriesPage() {
               <div className="text-4xl font-bold text-primary">0 <span className="text-lg text-muted-foreground">minutes</span></div>
             </div>
 
-            <div className="col-span-1 bg-muted rounded-xl p-6">
+            <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <AwardIcon className="h-5 w-5" />
                 <span>Daily Streak</span>
