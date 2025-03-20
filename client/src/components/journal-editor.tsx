@@ -32,7 +32,7 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
       title: "",
       content: "",
       mood: "neutral",
-      prompt: initialCategory || "",
+      category: initialCategory || "Daily Reflection",
     },
   });
 
