@@ -31,14 +31,15 @@ export function AiJournalAssistant() {
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && !isTyping) {
+      if (lastMessage.role === 'assistant') {
         setIsTyping(true);
         setDisplayedContent('');
         let i = 0;
         const typeInterval = setInterval(() => {
-          setDisplayedContent(lastMessage.content.slice(0, i + 1));
-          i++;
-          if (i >= lastMessage.content.length) {
+          if (i <= lastMessage.content.length) {
+            setDisplayedContent(lastMessage.content.slice(0, i));
+            i++;
+          } else {
             clearInterval(typeInterval);
             setIsTyping(false);
           }
