@@ -58,10 +58,19 @@ export function AIJournalAssistant() {
       }]);
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages(prev => [...prev, {
-        type: "assistant",
-        content: "I apologize, but I encountered an error. Please try again."
-      }]);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      
+      if (!response?.ok) {
+        setMessages(prev => [...prev, {
+          type: "assistant",
+          content: `Error: ${errorMessage}. Please check your OpenAI API key configuration.`
+        }]);
+      } else {
+        setMessages(prev => [...prev, {
+          type: "assistant",
+          content: "I apologize, but I encountered an error. Please try again."
+        }]);
+      }
     } finally {
       setIsLoading(false);
     }
