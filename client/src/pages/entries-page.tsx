@@ -15,7 +15,8 @@ import {
   CalendarDays,
   PenSquare,
   BookOpen,
-  Award
+  Award,
+  MessageSquare
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
