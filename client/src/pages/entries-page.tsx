@@ -102,15 +102,15 @@ export default function EntriesPage() {
                   <PenSquareIcon className="h-5 w-5" />
                   <span className="font-medium">Total Entries</span>
                 </div>
-                <div className="text-5xl font-bold text-[#4169FF]">{entries.length}</div>
+                <div className="text-5xl font-bold text-primary">{entries.length}</div>
               </div>
 
-              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-muted rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <BookIcon className="h-5 w-5" />
                   <span className="font-medium">Total Words</span>
                 </div>
-                <div className="text-5xl font-bold text-[#4169FF]">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
+                <div className="text-5xl font-bold text-primary">{entries.reduce((acc, entry) => acc + entry.content.split(/\s+/).length, 0)}</div>
               </div>
 
               <div className="col-span-2 bg-muted rounded-2xl p-6 shadow-lg">
@@ -118,10 +118,10 @@ export default function EntriesPage() {
                   <ClockIcon className="h-5 w-5" />
                   <span className="font-medium">Time Journaling</span>
                 </div>
-                <div className="text-5xl font-bold text-[#4169FF]">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
+                <div className="text-5xl font-bold text-primary">0<span className="text-2xl ml-2 text-muted-foreground">minutes</span></div>
               </div>
 
-              <div className="col-span-1 bg-[#1a1a1a] rounded-2xl p-6 shadow-lg">
+              <div className="col-span-1 bg-muted rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-3 text-muted-foreground">
                   <AwardIcon className="h-5 w-5" />
                   <span className="font-medium">Daily Streak</span>
@@ -159,15 +159,15 @@ export default function EntriesPage() {
               Suggest Improvement to Insights
             </Button>
 
-            <div className="col-span-2 bg-[#020733] rounded-xl p-6">
+            <div className="col-span-2 bg-muted rounded-xl p-6">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <ClockIcon className="h-5 w-5" />
                 <span>Time Journaling</span>
               </div>
-              <div className="text-4xl font-bold text-[#4169FF]">0 <span className="text-lg text-muted-foreground">minutes</span></div>
+              <div className="text-4xl font-bold text-primary">0 <span className="text-lg text-muted-foreground">minutes</span></div>
             </div>
 
-            <div className="col-span-1 bg-[#1A1A1A] rounded-xl p-6">
+            <div className="col-span-1 bg-muted rounded-xl p-6">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <AwardIcon className="h-5 w-5" />
                 <span>Daily Streak</span>
@@ -176,14 +176,14 @@ export default function EntriesPage() {
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Current</div>
                   <div className="flex items-end">
-                    <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                    <div className="w-2 h-16 bg-primary rounded-full"></div>
                     <div className="ml-2">1</div>
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Best</div>
                   <div className="flex items-end">
-                    <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                    <div className="w-2 h-16 bg-primary rounded-full"></div>
                     <div className="ml-2">1</div>
                   </div>
                 </div>
