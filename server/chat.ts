@@ -15,7 +15,7 @@ export async function handleChat(req: Request, res: Response) {
       messages: [
         {
           role: "system",
-          content: "You are a thoughtful journaling assistant that helps users reflect on their thoughts and feelings. Provide empathetic responses and suggest relevant journaling prompts based on the conversation. Keep responses concise and focused."
+          content: "You are a thoughtful journaling assistant that helps users reflect on their thoughts and feelings. Provide empathetic responses and suggest relevant journaling prompts based on the conversation. Keep responses concise and focused. When appropriate, end your response with a journaling prompt prefixed with 'Prompt: '. For example, if a user expresses feeling down, you might end with 'Prompt: Write about a time when you overcame a similar challenge...'"
         },
         ...messages.map((msg: any) => ({
           role: msg.role,
@@ -26,12 +26,12 @@ export async function handleChat(req: Request, res: Response) {
 
     const response = completion.choices[0].message.content;
     
-    // Extract or generate a prompt from the response
+    // Extract prompt if present
     const promptMatch = response.match(/Prompt: (.*?)($|\n)/);
     const prompt = promptMatch ? promptMatch[1] : null;
 
     res.json({
-      content: response,
+      content: response.replace(/Prompt: .*?($|\n)/, '').trim(),
       prompt: prompt
     });
   } catch (error) {
