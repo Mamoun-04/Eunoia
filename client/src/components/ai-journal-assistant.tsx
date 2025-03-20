@@ -144,11 +144,9 @@ export function AiJournalAssistant() {
         {suggestedPrompt && !showEditor && (
           <Button
             onClick={() => {
-              const lastMessage = messages[messages.length - 1].content;
-              const promptMatch = lastMessage.match(/Prompt:\s*(.*?)(?:\n|$)/);
-              const title = promptMatch ? promptMatch[1].trim() : lastMessage.split('\n')[0];
+              const promptText = suggestedPrompt?.split('\n\nPrompt:')?.pop()?.trim() || suggestedPrompt || '';
               setShowEditor(true);
-              form.setValue('title', title);
+              form.setValue('title', promptText);
             }}
             className="w-full mb-4"
             variant="secondary"
