@@ -198,13 +198,13 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         className={cn(
-          "sm:max-w-[425px] rounded-2xl backdrop-blur-sm bg-background/95 border-none shadow-xl",
+          "sm:max-w-[425px] rounded-2xl bg-background border-none shadow-xl",
           "transition-all duration-300 ease-in-out",
           "max-h-[80vh] overflow-y-auto",
           isMobile ? 'w-[95%] p-4' : ''
         )}
       >
-        <DialogHeader className="mb-4 sticky top-0 bg-background/95 backdrop-blur-sm py-4">
+        <DialogHeader className="mb-4 sticky top-0 bg-background py-4">
           <DialogTitle className="text-2xl font-[Playfair Display] text-center">
             Achievements
           </DialogTitle>
