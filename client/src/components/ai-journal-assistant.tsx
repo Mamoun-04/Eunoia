@@ -117,7 +117,7 @@ export function AiJournalAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-full relative">
+    <div className="flex flex-col h-[calc(100vh-12rem)] lg:h-[calc(100vh-8rem)] max-w-full relative">
       <div className="absolute top-0 left-0 right-0 bottom-[50px] overflow-y-auto px-1 sm:px-4 py-1 sm:py-2 space-y-1.5 sm:space-y-4">
         {messages.map((message, idx) => (
           <div
