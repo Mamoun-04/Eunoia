@@ -154,9 +154,9 @@ export function AiJournalAssistant() {
       </div>
 
       <div className="border-t p-4">
-        {currentPrompt && messageCount % 2 === 1 && !showEditor && (
-          <div className="bg-primary/10 p-4 rounded-lg my-4">
-            <p className="font-semibold text-primary">Recommended Journaling Prompt:</p>
+        {currentPrompt && !showEditor && (
+          <div className="bg-primary/10 p-4 rounded-lg mb-4">
+            <p className="font-semibold text-primary">Today's Prompt</p>
             <p>{currentPrompt}</p>
           </div>
         )}
@@ -172,9 +172,9 @@ export function AiJournalAssistant() {
             <Button
               onClick={handleStartJournaling}
               className="w-full"
-              variant="secondary"
+              variant="default"
             >
-              Use Current Prompt
+              Write with Prompt
             </Button>
           )}
         </div>
