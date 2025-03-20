@@ -151,22 +151,41 @@ export default function EntriesPage() {
             <div className="col-span-1 bg-[#111111] rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <AwardIcon className="h-5 w-5" />
-                <span>Daily Streak</span>
+                <span>Daily Streak & Achievements</span>
               </div>
-              <div className="flex items-end gap-8">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-2">Current</div>
-                  <div className="flex items-end">
-                    <div className="w-2 h-16 bg-primary rounded-full"></div>
-                    <div className="ml-2">1</div>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-end gap-8">
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Current</div>
+                    <div className="flex items-end">
+                      <div className="w-2 h-16 bg-primary rounded-full"></div>
+                      <div className="ml-2">1</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Best</div>
+                    <div className="flex items-end">
+                      <div className="w-2 h-16 bg-primary rounded-full"></div>
+                      <div className="ml-2">1</div>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-2">Best</div>
-                  <div className="flex items-end">
-                    <div className="w-2 h-16 bg-primary rounded-full"></div>
-                    <div className="ml-2">1</div>
+                <div className="border-t border-muted pt-4">
+                  <div className="text-sm text-muted-foreground mb-2">Next Achievement</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎯</span>
+                    <div>
+                      <div className="text-sm font-medium">Philosopher</div>
+                      <div className="text-xs text-muted-foreground">4 more days for 5-day streak</div>
+                    </div>
                   </div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Unlocked: 
+                  <span className="ml-1" title="First Entry">📝</span>
+                  <span className="ml-1 opacity-50" title="5-day Streak (Philosopher)">🎯</span>
+                  <span className="ml-1 opacity-50" title="10-day Streak (Sage)">🏆</span>
+                  <span className="ml-1 opacity-50" title="30-day Streak (Enlightened)">👑</span>
                 </div>
               </div>
             </div>
