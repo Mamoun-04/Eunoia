@@ -71,10 +71,17 @@ export function AiJournalAssistant() {
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
 
-      //Extract and set prompt if available
-      const promptMatch = data.message.match(/As a journaling prompt[,:]?\s*(.*?)(?=\n|$)/i);
+      // Extract and set prompt if available
+      const promptMatch = data.message.match(/(?:As a journaling prompt|Here's a prompt|Prompt:|Journaling prompt)[,:]?\s*(.*?)(?=\n|$)/i);
       if (promptMatch) {
         setCurrentPrompt(promptMatch[1].trim());
+      } else {
+        // If no specific prompt format found, try to extract the last sentence that looks like a prompt
+        const sentences = data.message.split(/[.!?]+\s+/);
+        const lastSentence = sentences[sentences.length - 1].trim();
+        if (lastSentence.includes('?') && lastSentence.length > 20) {
+          setCurrentPrompt(lastSentence);
+        }
       }
 
 
@@ -119,7 +126,7 @@ export function AiJournalAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
-      {currentPrompt && !showEditor && (
+      {currentPrompt && (
         <div className="border-b p-4 bg-muted/30">
           <div className="max-w-2xl mx-auto space-y-4">
             <div className="flex flex-col gap-2">
