@@ -24,6 +24,10 @@ export async function handleChat(req: Request, res: Response) {
       ]
     });
 
+    if (!completion.choices[0]?.message?.content) {
+      throw new Error("Invalid response from OpenAI API");
+    }
+
     const response = completion.choices[0].message.content;
     
     // Extract prompt if present
