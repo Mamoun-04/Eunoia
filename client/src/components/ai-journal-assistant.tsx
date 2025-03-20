@@ -13,8 +13,9 @@ interface Message {
 
 export function AiJournalAssistant() {
   const [location] = useLocation();
-  // Don't show on login page
-  if (location === '/login') return null;
+  // Only show on main pages
+  const allowedPages = ['/', '/entries', '/library'];
+  if (!allowedPages.includes(location)) return null;
   
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
