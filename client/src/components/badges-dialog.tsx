@@ -374,10 +374,10 @@ const ACHIEVEMENTS: Achievement[] = [
 
 export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [selectedCategory, setSelectedCategory] = useState<Achievement['category'] | 'all'>('all');
-  const { data: entries = [] } = useQuery({ 
-    queryKey: ['entries'],
+  const { data: entries = [] as Entry[] } = useQuery({ 
+    queryKey: ['/api/entries'],
     staleTime: 0,
-    cacheTime: 0
+    gcTime: 0 // gcTime is the replacement for cacheTime in React Query v5
   });
 
   const filteredAchievements = ACHIEVEMENTS.filter(
@@ -421,114 +421,176 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             Achievements Gallery
           </DialogTitle>
         </DialogHeader>
-        <div className="flex justify-center gap-4 flex-wrap mb-4">
-          <div className="achievement-total-badge relative px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20">
-              <span className="font-semibold text-foreground/90">
-                {achievementStats.unlockedCount} / {ACHIEVEMENTS.length} Achieved
-              </span>
-            </div>
-            {(['diamond', 'platinum', 'gold', 'silver', 'bronze'] as const).map(tier => (
-                <motion.div
-                  key={tier}
-                  className={cn(
-                    "achievement-tier-badge px-4 py-1.5 rounded-full font-medium",
-                    "shadow-lg backdrop-blur-sm transition-all duration-300",
-                    tier === 'diamond' && "bg-gradient-to-r from-blue-400/30 to-purple-400/30 border border-blue-300/30",
-                    tier === 'platinum' && "bg-gradient-to-r from-slate-400/30 to-blue-300/30 border border-slate-300/30",
-                    tier === 'gold' && "bg-gradient-to-r from-yellow-400/30 to-amber-300/30 border border-yellow-300/30",
-                    tier === 'silver' && "bg-gradient-to-r from-slate-300/30 to-slate-200/30 border border-slate-200/30",
-                    tier === 'bronze' && "bg-gradient-to-r from-orange-400/30 to-amber-500/30 border border-orange-300/30"
-                  )}
-                  initial={{ scale: 0.95 }}
-                  animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {achievementStats.tierCounts[tier] || 0} {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                </motion.div>
-              ))}
+        
+        {/* Top section - Achievement Stats */}
+        <div className="flex justify-center gap-4 flex-wrap mb-6">
+          <div className="achievement-total-badge relative px-6 py-2.5 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 shadow-md">
+            <span className="font-semibold text-foreground/90">
+              {achievementStats.unlockedCount} / {ACHIEVEMENTS.length} Achieved
+            </span>
           </div>
+          
+          {/* Tier badges with consistent colors */}
+          {(['diamond', 'platinum', 'gold', 'silver', 'bronze'] as const).map(tier => {
+            // Define consistent tier styling
+            const tierColor = {
+              'diamond': "from-blue-400/30 to-purple-500/30 border-blue-400/40",
+              'platinum': "from-emerald-400/30 to-emerald-500/30 border-emerald-400/40",
+              'gold': "from-yellow-400/30 to-yellow-500/30 border-yellow-400/40",
+              'silver': "from-slate-300/30 to-slate-400/30 border-slate-300/40",
+              'bronze': "from-orange-400/30 to-orange-600/30 border-orange-400/40"
+            }[tier];
+            
+            return (
+              <motion.div
+                key={tier}
+                className={cn(
+                  "achievement-tier-badge px-4 py-2 rounded-full font-medium",
+                  "shadow-lg backdrop-blur-sm transition-all duration-300",
+                  `bg-gradient-to-r ${tierColor} border`
+                )}
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                {achievementStats.tierCounts[tier] || 0} {tier.charAt(0).toUpperCase() + tier.slice(1)}
+              </motion.div>
+            );
+          })}
+        </div>
 
-          <div className="flex gap-4 p-4 border-t border-b overflow-x-auto">
-            {categories.map(category => {
-              const Icon = CategoryIcon[category.id as keyof typeof CategoryIcon] || Star;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id as Achievement['category'] | 'all')}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full transition-colors",
-                    selectedCategory === category.id
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{category.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Category filters - improved alignment */}
+        <div className="flex gap-3 px-4 py-3 mb-2 border-t border-b overflow-x-auto sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+          {categories.map(category => {
+            const Icon = CategoryIcon[category.id as keyof typeof CategoryIcon] || Star;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id as Achievement['category'] | 'all')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-full transition-all",
+                  "text-sm font-medium",
+                  selectedCategory === category.id
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "hover:bg-muted/80"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{category.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Main achievements grid */}
+        <div className="flex-1 overflow-y-auto py-4 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredAchievements.map(achievement => {
                 const isUnlocked = achievement.checkUnlocked(entries);
                 const progress = achievementStats.progressMap[achievement.id];
 
+                // Define more consistent and vibrant tier styles that match the tier badges
                 const tierStyle = {
                   'bronze': {
                     background: "from-orange-500/10 to-orange-600/10",
-                    border: "border border-orange-500/20"
+                    border: "border border-orange-500/20",
+                    glow: "shadow-[0_0_10px_rgba(234,88,12,0.2)]",
+                    progressBar: "bg-gradient-to-r from-orange-400 to-orange-600"
                   },
                   'silver': {
                     background: "from-slate-300/10 to-slate-400/10",
-                    border: "border border-slate-400/20"
+                    border: "border border-slate-400/20",
+                    glow: "shadow-[0_0_10px_rgba(148,163,184,0.2)]",
+                    progressBar: "bg-gradient-to-r from-slate-300 to-slate-400"
                   },
                   'gold': {
                     background: "from-yellow-400/10 to-yellow-500/10",
-                    border: "border border-yellow-500/20"
+                    border: "border border-yellow-500/20",
+                    glow: "shadow-[0_0_10px_rgba(234,179,8,0.2)]",
+                    progressBar: "bg-gradient-to-r from-yellow-400 to-yellow-500"
                   },
                   'platinum': {
                     background: "from-emerald-400/10 to-emerald-500/10",
-                    border: "border border-emerald-500/20"
+                    border: "border border-emerald-500/20",
+                    glow: "shadow-[0_0_10px_rgba(16,185,129,0.2)]",
+                    progressBar: "bg-gradient-to-r from-emerald-400 to-emerald-500"
                   },
                   'diamond': {
                     background: "from-blue-400/10 to-purple-500/10",
-                    border: "border border-blue-500/20"
+                    border: "border border-blue-500/20",
+                    glow: "shadow-[0_0_15px_rgba(96,165,250,0.3)]",
+                    progressBar: "bg-gradient-to-r from-blue-400 to-purple-500"
                   }
                 }[achievement.tier];
 
                 return (
-                  <div
+                  <motion.div
                     key={achievement.id}
                     className={cn(
                       "achievement-card p-6 rounded-2xl transition-all duration-500",
                       `bg-gradient-to-br ${tierStyle.background}`,
                       tierStyle.border,
                       "relative overflow-hidden backdrop-blur-sm",
-                      isUnlocked && "animate-card-unlock"
+                      isUnlocked 
+                        ? cn("ring-1 ring-opacity-40", tierStyle.glow, {
+                            'ring-orange-400': achievement.tier === 'bronze',
+                            'ring-slate-300': achievement.tier === 'silver',
+                            'ring-yellow-400': achievement.tier === 'gold',
+                            'ring-emerald-400': achievement.tier === 'platinum',
+                            'ring-blue-400': achievement.tier === 'diamond',
+                          })
+                        : "opacity-75"
                     )}
+                    animate={isUnlocked ? { scale: 1 } : { scale: 0.98 }}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                   >
+                    {/* Add a completion checkmark for unlocked achievements */}
+                    {isUnlocked && (
+                      <div className="absolute top-4 right-4 bg-green-500/20 p-1 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    
                     <div className="flex items-start justify-between mb-4">
                       <div className="text-2xl">{achievement.emoji}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={cn(
+                        "text-sm font-medium px-2 py-0.5 rounded-full",
+                        isUnlocked ? "bg-green-500/20 text-green-500" : "text-muted-foreground"
+                      )}>
                         {Math.round(progress)}%
                       </div>
                     </div>
-                    <h3 className="font-semibold mb-1">{achievement.name}</h3>
+                    
+                    <h3 className={cn(
+                      "font-semibold mb-1 text-lg",
+                      isUnlocked && "text-foreground"
+                    )}>
+                      {achievement.name}
+                    </h3>
+                    
                     <p className="text-sm text-muted-foreground mb-4">
                       {achievement.description}
                     </p>
-                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    
+                    <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-primary transition-all duration-500"
+                        className={cn(
+                          "h-full transition-all duration-500",
+                          progress === 100 ? tierStyle.progressBar : "bg-primary"
+                        )}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {achievement.requirement}
+                    
+                    <div className="mt-2 text-xs text-muted-foreground flex justify-between items-center">
+                      <span>{achievement.requirement}</span>
+                      {isUnlocked && (
+                        <span className="text-xs text-green-500 font-medium">Completed!</span>
+                      )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
