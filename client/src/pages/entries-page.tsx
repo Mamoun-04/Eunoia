@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { useState } from "react";
 import { BadgesDialog } from "@/components/badges-dialog";
+import { AiJournalAssistant } from "@/components/ai-journal-assistant";
 import {
   Card,
   CardContent,
