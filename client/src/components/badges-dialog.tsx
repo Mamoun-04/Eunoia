@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { ACHIEVEMENTS, type Achievement } from "@/lib/achievements";
+import { achievements, type Achievement } from "@/lib/achievements";
 
 export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [selectedCategory, setSelectedCategory] = useState<Achievement['category'] | 'all'>('all');
@@ -14,11 +14,11 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     queryFn: () => [] as Entry[]
   });
 
-  const filteredAchievements = ACHIEVEMENTS.filter(
+  const filteredAchievements = achievements.filter(
     achievement => selectedCategory === 'all' || achievement.category === selectedCategory
   );
 
-  const tierCounts = ACHIEVEMENTS.reduce((acc, achievement) => {
+  const tierCounts = achievements.reduce((acc, achievement) => {
     const isUnlocked = achievement.isUnlocked(entries);
     if (isUnlocked) {
       acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
