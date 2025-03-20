@@ -1,0 +1,227 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { setupAuth } from "./auth";
+import { sql } from "@db";
+
+export function registerRoutes(app: Express): Server {
+  setupAuth(app);
+  app.use(router);
+
+  app.get('/api/bookmarks', async (req, res) => {
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      const bookmarks = await sql`
+        SELECT b.id, b.user_id, b.created_at, b.verse_data as verse
+        FROM bookmarks b
+        WHERE b.user_id = ${req.user.id}
+        ORDER BY b.created_at DESC
+      `;
+      res.json(bookmarks);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch bookmarks' });
+    }
+  });
+
+  app.get('/api/bookmarks/:verseId', async (req, res) => {
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      const result = await sql`
+        SELECT * FROM bookmarks 
+        WHERE user_id = ${req.user.id} 
+        AND verse_id = ${parseInt(req.params.verseId)}
+      `;
+      res.status(result.length > 0 ? 200 : 404).end();
+    } catch (error) {
+      console.error('Bookmark check error:', error);
+      res.status(500).json({ error: 'Failed to check bookmark status' });
+    }
+  });
+
+  app.post('/api/bookmarks/:verseId', async (req, res) => {
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      // Ensure verse data is provided
+      if (!req.body.verse) {
+        return res.status(400).json({ error: 'Verse data is required' });
+      }
+
+      await sql`
+        INSERT INTO bookmarks (user_id, verse_id, verse_data)
+        VALUES (
+          ${req.user.id}, 
+          ${parseInt(req.params.verseId)}, 
+          ${JSON.stringify(req.body.verse)}::jsonb
+        )
+        ON CONFLICT (user_id, verse_id) DO UPDATE 
+        SET verse_data = ${JSON.stringify(req.body.verse)}::jsonb
+      `;
+      res.status(201).end();
+    } catch (error) {
+      console.error('Bookmark creation error:', error);
+      res.status(500).json({ error: 'Failed to create bookmark' });
+    }
+  });
+
+  app.delete('/api/bookmarks/:verseId', async (req, res) => {
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      await sql`
+        DELETE FROM bookmarks
+        WHERE user_id = ${req.user.id}
+        AND verse_id = ${parseInt(req.params.verseId)}
+      `;
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete bookmark' });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
+
+import Stripe from 'stripe';
+import { Router } from 'express';
+
+const router = Router();
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
+});
+
+router.post('/api/create-subscription', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Monthly Donation to Quranic Wisdom',
+            },
+            unit_amount: req.body.amount,
+            recurring: {
+              interval: 'month',
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${req.headers.origin}?subscription_success=true`,
+      cancel_url: `${req.headers.origin}?canceled=true`,
+    });
+
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create subscription session' });
+  }
+});
+
+router.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Donation to Quranic Wisdom',
+            },
+            unit_amount: req.body.amount,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${req.headers.origin}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}?canceled=true`,
+    });
+
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+
+
+router.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Check if message is asking for religious ruling
+    const isRulingQuestion = message.toLowerCase().match(/\b(halal|haram|permitted|forbidden|ruling|allowed|permissible|opinion|fatwa)\b/);
+
+    const prompt = `You are a compassionate Islamic spiritual guide. For every response, alternate between these two formats:
+
+Format 1:
+1. Include a relevant Quranic verse
+2. Include a relevant Hadith
+
+Format 2:
+1. Include a different Quranic verse
+2. Include a wisdom from scholars (especially Ibn Al-Qayyim, Ibn Taymiyyah, or Al-Ghazali)
+
+Always format Quranic verses as:
+Arabic: ﴿[Arabic text]﴾
+Translation: [English translation]
+Reference: [Surah:Verse]
+
+Structure responses naturally by:
+- Sometimes starting with the verse
+- Sometimes starting with hadith/wisdom
+- Sometimes beginning with a brief introduction
+
+Keep responses under 250 words and end with either:
+- A warm traditional phrase
+- A brief encouragement
+- A focused next step
+
+Remember: Provide authentic guidance while being concise.
+
+User query: ${message}`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    });
+
+    const data = await response.json();
+    res.json({ message: data.choices[0].message.content });
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    res.status(500).json({ error: 'Failed to process chat message' });
+  }
+});
