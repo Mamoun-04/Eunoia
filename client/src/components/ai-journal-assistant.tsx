@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
+import { useForm } from "react-hook-form";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -8,6 +9,7 @@ interface Message {
 }
 
 export function AiJournalAssistant() {
+  const form = useForm();
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
     content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.\n\nWhat would you like to discuss today?"
