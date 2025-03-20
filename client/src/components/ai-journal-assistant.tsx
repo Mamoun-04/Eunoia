@@ -10,7 +10,12 @@ interface Message {
   isPrompt?: boolean;
 }
 
-export function AiJournalAssistant() {
+interface AiJournalAssistantProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AiJournalAssistant({ open, onOpenChange }: AiJournalAssistantProps) {
   const isMobile = useIsMobile();
   const form = useForm();
   const [messages, setMessages] = useState<Message[]>([{
@@ -117,7 +122,9 @@ export function AiJournalAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-full relative">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] h-[70vh] p-0 gap-0">
+        <div className="flex flex-col h-full max-w-full relative">
       <div className="absolute top-0 left-0 right-0 bottom-[120px] overflow-y-auto px-1 sm:px-2 py-1 space-y-1">
         {messages.map((message, idx) => (
           <div
@@ -194,6 +201,8 @@ export function AiJournalAssistant() {
           initialCategory="reflection"
         />
       )}
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
