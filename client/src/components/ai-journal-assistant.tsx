@@ -11,6 +11,10 @@ interface Message {
 }
 
 export function AiJournalAssistant() {
+  const [location] = useLocation();
+  // Don't show on login page
+  if (location === '/login') return null;
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
