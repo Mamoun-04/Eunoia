@@ -19,7 +19,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   );
 
   const tierCounts = achievements.reduce((acc, achievement) => {
-    const isUnlocked = achievement.isUnlocked(entries);
+    const isUnlocked = achievement.checkUnlocked(entries);
     if (isUnlocked) {
       acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
     }
@@ -34,7 +34,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
           <div className="grid grid-cols-1 gap-4">
             {filteredAchievements.map(achievement => {
-              const isUnlocked = achievement.isUnlocked(entries);
+              const isUnlocked = achievement.checkUnlocked(entries);
               const progress = achievement.getProgress(entries);
 
               const tierStyles = {
