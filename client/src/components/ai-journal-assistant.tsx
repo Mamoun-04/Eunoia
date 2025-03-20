@@ -117,8 +117,8 @@ export function AiJournalAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] lg:h-[calc(100vh-8rem)] max-w-full relative">
-      <div className="absolute top-0 left-0 right-0 bottom-[120px] lg:bottom-[50px] overflow-y-auto px-1 sm:px-2 py-1 space-y-1">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-full relative">
+      <div className="absolute top-0 left-0 right-0 bottom-[120px] overflow-y-auto px-1 sm:px-2 py-1 space-y-1">
         {messages.map((message, idx) => (
           <div
             key={idx}
@@ -167,7 +167,7 @@ export function AiJournalAssistant() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-4">
+      <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-4 mb-16 lg:mb-0">
         <div className="flex flex-col gap-2">
           <textarea
             value={input}
