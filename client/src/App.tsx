@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import HomePage from "@/pages/home-page";
-import LibraryPage from "@/pages/library-page";
+import AssistantPage from "@/pages/assistant-page";
 import EntriesPage from "@/pages/entries-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
@@ -15,7 +15,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/library" component={LibraryPage} />
+      <ProtectedRoute path="/assistant" component={AssistantPage} />
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/" component={HomePage} />
       <Route component={NotFound} />
