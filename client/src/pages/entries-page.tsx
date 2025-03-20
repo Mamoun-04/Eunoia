@@ -55,12 +55,12 @@ type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 // Color definitions for achievement tiers
 const tierColors = {
   bronze: {
-    background: 'from-amber-900/40 to-amber-700/20 hover:from-amber-800/50 hover:to-amber-600/30',
-    border: 'border-amber-700/40',
-    text: 'text-amber-600',
-    badge: 'border border-amber-800/50 bg-amber-800/30 text-amber-700',
-    emoji: 'bg-amber-800/20 animate-pulse-slow',
-    barColor: 'bg-amber-700'
+    background: 'from-[#8B4513]/80 via-[#CD7F32]/60 to-[#B8860B]/40 hover:from-[#CD7F32]/90 hover:to-[#B8860B]/50',
+    border: 'border-[#CD7F32]/40 shadow-lg shadow-[#8B4513]/20',
+    text: 'text-[#FFD700]',
+    badge: 'border border-[#CD7F32]/50 bg-gradient-to-r from-[#8B4513]/30 to-[#CD7F32]/30 text-[#FFD700]',
+    emoji: 'bg-gradient-to-r from-[#8B4513]/20 to-[#CD7F32]/20 animate-pulse-slow',
+    barColor: 'bg-gradient-to-r from-[#8B4513] to-[#CD7F32]'
   },
   silver: {
     background: 'from-slate-400/40 to-slate-300/20 hover:from-slate-300/50 hover:to-slate-200/30',

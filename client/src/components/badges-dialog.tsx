@@ -557,21 +557,27 @@ export function BadgesDialog({ open, onOpenChange }: BadgesDialogProps) {
                 exit={{ opacity: 0, y: -20 }}
                 key={achievement.id}
                 className={cn(
-                  "p-6 rounded-2xl transition-all duration-500",
+                  "achievement-card p-6 rounded-2xl transition-all duration-500",
                   `bg-gradient-to-br ${tierStyle.background}`,
                   tierStyle.border,
-                  "shadow-lg hover:shadow-2xl transform hover:-translate-y-1",
-                  "relative overflow-hidden backdrop-blur-sm",
-                  isUnlocked && "animate-card-unlock",
-                  !isUnlocked && "opacity-60 hover:opacity-80 grayscale-[40%] hover:grayscale-[20%]"
+                  "shadow-[0_10px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_30px_rgba(0,0,0,0.4)]",
+                  "relative overflow-hidden backdrop-blur-md",
+                  isUnlocked && "animate-card-unlock before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:animate-shine",
+                  !isUnlocked && "achievement-locked opacity-70 hover:opacity-85 grayscale-[35%] hover:grayscale-[15%]"
                 )}
               >
                 {achievement.tier === 'diamond' && isUnlocked && (
-                  <div className={cn(
-                    "absolute inset-0 w-[200%]", 
-                    "animate-[shimmer_2s_infinite]",
-                    "bg-gradient-to-r from-transparent via-indigo-300/20 to-transparent"
-                  )}/>
+                  <>
+                    <div className={cn(
+                      "absolute inset-0 w-[200%]",
+                      "animate-[shimmer_2s_infinite]",
+                      "bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    )}/>
+                    <div className="achievement-sparkle absolute top-1/4 left-1/4" style={{animationDelay: '0.2s'}}/>
+                    <div className="achievement-sparkle absolute top-3/4 right-1/4" style={{animationDelay: '0.5s'}}/>
+                    <div className="achievement-sparkle absolute top-1/2 right-1/3" style={{animationDelay: '0.8s'}}/>
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 mix-blend-overlay"/>
+                  </>
                 )}
                 
                 <div className="flex items-center gap-4 relative">
