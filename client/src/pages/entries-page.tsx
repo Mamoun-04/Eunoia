@@ -44,7 +44,7 @@ export default function EntriesPage() {
   const navigation = [
     { name: "Today", href: "/", icon: CalendarDays },
     { name: "Entries", href: "/entries", icon: PenSquare },
-    { name: "Library", href: "/library", icon: BookOpen },
+    { name: "AI Chat", href: "/assistant", icon: MessageSquare },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

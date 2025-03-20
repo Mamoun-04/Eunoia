@@ -90,6 +90,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Chat endpoint
+  app.post("/api/chat", requireAuth, async (req, res) => {
+    try {
+      // For now, return a mock response
+      // TODO: Implement OpenAI integration
+      res.json({ 
+        message: "I'm here to help you with your journaling. What would you like to reflect on today?" 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get AI response" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
