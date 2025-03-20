@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&display=swap');
 
 @keyframes shine {
   from {
@@ -123,9 +124,6 @@
     background-position: 200% 0;
   }
 }
-
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&display=swap');
 
 @keyframes glow {
   0% {
