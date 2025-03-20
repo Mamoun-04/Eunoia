@@ -26,15 +26,15 @@ import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as 
 
 interface Badge {
   id: string;
-
-  const [showAiAssistant, setShowAiAssistant] = useState(false);
-
   name: string;
   description: string;
   emoji: string;
   requirement: string;
   isUnlocked: boolean;
 }
+
+export default function EntriesPage() {
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
 
 export default function EntriesPage() {
   const { logoutMutation } = useAuth();
