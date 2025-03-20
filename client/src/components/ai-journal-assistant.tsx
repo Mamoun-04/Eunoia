@@ -1,209 +1,159 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { JournalEditor } from './journal-editor';
-import { useIsMobile } from '@/hooks/use-is-mobile';
-import { useForm } from "react-hook-form";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { MessageSquare, X, Send, Maximize2, Minimize2 } from "lucide-react";
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-  isPrompt?: boolean;
 }
 
-interface AiJournalAssistantProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function AiJournalAssistant({ open, onOpenChange }: AiJournalAssistantProps) {
-  const isMobile = useIsMobile();
-  const form = useForm();
+export function AiJournalAssistant() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.",
+    content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights."
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [displayedContent, setDisplayedContent] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, displayedContent]);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant') {
-        setIsTyping(true);
-        setDisplayedContent('');
-        let i = 0;
-        const typeInterval = setInterval(() => {
-          if (i <= lastMessage.content.length) {
-            setDisplayedContent(lastMessage.content.slice(0, i));
-            i++;
-          } else {
-            clearInterval(typeInterval);
-            setIsTyping(false);
-          }
-        }, 20);
-        return () => clearInterval(typeInterval);
-      }
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const handleStartJournaling = (prompt: string) => {
-    setShowEditor(true);
-    form.setValue('prompt', prompt);
-    form.setValue('content', '');
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { role: 'user' as const, content: input };
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setMessageCount(messageCount + 1);
+    const userMessage = input.trim();
     setInput('');
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: userMessage })
       });
 
-      if (!response.ok) throw new Error('Failed to get AI response');
-
       const data = await response.json();
-      const parts = data.message.split('\n\nPrompt:');
-
-      // Add the response message
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: parts[0].trim(),
-      }]);
-
-      // Add the prompt as a separate message
-      if (parts[1]) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: parts[1].trim(),
-          isPrompt: true,
-        }]);
-      }
-
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
     } catch (error) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment."
-      }]);
+      console.error('Chat error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const formatMessage = (content: string) => {
-    return content.split('\n').map((paragraph, idx) => (
-      <p key={idx} className="mb-4">{paragraph}</p>
-    ));
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] h-[70vh] p-0 gap-0">
-        <div className="flex flex-col h-full max-w-full relative">
-      <div className="absolute top-0 left-0 right-0 bottom-[120px] overflow-y-auto px-1 sm:px-2 py-1 space-y-1">
-        {messages.map((message, idx) => (
-          <div
-            key={idx}
-            className={`flex ${
-              message.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-1.5 sm:p-2 break-words ${
-                message.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : message.isPrompt
-                  ? 'bg-secondary'
-                  : 'bg-muted'
-              }`}
-            >
-              <div className="space-y-1 text-sm sm:text-base">
-                {idx === messages.length - 1 && message.role === 'assistant'
-                  ? formatMessage(displayedContent)
-                  : formatMessage(message.content)}
-                {message.isPrompt && (
-                  <Button
-                    onClick={() => handleStartJournaling(message.content)}
-                    className="w-full"
-                    variant="default"
-                    size="sm"
-                  >
-                    Start New Entry Using This Prompt
-                  </Button>
+    <div className={`fixed z-50 ${isFullscreen ? 'inset-0' : 'bottom-4 right-4 sm:bottom-8 sm:right-8'}`}>
+      {isOpen ? (
+        <Card className={`${isFullscreen ? 'fixed inset-0 w-full h-full' : 'w-[90vw] h-[80vh] sm:w-[350px] sm:h-[500px]'} flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300`}>
+          <div className="flex items-center justify-between p-4 border-b">
+            <h3 className="font-semibold">AI Journal Assistant</h3>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMessages([{
+                  role: 'assistant',
+                  content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights."
+                }])}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
                 )}
-              </div>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setIsFullscreen(false);
+                  setIsOpen(false);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-muted rounded-lg p-4">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce" />
-                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.2s]" />
-                <div className="w-2 h-2 rounded-full bg-foreground/50 animate-bounce [animation-delay:0.4s]" />
-              </div>
+
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${
+                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                  } mb-4`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                      msg.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <div className="whitespace-pre-line">
+                      {msg.content}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-muted max-w-[80%] rounded-lg px-4 py-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
+          </ScrollArea>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t bg-background p-4 mb-16 lg:mb-0">
-        <div className="flex flex-col gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="flex-1 min-h-[60px] max-h-[100px] rounded-lg border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
-            className="w-full py-6 text-base rounded-lg"
-          >
-            Send Message
-          </Button>
-        </div>
-      </div>
-
-      {showEditor && (
-        <JournalEditor
-          onClose={() => {
-            setShowEditor(false);
-          }}
-          initialCategory="reflection"
-        />
+          <form onSubmit={handleSubmit} className="p-4 border-t">
+            <div className="flex gap-2">
+              <Input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </form>
+        </Card>
+      ) : (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="h-12 w-12 rounded-full shadow-lg"
+        >
+          <MessageSquare className="h-5 w-5" />
+        </Button>
       )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }
