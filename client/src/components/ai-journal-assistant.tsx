@@ -20,6 +20,8 @@ export function AiJournalAssistant() {
   const [showEditor, setShowEditor] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
+  const [currentPrompt, setCurrentPrompt] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export function AiJournalAssistant() {
     const userMessage = { role: 'user' as const, content: input };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
+    setMessageCount(messageCount + 1);
     setInput('');
     setIsLoading(true);
 
@@ -67,9 +70,13 @@ export function AiJournalAssistant() {
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
 
-      if (data.message.toLowerCase().includes('prompt:')) {
-        setSuggestedPrompt(data.message);
+      //Extract and set prompt if available
+      const promptMatch = data.message.match(/Prompt:\s*(.*?)(?:\n|$)/);
+      if (promptMatch) {
+        setCurrentPrompt(promptMatch[1].trim());
       }
+
+
     } catch (error) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
@@ -102,6 +109,12 @@ export function AiJournalAssistant() {
       return <p key={idx} className="mb-4">{paragraph}</p>;
     });
   };
+
+  const handleStartJournaling = () => {
+    setShowEditor(true);
+    form.setValue('entry', currentPrompt);
+  };
+
 
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
@@ -141,15 +154,15 @@ export function AiJournalAssistant() {
       </div>
 
       <div className="border-t p-4">
-        {suggestedPrompt && !showEditor && (
+        {currentPrompt && messageCount % 2 === 1 && !showEditor && (
+          <div className="bg-primary/10 p-4 rounded-lg my-4">
+            <p className="font-semibold text-primary">Recommended Journaling Prompt:</p>
+            <p>{currentPrompt}</p>
+          </div>
+        )}
+        {currentPrompt && !showEditor && (
           <Button
-            onClick={() => {
-              const lastMessage = messages[messages.length - 1].content;
-              const promptMatch = lastMessage.match(/Prompt:\s*(.*?)(?:\n|$)/);
-              const title = promptMatch ? promptMatch[1].trim() : lastMessage.split('\n')[0];
-              setShowEditor(true);
-              form.setValue('title', title);
-            }}
+            onClick={handleStartJournaling}
             className="w-full mb-4"
             variant="secondary"
           >
@@ -177,7 +190,7 @@ export function AiJournalAssistant() {
         <JournalEditor
           onClose={() => {
             setShowEditor(false);
-            setSuggestedPrompt(null);
+            setCurrentPrompt(null);
           }}
           initialCategory="reflection"
         />
