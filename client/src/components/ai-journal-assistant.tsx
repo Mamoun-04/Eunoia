@@ -41,7 +41,10 @@ export function AIJournalAssistant() {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
           messages: messages.concat(userMessage).map(msg => ({
             role: msg.type === "user" ? "user" : "assistant",
@@ -51,10 +54,16 @@ export function AIJournalAssistant() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from chat API');
+        throw new Error(`Failed to get response from chat API: ${response.status}`);
       }
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error("Invalid response format from server");
+      }
       setMessages(prev => [...prev, {
         type: "assistant",
         content: data.content,
