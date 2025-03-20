@@ -37,31 +37,38 @@ const calculateStreak = (entries: Entry[], requiredDays: number) => {
   const sortedDates = entries
     .map(e => new Date(e.createdAt).toISOString().split('T')[0])
     .sort()
-    .reverse()
-    .slice(0, requiredDays);
+    .reverse();
 
-  let streak = 1;
+  let currentStreak = 1;
+  let maxStreak = 1;
+
   for (let i = 1; i < sortedDates.length; i++) {
     const curr = new Date(sortedDates[i]);
     const prev = new Date(sortedDates[i - 1]);
     const diffDays = Math.floor((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 1) streak++;
+
+    if (diffDays === 1) {
+      currentStreak++;
+      maxStreak = Math.max(maxStreak, currentStreak);
+    } else {
+      currentStreak = 1;
+    }
   }
 
   return { 
-    achieved: streak >= requiredDays, 
-    progress: Math.min((streak / requiredDays) * 100, 100) 
+    achieved: maxStreak >= requiredDays, 
+    progress: Math.min((maxStreak / requiredDays) * 100, 100) 
   };
 };
 
-const calculateWordCount = (entries: Entry[], requiredWords: number) => {
-  const totalWords = entries.reduce((sum, entry) => 
-    sum + entry.content.split(/\s+/).filter(word => word.length > 0).length, 0);
+const calculateWordCount = (entries: Entry[], targetCount: number) => {
+  const totalWords = entries.reduce((sum, entry) => {
+    return sum + (entry.content?.split(/\s+/).length || 0);
+  }, 0);
 
   return {
-    achieved: totalWords >= requiredWords,
-    progress: Math.min((totalWords / requiredWords) * 100, 100),
-    count: totalWords
+    achieved: totalWords >= targetCount,
+    progress: Math.min((totalWords / targetCount) * 100, 100)
   };
 };
 
@@ -75,11 +82,11 @@ const calculateEntriesInTimeframe = (entries: Entry[], requiredEntries: number, 
 };
 
 const ACHIEVEMENTS: Achievement[] = [
-  // Streak-based achievements (Bronze to Diamond)
+  // Streak achievements (Bronze to Diamond)
   {
     id: "streak_3_days",
-    name: "Getting Started",
-    description: "Maintain a 3-day journaling streak",
+    name: "Consistent Writer",
+    description: "Write entries 3 days in a row",
     emoji: "🔥",
     requirement: "3-day streak",
     tier: "bronze",
@@ -383,20 +390,20 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       acc[achievement.tier] = (acc[achievement.tier] || 0) + 1;
       return acc;
     }, {} as Record<AchievementTier, number>);
-    
+
+    const progressMap = ACHIEVEMENTS.reduce((acc, achievement) => {
+      acc[achievement.id] = achievement.getProgress(entries);
+      return acc;
+    }, {} as Record<string, number>);
+
     return {
       unlockedCount: unlocked.length,
       tierCounts,
-      progressMap: ACHIEVEMENTS.reduce((acc, achievement) => {
-        acc[achievement.id] = achievement.getProgress(entries);
-        return acc;
-      }, {} as Record<string, number>)
+      progressMap
     };
   }, [entries]);
 
-  const { unlockedCount, tierCounts, progressMap } = achievementStats;
-
-  const categories: { id: Achievement['category'] | 'all'; label: string }[] = [
+  const categories = [
     { id: 'all', label: 'All Achievements' },
     { id: 'streak', label: 'Streaks' },
     { id: 'word-count', label: 'Word Count' },
@@ -409,28 +416,17 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-background opacity-50" />
-          <div className="relative">
-            <DialogTitle className="text-2xl font-[Playfair Display] text-center mb-2">
-              Achievements Gallery
-            </DialogTitle>
-            <div className="flex justify-center gap-4 flex-wrap mb-4">
-              {/* Total Achievement Counter */}
-              <motion.div
-                className="achievement-total-badge relative px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20"
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <span className="font-semibold text-foreground/90">
-                  {unlockedCount} / {ACHIEVEMENTS.length} Achieved
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-              </motion.div>
-
-              {/* Tier Counters */}
-              {(['diamond', 'platinum', 'gold', 'silver', 'bronze'] as const).map(tier => (
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-[Playfair Display] text-center mb-2">
+            Achievements Gallery
+          </DialogTitle>
+          <div className="flex justify-center gap-4 flex-wrap mb-4">
+            <div className="achievement-total-badge relative px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20">
+              <span className="font-semibold text-foreground/90">
+                {achievementStats.unlockedCount} / {ACHIEVEMENTS.length} Achieved
+              </span>
+            </div>
+            {(['diamond', 'platinum', 'gold', 'silver', 'bronze'] as const).map(tier => (
                 <motion.div
                   key={tier}
                   className={cn(
@@ -446,153 +442,97 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                   animate={{ scale: 1 }}
                   whileHover={{ scale: 1.05 }}
                 >
-                  {tierCounts[tier] || 0} {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                  {achievementStats.tierCounts[tier] || 0} {tier.charAt(0).toUpperCase() + tier.slice(1)}
                 </motion.div>
               ))}
-            </div>
+          </div>
 
-            {/* Category Filters */}
-            <div className="flex justify-center gap-2 flex-wrap">
-              {categories.map(({ id, label }) => {
-                const Icon = id !== 'all' ? CategoryIcon[id] : Star;
+          <div className="flex gap-4 p-4 border-t border-b overflow-x-auto">
+            {categories.map(category => {
+              const Icon = CategoryIcon[category.id as keyof typeof CategoryIcon] || Star;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id as Achievement['category'] | 'all')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full transition-colors",
+                    selectedCategory === category.id
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{category.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredAchievements.map(achievement => {
+                const isUnlocked = achievement.checkUnlocked(entries);
+                const progress = achievementStats.progressMap[achievement.id];
+
+                const tierStyle = {
+                  'bronze': {
+                    background: "from-orange-500/10 to-orange-600/10",
+                    border: "border border-orange-500/20"
+                  },
+                  'silver': {
+                    background: "from-slate-300/10 to-slate-400/10",
+                    border: "border border-slate-400/20"
+                  },
+                  'gold': {
+                    background: "from-yellow-400/10 to-yellow-500/10",
+                    border: "border border-yellow-500/20"
+                  },
+                  'platinum': {
+                    background: "from-emerald-400/10 to-emerald-500/10",
+                    border: "border border-emerald-500/20"
+                  },
+                  'diamond': {
+                    background: "from-blue-400/10 to-purple-500/10",
+                    border: "border border-blue-500/20"
+                  }
+                }[achievement.tier];
+
                 return (
-                  <Button
-                    key={id}
-                    variant={selectedCategory === id ? "default" : "outline"}
+                  <div
+                    key={achievement.id}
                     className={cn(
-                      "transition-all duration-300",
-                      selectedCategory === id && "bg-primary text-primary-foreground shadow-lg",
-                      "hover:scale-105"
+                      "achievement-card p-6 rounded-2xl transition-all duration-500",
+                      `bg-gradient-to-br ${tierStyle.background}`,
+                      tierStyle.border,
+                      "relative overflow-hidden backdrop-blur-sm",
+                      isUnlocked && "animate-card-unlock"
                     )}
-                    onClick={() => setSelectedCategory(id)}
                   >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {label}
-                  </Button>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-2xl">{achievement.emoji}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {Math.round(progress)}%
+                      </div>
+                    </div>
+                    <h3 className="font-semibold mb-1">{achievement.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {achievement.description}
+                    </p>
+                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {achievement.requirement}
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto mt-4 pr-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredAchievements.map(achievement => {
-              const isUnlocked = achievement.checkUnlocked(entries);
-              const progress = progressMap[achievement.id];
-
-              const tierStyle = {
-                diamond: {
-                  background: "from-blue-500/5 to-purple-500/5",
-                  border: "border-blue-300/20",
-                  badge: "bg-blue-400/20 text-blue-200",
-                  text: "text-blue-200",
-                  emoji: "bg-blue-400/10"
-                },
-                platinum: {
-                  background: "from-slate-400/5 to-blue-300/5",
-                  border: "border-slate-300/20",
-                  badge: "bg-slate-400/20 text-slate-200",
-                  text: "text-slate-200",
-                  emoji: "bg-slate-400/10"
-                },
-                gold: {
-                  background: "from-yellow-500/5 to-amber-500/5",
-                  border: "border-yellow-300/20",
-                  badge: "bg-yellow-400/20 text-yellow-200",
-                  text: "text-yellow-200",
-                  emoji: "bg-yellow-400/10"
-                },
-                silver: {
-                  background: "from-slate-300/5 to-slate-200/5",
-                  border: "border-slate-200/20",
-                  badge: "bg-slate-300/20 text-slate-300",
-                  text: "text-slate-300",
-                  emoji: "bg-slate-300/10"
-                },
-                bronze: {
-                  background: "from-orange-500/5 to-amber-600/5",
-                  border: "border-orange-300/20",
-                  badge: "bg-orange-400/20 text-orange-200",
-                  text: "text-orange-200",
-                  emoji: "bg-orange-400/10"
-                }
-              }[achievement.tier];
-
-              return (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  key={achievement.id}
-                  className={cn(
-                    "achievement-card p-6 rounded-2xl transition-all duration-500",
-                    `bg-gradient-to-br ${tierStyle.background}`,
-                    tierStyle.border,
-                    "shadow-lg hover:shadow-xl",
-                    "relative overflow-hidden backdrop-blur-sm",
-                    "hover:scale-[1.02] transition-transform",
-                    isUnlocked && "animate-card-unlock"
-                  )}
-                >
-                  {isUnlocked && achievement.tier === 'diamond' && (
-                    <div className="absolute inset-0 achievement-sparkle-container">
-                      <div className="achievement-sparkle" style={{animationDelay: '0.2s'}}/>
-                      <div className="achievement-sparkle" style={{animationDelay: '0.5s'}}/>
-                      <div className="achievement-sparkle" style={{animationDelay: '0.8s'}}/>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "text-3xl p-3 rounded-xl flex items-center justify-center",
-                      tierStyle.emoji,
-                      isUnlocked && "animate-glow"
-                    )}>
-                      {achievement.emoji}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className={cn(
-                          "font-[Playfair Display] text-lg font-semibold",
-                          tierStyle.text
-                        )}>
-                          {achievement.name}
-                        </h3>
-                        <Badge className={tierStyle.badge}>
-                          {achievement.tier.charAt(0).toUpperCase() + achievement.tier.slice(1)}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {achievement.description}
-                      </p>
-                      {!isUnlocked && (
-                        <div className="w-full bg-muted/20 rounded-full h-1.5 mt-2">
-                          <div 
-                            className={cn(
-                              "h-1.5 rounded-full transition-all duration-500",
-                              `bg-gradient-to-r ${tierStyle.background}`
-                            )}
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className={cn(
-                    "mt-2 text-xs pl-16",
-                    !isUnlocked ? "text-muted-foreground" : tierStyle.text
-                  )}>
-                    {!isUnlocked
-                      ? `Progress: ${Math.round(progress)}% complete`
-                      : `Achieved! (${achievement.requirement})`}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+        </DialogContent>
+      </Dialog>
+    );
+  }
