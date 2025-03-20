@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
@@ -79,7 +78,7 @@ export function AiJournalAssistant() {
 
       const data = await response.json();
       const parts = data.message.split('\n\nPrompt:');
-      
+
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: parts[0].trim(),
@@ -135,7 +134,7 @@ export function AiJournalAssistant() {
             </div>
           </div>
         )}
-      {/* End of prompt section */}
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, idx) => (
           <div
