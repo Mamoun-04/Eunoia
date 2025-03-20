@@ -161,24 +161,17 @@ export function AiJournalAssistant() {
             <p>{currentPrompt}</p>
           </div>
         )}
-        <div className="flex gap-2 mb-4">
-          <Button
-            onClick={() => setShowEditor(true)}
-            className="w-full"
-            variant="secondary"
-          >
-            Start New Entry
-          </Button>
-          {currentPrompt && !showEditor && (
+        {currentPrompt && !showEditor && (
+          <div className="flex gap-2 mb-4">
             <Button
               onClick={handleStartJournaling}
               className="w-full"
               variant="default"
             >
-              Write with Prompt
+              Start an entry with this prompt
             </Button>
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex gap-2">
           <textarea
             value={input}
