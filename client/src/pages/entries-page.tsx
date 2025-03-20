@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { useState } from "react";
+import { BadgesDialog } from "@/components/badges-dialog";
 import {
   Card,
   CardContent,
@@ -26,6 +27,7 @@ import { Award as AwardIcon, Book as BookIcon, Clock as ClockIcon, PenSquare as 
 export default function EntriesPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
+  const [showBadges, setShowBadges] = useState(false);
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
@@ -180,13 +182,17 @@ export default function EntriesPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <button
+                  onClick={() => setShowBadges(true)}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
                   Unlocked: 
                   <span className="ml-1" title="First Entry">📝</span>
                   <span className="ml-1 opacity-50" title="5-day Streak (Philosopher)">🎯</span>
                   <span className="ml-1 opacity-50" title="10-day Streak (Sage)">🏆</span>
                   <span className="ml-1 opacity-50" title="30-day Streak (Enlightened)">👑</span>
-                </div>
+                </button>
+                <BadgesDialog open={showBadges} onOpenChange={setShowBadges} />
               </div>
             </div>
           </div>
