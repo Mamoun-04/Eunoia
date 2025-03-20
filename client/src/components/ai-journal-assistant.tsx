@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { JournalEditor } from './journal-editor';
@@ -6,7 +7,7 @@ import { useForm } from "react-hook-form";
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-  prompt?: string;
+  isPrompt?: boolean;
 }
 
 export function AiJournalAssistant() {
@@ -14,7 +15,6 @@ export function AiJournalAssistant() {
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
     content: "Welcome to your AI journaling assistant! I'm here to help you reflect on your thoughts and feelings.\n\nYou can share what's on your mind, and I'll provide thoughtful responses and journaling prompts to help you explore deeper insights.",
-    prompt: "What's on your mind today? Take a moment to check in with yourself."
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,12 +49,9 @@ export function AiJournalAssistant() {
     }
   }, [messages]);
 
-  const handleStartJournaling = () => {
+  const handleStartJournaling = (prompt: string) => {
     setShowEditor(true);
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      form.setValue('content', `Prompt: ${lastMessage.prompt}\n\n`);
-    }
+    form.setValue('content', `Prompt: ${prompt}\n\n`);
   };
 
   const sendMessage = async () => {
@@ -78,18 +75,26 @@ export function AiJournalAssistant() {
 
       const data = await response.json();
       const parts = data.message.split('\n\nPrompt:');
-
+      
+      // Add the response message
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: parts[0].trim(),
-        prompt: parts[1]?.trim() || "What other thoughts or feelings come up for you right now?"
       }]);
+
+      // Add the prompt as a separate message
+      if (parts[1]) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: parts[1].trim(),
+          isPrompt: true,
+        }]);
+      }
 
     } catch (error) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
-        prompt: "While we wait, what brings you here today?"
+        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment."
       }]);
     } finally {
       setIsLoading(false);
@@ -109,8 +114,6 @@ export function AiJournalAssistant() {
     ));
   };
 
-  const currentPrompt = messages[messages.length - 1]?.prompt;
-
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -125,6 +128,8 @@ export function AiJournalAssistant() {
               className={`max-w-[80%] rounded-lg p-4 ${
                 message.role === 'user'
                   ? 'bg-primary text-primary-foreground'
+                  : message.isPrompt
+                  ? 'bg-secondary'
                   : 'bg-muted'
               }`}
             >
@@ -132,14 +137,14 @@ export function AiJournalAssistant() {
                 {idx === messages.length - 1 && message.role === 'assistant'
                   ? formatMessage(displayedContent)
                   : formatMessage(message.content)}
-                {message.role === 'assistant' && message.prompt && (
+                {message.isPrompt && (
                   <Button
-                    onClick={handleStartJournaling}
+                    onClick={() => handleStartJournaling(message.content)}
                     className="w-full"
-                    variant="secondary"
+                    variant="default"
                     size="sm"
                   >
-                    Use This Prompt
+                    Start New Entry Using This Prompt
                   </Button>
                 )}
               </div>
