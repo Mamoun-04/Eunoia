@@ -99,35 +99,53 @@ export default function EntriesPage() {
                 Suggest Improvement
               </Button>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-              <MetricCard
-                icon={<PenSquareIcon className="h-6 w-6" />}
-                label="Entries"
-                value={entriesThisMonth}
-                subtitle="this month"
-                onClick={() => toast({ title: "Monthly Entries", description: `You've written ${entriesThisMonth} entries this month` })}
-              />
-              <MetricCard
-                icon={<BookIcon className="h-6 w-6" />}
-                label="Words Written"
-                value={totalWords.toLocaleString()}
-                subtitle="total"
-                onClick={() => toast({ title: "Word Count", description: `You've written ${totalWords.toLocaleString()} words in total` })}
-              />
-              <MetricCard
-                icon={<ClockIcon className="h-6 w-6" />}
-                label="Time Writing"
-                value="30"
-                subtitle="minutes today"
-                onClick={() => toast({ title: "Writing Time", description: "You've spent 30 minutes writing today" })}
-              />
-              <MetricCard
-                icon={<AwardIcon className="h-6 w-6" />}
-                label="Daily Streak"
-                value="1"
-                subtitle="Keep it up!"
-                onClick={() => toast({ title: "Daily Streak", description: "You're on a 1 day streak. Keep writing daily!" })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-1 bg-[#020733] rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                  <PenSquareIcon className="h-5 w-5" />
+                  <span>Total Entries</span>
+                </div>
+                <div className="text-4xl font-bold text-[#4169FF]">{entriesThisMonth}</div>
+              </div>
+              
+              <div className="col-span-1 bg-[#020733] rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                  <BookIcon className="h-5 w-5" />
+                  <span>Total Words</span>
+                </div>
+                <div className="text-4xl font-bold text-[#4169FF]">{totalWords.toLocaleString()}</div>
+              </div>
+
+              <div className="col-span-2 bg-[#020733] rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                  <ClockIcon className="h-5 w-5" />
+                  <span>Time Journaling</span>
+                </div>
+                <div className="text-4xl font-bold text-[#4169FF]">0 <span className="text-lg text-muted-foreground">minutes</span></div>
+              </div>
+
+              <div className="col-span-1 bg-[#1A1A1A] rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                  <AwardIcon className="h-5 w-5" />
+                  <span>Daily Streak</span>
+                </div>
+                <div className="flex items-end gap-8">
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Current</div>
+                    <div className="flex items-end">
+                      <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                      <div className="ml-2">1</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Best</div>
+                    <div className="flex items-end">
+                      <div className="w-2 h-16 bg-[#4169FF] rounded-full"></div>
+                      <div className="ml-2">1</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
