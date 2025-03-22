@@ -316,12 +316,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="bg-black/5 backdrop-blur-sm p-4 rounded-xl">
-                <img 
-                  src={imagePreview} 
-                  alt="Journal entry" 
-                  className="w-full rounded-lg object-contain max-h-[220px]"
-                />
+              <div className="bg-black/5 backdrop-blur-sm p-4 rounded-xl w-full">
+                <div className="relative w-full aspect-[16/9]">
+                  <img 
+                    src={imagePreview} 
+                    alt="Journal entry" 
+                    className="absolute inset-0 w-full h-full rounded-lg object-cover"
+                  />
+                </div>
               </div>
               <motion.div
                 whileHover={{ scale: 1.1 }}
