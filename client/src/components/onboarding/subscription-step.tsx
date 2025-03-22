@@ -5,6 +5,12 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const FREE_FEATURES = [
   "1 journal entry per day",
@@ -137,14 +143,14 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
-        <div className="space-y-4">
+        <Accordion type="single" collapsible>
           {faq.map((item, index) => (
-            <div key={index}>
-              <h3 className="text-lg font-medium">{item.question}</h3>
-              <p className="text-sm">{item.answer}</p>
-            </div>
+            <AccordionItem key={index}>
+              <AccordionTrigger className="font-medium">{item.question}</AccordionTrigger>
+              <AccordionContent>{item.answer}</AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </div>
     </div>
   );
