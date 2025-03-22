@@ -109,18 +109,7 @@ export default function LibraryPage() {
   return (
     <div className="min-h-screen bg-background pb-16">
       <div className="container mx-auto py-8 px-4">
-        <nav className="flex justify-between items-center mb-8"> {/* Added desktop navigation */}
-          <h1 className="text-3xl font-bold">Library</h1> {/* Adjusted heading size */}
-          <div className="flex space-x-4">
-              {navigation.map((item) => (
-                <Link key={item.name} href={item.href}>
-                  <Button variant="ghost" size="sm">
-                    {item.name}
-                  </Button>
-                </Link>
-              ))}
-          </div>
-        </nav>
+        <div className="mb-8">
         {!selectedLesson ? (
           <>
             <div className="mb-8">
