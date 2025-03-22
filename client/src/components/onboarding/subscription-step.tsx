@@ -7,6 +7,7 @@ const FREE_FEATURES = [
   "1 journal entry per day",
   "Basic mood tracking",
   "1 guided journaling lesson daily",
+  "Limited AI chat assistant (15 mins/day)",
   "Standard support",
   "Basic data encryption",
   "Text-only entries"
@@ -16,6 +17,7 @@ const PREMIUM_FEATURES = [
   "Unlimited journal entries",
   "Advanced mood analytics & insights",
   "Unlimited guided journaling lessons",
+  "Unlimited AI chat assistant access",
   "Image attachments for entries",
   "Priority support & coaching",
   "Enhanced data security & encryption",
