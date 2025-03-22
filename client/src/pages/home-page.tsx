@@ -1,11 +1,13 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { JournalEditor } from "@/components/journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
-import { useState, createContext, useContext } from "react";
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { useState } from "react";
 import {
   LayoutGrid,
   LogOut,
@@ -19,48 +21,12 @@ import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
 import { SubscriptionDialog } from "@/components/subscription-dialog";
 
-// Onboarding Context
-const OnboardingContext = createContext<{
-  showOnboarding: boolean;
-  setShowOnboarding: (show: boolean) => void;
-}>({ showOnboarding: false, setShowOnboarding: () => {} });
-
-const OnboardingProvider = ({ children }: { children: React.ReactNode }) => {
-  const [showOnboarding, setShowOnboarding] = useState(false); //Initially false, should be determined based on user's first time login
-
-  //Logic to check if it's the user's first time should be here.  This is a placeholder.
-  const isFirstTime = false; //Replace with actual logic to check if user is new
-  if(isFirstTime){
-    setShowOnboarding(true);
-  }
-
-  return (
-    <OnboardingContext.Provider value={{ showOnboarding, setShowOnboarding }}>
-      {children}
-    </OnboardingContext.Provider>
-  );
-};
-
-const useOnboarding = () => useContext(OnboardingContext);
-
-
-// Placeholder Onboarding Component
-const OnboardingFlow = ({ onComplete }: { onComplete: () => void }) => {
-  return (
-    <div>
-      <h1>Welcome to the Onboarding Flow!</h1>
-      <Button onClick={onComplete}>Complete Onboarding</Button>
-    </div>
-  );
-};
-
-
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
+  const { showOnboarding, setShowOnboarding } = useOnboarding();
   const [isEditing, setIsEditing] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [location] = useLocation();
-  const { showOnboarding, setShowOnboarding } = useOnboarding();
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
@@ -169,9 +135,9 @@ export default function HomePage() {
                     <MoodSelector value={entry.mood} readonly />
                   </div>
                   {entry.imageUrl && (
-                    <img 
-                      src={entry.imageUrl} 
-                      alt="Entry image" 
+                    <img
+                      src={entry.imageUrl}
+                      alt="Entry image"
                       className="w-full rounded-lg mb-4 max-h-96 object-cover"
                     />
                   )}

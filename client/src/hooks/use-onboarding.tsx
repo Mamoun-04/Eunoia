@@ -12,7 +12,14 @@ const OnboardingContext = createContext<OnboardingContextType>({
 });
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    const stored = localStorage.getItem("showOnboarding");
+    return stored === null ? false : JSON.parse(stored);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("showOnboarding", JSON.stringify(showOnboarding));
+  }, [showOnboarding]);
 
   return (
     <OnboardingContext.Provider value={{ showOnboarding, setShowOnboarding }}>
