@@ -83,10 +83,7 @@ const SAMPLE_LESSONS = [
           "Observing thoughts",
           "Connection with nature"
         ]
-      }
-    ]
-    description: "Connect with the present moment and find peace in stillness.",
-    questions: [
+      },
       {
         id: "current-feelings",
         type: "text",
