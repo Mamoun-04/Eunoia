@@ -19,6 +19,159 @@ const SAMPLE_LESSONS = [
     title: "Daily Gratitude Practice",
     topic: "Gratitude",
     description: "Reflect on the blessings in your life and cultivate thankfulness.",
+    questions: Array(5).fill(null).map((_, i) => [
+      {
+        id: `gratitude-text-${i}`,
+        type: "text",
+        prompt: "What specific moment or person made you feel grateful today?"
+      },
+      {
+        id: `gratitude-slider-${i}`,
+        type: "slider",
+        prompt: "How deeply did you feel gratitude in this moment? (1-10)"
+      },
+      {
+        id: `gratitude-mc-${i}`,
+        type: "multipleChoice",
+        prompt: "How did this gratitude affect your mindset?",
+        options: [
+          "It brightened my entire day",
+          "It gave me new perspective",
+          "It deepened my relationships",
+          "It motivated me to give back"
+        ]
+      }
+    ])[0]
+  },
+  // Generate 66 lessons with 5 prompts each
+  ...Array(66).fill(null).map((_, index) => ({
+    id: `short-lesson-${index + 1}`,
+    title: [
+      "Morning Reflection",
+      "Evening Wind Down",
+      "Mindful Moment",
+      "Quick Check-in",
+      "Breath Awareness",
+      "Gratitude Snapshot",
+      "Joy Spotting",
+      "Peace Pause",
+      "Heart Check",
+      "Spirit Lift"
+    ][index % 10] + ` ${Math.floor(index / 10) + 1}`,
+    topic: [
+      "Self-Reflection",
+      "Mindfulness",
+      "Gratitude",
+      "Joy",
+      "Peace",
+      "Love",
+      "Hope",
+      "Faith",
+      "Wisdom",
+      "Growth"
+    ][index % 10],
+    description: "A quick reflection practice to center your mind and heart.",
+    questions: Array(5).fill(null).map((_, i) => ({
+      id: `short-${index}-q${i}`,
+      type: ["text", "slider", "multipleChoice"][i % 3],
+      prompt: `Reflection prompt ${i + 1} for your journey today.`,
+      ...(i % 3 === 2 ? {
+        options: [
+          "Option A for deeper insight",
+          "Option B for growth",
+          "Option C for reflection",
+          "Option D for awareness"
+        ]
+      } : {})
+    }))
+  })),
+  // Generate 67 lessons with 10 prompts each
+  ...Array(67).fill(null).map((_, index) => ({
+    id: `medium-lesson-${index + 1}`,
+    title: [
+      "Deep Dive",
+      "Soul Search",
+      "Heart Journey",
+      "Spirit Quest",
+      "Mind Explorer",
+      "Inner Path",
+      "Truth Seeker",
+      "Light Finder",
+      "Peace Walker",
+      "Joy Seeker"
+    ][index % 10] + ` ${Math.floor(index / 10) + 1}`,
+    topic: [
+      "Inner Growth",
+      "Spiritual Journey",
+      "Emotional Wisdom",
+      "Mental Clarity",
+      "Heart Wisdom",
+      "Soul Care",
+      "Life Purpose",
+      "Divine Connection",
+      "Personal Truth",
+      "Sacred Journey"
+    ][index % 10],
+    description: "A comprehensive reflection practice for deeper understanding.",
+    questions: Array(10).fill(null).map((_, i) => ({
+      id: `medium-${index}-q${i}`,
+      type: ["text", "slider", "multipleChoice"][i % 3],
+      prompt: `Reflection prompt ${i + 1} for deeper exploration.`,
+      ...(i % 3 === 2 ? {
+        options: [
+          "Deeper insight option A",
+          "Growth perspective B",
+          "Reflection choice C",
+          "Awareness path D"
+        ]
+      } : {})
+    }))
+  })),
+  // Generate 67 lessons with 15 prompts each
+  ...Array(67).fill(null).map((_, index) => ({
+    id: `long-lesson-${index + 1}`,
+    title: [
+      "Sacred Journey",
+      "Divine Exploration",
+      "Soul Sanctuary",
+      "Spirit Sojourn",
+      "Heart Pilgrimage",
+      "Mind Odyssey",
+      "Truth Expedition",
+      "Light Voyage",
+      "Peace Passage",
+      "Joy Journey"
+    ][index % 10] + ` ${Math.floor(index / 10) + 1}`,
+    topic: [
+      "Spiritual Growth",
+      "Divine Connection",
+      "Soul Purpose",
+      "Inner Wisdom",
+      "Heart Truth",
+      "Mind Clarity",
+      "Life Direction",
+      "Sacred Connection",
+      "Personal Transformation",
+      "Eternal Journey"
+    ][index % 10],
+    description: "An in-depth spiritual journey for profound self-discovery.",
+    questions: Array(15).fill(null).map((_, i) => ({
+      id: `long-${index}-q${i}`,
+      type: ["text", "slider", "multipleChoice"][i % 3],
+      prompt: `Deep reflection prompt ${i + 1} for spiritual growth.`,
+      ...(i % 3 === 2 ? {
+        options: [
+          "Profound insight path A",
+          "Transformative choice B",
+          "Spiritual reflection C",
+          "Divine awareness D"
+        ]
+      } : {})
+    }))
+  }))
+];
+    topic: "Gratitude",
+    description: "Reflect on the blessings in your life and cultivate thankfulness.",
     questions: [
       {
         id: "grateful-moment",
