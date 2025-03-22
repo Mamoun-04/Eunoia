@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { useOnboarding } from "@/hooks/use-onboarding";
 
 export default function ProfileSetup() {
   const { setStep } = useOnboarding();
