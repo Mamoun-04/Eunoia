@@ -46,6 +46,21 @@ export const moodOptions = [
   "very_happy"
 ] as const;
 
+export const lessonTypes = {
+  text: "text",
+  multipleChoice: "multipleChoice",
+  slider: "slider"
+} as const;
+
+export const lessons = pgTable("lessons", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  topic: text("topic").notNull(),
+  description: text("description").notNull(),
+  questions: text("questions").notNull(), // JSON string of questions array
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
 export const categoryOptions = [
   "Work & Career",
   "Gratitude",
