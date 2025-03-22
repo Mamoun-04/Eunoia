@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
@@ -60,11 +59,17 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
     onComplete({ plan });
   };
 
+  const faq = [
+    { question: "What happens after the free trial?", answer: "After your 7-day free trial, your subscription will automatically convert to a paid monthly plan unless you cancel." },
+    { question: "Can I cancel my subscription?", answer: "Yes, you can cancel your subscription at any time from your account settings." },
+    { question: "What payment methods do you accept?", answer: "We accept all major credit cards and PayPal." }
+  ];
+
   return (
-    <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
+    <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
       <div className="text-center">
-        <h2 className="text-3xl font-semibold mb-2">Unlock Your Mindful Journey</h2>
-        <p className="text-muted-foreground">Start with a 7-day free trial, then choose your plan</p>
+        <h2 className="text-2xl font-semibold mb-2">Unlock Your Mindful Journey</h2>
+        <p className="text-sm text-muted-foreground">Start with a 7-day free trial, then choose your plan</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -128,6 +133,18 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
             Billed annually at $39.99/year
           </p>
         </Card>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {faq.map((item, index) => (
+            <div key={index}>
+              <h3 className="text-lg font-medium">{item.question}</h3>
+              <p className="text-sm">{item.answer}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
