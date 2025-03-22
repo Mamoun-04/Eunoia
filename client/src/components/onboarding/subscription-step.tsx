@@ -143,13 +143,25 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Frequently Asked Questions</h2>
-        <Accordion type="single" collapsible>
-          {faq.map((item, index) => (
-            <AccordionItem key={index}>
-              <AccordionTrigger className="font-medium">{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="after-trial">
+            <AccordionTrigger>What happens after the free trial?</AccordionTrigger>
+            <AccordionContent>
+              After your 7-day free trial ends, you'll be automatically switched to the free plan unless you choose to subscribe to a premium plan. Don't worry - we'll notify you before the trial ends.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="cancel">
+            <AccordionTrigger>Can I cancel my subscription?</AccordionTrigger>
+            <AccordionContent>
+              Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your current billing period.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="payment">
+            <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
+            <AccordionContent>
+              We accept all major credit cards (Visa, MasterCard, American Express) and PayPal for subscription payments.
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
     </div>
