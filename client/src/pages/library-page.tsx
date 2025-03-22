@@ -10,8 +10,17 @@ import {
   CalendarDays,
   PenSquare,
   BookOpen,
+  Search,
+  Filter
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const SAMPLE_LESSONS = [
   {
@@ -967,7 +976,7 @@ const SAMPLE_LESSONS = [
       {
         id: "mindfulness-action-slider-26",
         type: "slider",
-        prompt: "On a scale of 1-10, how intentional was your mindful action?"
+        prompt: "On ascale of 1-10, how intentional was your mindful action?"
       },
       {
         id: "mindfulness-action-mc-26",
@@ -1684,6 +1693,18 @@ export default function LibraryPage() {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [lengthFilter, setLengthFilter] = useState("all");
+
+  const filteredLessons = SAMPLE_LESSONS.filter((lesson) => {
+    const titleMatch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const topicMatch = lesson.topic.toLowerCase().includes(searchQuery.toLowerCase());
+    const lengthMatch = lengthFilter === "all" ||
+      (lengthFilter === "short" && lesson.questions.length === 5) ||
+      (lengthFilter === "medium" && lesson.questions.length === 10) ||
+      (lengthFilter === "long" && lesson.questions.length === 15);
+    return titleMatch || topicMatch && lengthMatch;
+  });
 
   const navigation = [
     { name: "Today", href: "/", icon: CalendarDays },
@@ -1759,10 +1780,37 @@ export default function LibraryPage() {
                 <p className="text-muted-foreground">
                   Choose a lesson below to begin your reflection journey
                 </p>
+                <div className="flex gap-4 mt-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by topic or title..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Filter className="h-4 w-4" />
+                        {lengthFilter === "all" ? "All Lengths" : 
+                         lengthFilter === "short" ? "Short (5 min)" :
+                         lengthFilter === "medium" ? "Medium (10 min)" : "Long (15 min)"}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => setLengthFilter("all")}>All Lengths</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("short")}>Short (5 min)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("medium")}>Medium (10 min)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("long")}>Long (15 min)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {SAMPLE_LESSONS.map((lesson) => (
+                {filteredLessons.map((lesson) => (
                   <Card
                     key={lesson.id}
                     className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
