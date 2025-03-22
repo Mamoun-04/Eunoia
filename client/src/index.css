@@ -229,8 +229,9 @@
 
 /* Minimalist journaling interface styles */
 .journal-interface {
-  @apply p-4 sm:p-6 relative h-[100dvh] sm:h-auto;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  @apply p-6 sm:p-8 relative h-[100dvh] sm:h-auto;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
+  padding-top: 1rem;
 }
 
 .prompt-card {
