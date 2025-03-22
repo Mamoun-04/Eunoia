@@ -316,7 +316,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="bg-black/5 backdrop-blur-sm p-4 rounded-xl w-full">
+              <div className="w-full">
                 <div className="relative w-full aspect-[16/9]">
                   <img 
                     src={imagePreview} 
