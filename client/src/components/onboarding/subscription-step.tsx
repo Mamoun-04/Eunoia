@@ -2,144 +2,119 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useState } from 'react';
 
-const FREE_FEATURES = [
-  "3 journal entries per week",
-  "Basic mood tracking",
-  "5 guided journaling lessons",
-  "Limited AI chat assistant access",
-  "Text-only entries"
+const plans = [
+  {
+    name: "Free",
+    price: "0",
+    features: [
+      "Basic journaling features",
+      "3 entries per day",
+      "Basic analytics",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "9.99",
+    features: [
+      "Unlimited entries",
+      "Advanced analytics",
+      "AI-powered insights",
+      "Priority support",
+    ],
+  },
 ];
 
-const PREMIUM_FEATURES = [
-  "Unlimited journal entries",
-  "Advanced mood analytics & insights",
-  "Unlimited guided journaling lessons",
-  "Unlimited AI chat assistant access",
-  "Image attachments for entries",
-  "Priority support & coaching",
-  "Enhanced data security & encryption",
-  "Cloud backup & sync",
-  "Custom categories & tags",
-  "Premium journal prompts"
-];
-
-export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => void }) {
+export function SubscriptionStep({ data }: { data: any }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { registerMutation } = useAuth();
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
 
-  const subscribeMutation = useMutation({
-    mutationFn: async (plan: string) => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Subscription failed');
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Plan selected",
-        description: "Proceeding to account creation"
+  const handleSubscribe = async (plan: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
       });
-      onComplete({ plan: data.plan });
-      setLocation("/auth");
-    },
-    onError: (error: Error) => {
+
+      if (!response.ok) throw new Error("Subscription failed");
+
+      // After successful subscription, register the user
+      await registerMutation.mutateAsync(data);
+      setLocation("/");
+
       toast({
-        title: "Subscription failed",
-        description: error.message,
-        variant: "destructive"
+        title: "Welcome to Eunoia!",
+        description: "Your account has been created successfully.",
       });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to complete subscription. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  });
-
-  const handlePlanSelection = (plan: string) => {
-    subscribeMutation.mutate(plan);
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
-      <div className="text-center">
-        <h2 className="text-2xl font-['Playfair Display'] font-semibold mb-2">Unlock Your Mindful Journey</h2>
-        <p className="text-sm text-muted-foreground font-['Inter']">Start with a 7-day free trial, then choose your plan</p>
+    <div className="w-full max-w-5xl space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Choose Your Plan</h1>
+        <p className="text-xl text-muted-foreground">
+          Select the plan that best fits your journaling needs
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <h3 className="text-xl font-['The Seasons'] font-semibold mb-2">Free Plan</h3>
-          <div className="text-3xl font-['Hello Paris'] text-center mb-4">$0<span className="text-lg text-muted-foreground font-['Inter']">/mo</span></div>
-          <ul className="space-y-2 mb-6">
-            {FREE_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-center gap-2 font-['Inter']">
-                <Check className="h-4 w-4 text-green-500" />
-                <span className="text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <Button variant="outline" className="w-full font-['Inter']" onClick={() => handlePlanSelection('free')}>
-            Start Free Plan
-          </Button>
-        </Card>
+      <div className="grid md:grid-cols-2 gap-8">
+        {plans.map((plan) => (
+          <Card key={plan.name} className="p-6">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-2xl font-bold">{plan.name}</h3>
+                <p className="text-3xl font-bold mt-2">
+                  ${plan.price}
+                  <span className="text-lg text-muted-foreground">/month</span>
+                </p>
+              </div>
 
-        <Card className="p-6 border-primary relative">
-          <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-['Inter']">
-            7 Days Free
-          </div>
-          <h3 className="text-xl font-['The Seasons'] font-semibold mb-2">Monthly Premium</h3>
-          <div className="text-3xl font-['Hello Paris'] text-center mb-4">$3.99<span className="text-lg text-muted-foreground font-['Inter']">/mo</span></div>
-          <ul className="space-y-2 mb-6">
-            {PREMIUM_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-center gap-2 font-['Inter']">
-                <Check className="h-4 w-4 text-green-500" />
-                <span className="text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('monthly')}>
-            Start Free Trial
-          </Button>
-          <p className="text-xs text-muted-foreground text-center mt-2 font-['Inter']">
-            After trial ends, $3.99/month
-          </p>
-        </Card>
+              <ul className="space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
 
-        <Card className="p-6 border-primary/50 relative bg-primary/5">
-          <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-['Inter']">
-            Best Value
-          </div>
-          <h3 className="text-xl font-['The Seasons'] font-semibold mb-2">Yearly Premium</h3>
-          <div className="text-3xl font-['Hello Paris'] text-center mb-4">$39.99<span className="text-lg text-muted-foreground font-['Inter']">/yr</span></div>
-          <div className="text-sm text-primary mb-4 font-['Inter']">Save 16% annually</div>
-          <ul className="space-y-2 mb-6">
-            {PREMIUM_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-center gap-2 font-['Inter']">
-                <Check className="h-4 w-4 text-green-500" />
-                <span className="text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('yearly')}>
-            Choose Yearly Plan
-          </Button>
-          <p className="text-xs text-muted-foreground text-center mt-2 font-['Inter']">
-            Billed annually at $39.99/year
-          </p>
-        </Card>
+              <Button
+                className="w-full"
+                onClick={() => handleSubscribe(plan.name.toLowerCase())}
+                disabled={isLoading}
+              >
+                {isLoading ? "Processing..." : `Get Started with ${plan.name}`}
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
 
       <div className="mt-8">
-        <h2 className="text-xl font-['Playfair Display'] font-semibold mb-4">Frequently Asked Questions</h2>
+        <h2 className="text-xl font-['Playfair Display'] font-semibold mb-4">
+          Frequently Asked Questions
+        </h2>
         <Accordion type="single" collapsible className="w-full">
           {[
             {
