@@ -9,16 +9,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Lazy load the components to improve performance
+const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
+const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
+const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
 const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
 const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
 const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
-const CreateAccountWithProfile = lazy(() => import("@/components/onboarding/create-account-with-profile"));
+const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
 
 export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
   const [location, setLocation] = useLocation();
-  const { user } = useAuth();
 
+  const { user } = useAuth();
+  
   // Redirect to home if already logged in
   useEffect(() => {
     if (user) {
@@ -26,62 +30,130 @@ export default function OnboardingPage() {
     }
   }, [user, setLocation]);
 
-  // Calculate progress percentage
-  const totalSteps = 4; // Goal, Interests, Subscription, Account+Profile
-  const progressPercentage = (step / totalSteps) * 100;
-
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return <GoalSetting />;
-      case 2:
-        return <InterestSelection />;
-      case 3:
-        return <SubscriptionStep />;
-      case 4:
-        return <CreateAccountWithProfile />;
-      default:
-        return <GoalSetting />;
+  // If step is 0 or 1, auto-advance to step 2 (profile setup)
+  useEffect(() => {
+    if (step === 0) {
+      const timer = setTimeout(() => {
+        setStep(2); // Skip welcome screen, go directly to profile setup
+      }, 2000);
+      
+      return () => clearTimeout(timer);
     }
+    
+    // If somehow we end up on step 1 (welcome screen) in the onboarding flow,
+    // immediately advance to step 2 to prevent circular issues
+    if (step === 1) {
+      setStep(2);
+    }
+  }, [step, setStep]);
+
+  // Calculate progress percentage - adjusted for starting at step 2
+  const totalSteps = 5; // Steps 2-6: Profile, Goal, Interests, Subscription, Account creation
+  const actualStep = step > 1 ? step - 1 : 1; // Adjust for the welcome screen being skipped
+  const progressPercentage = ((actualStep - 1) / totalSteps) * 100;
+
+  // Loading fallback component
+  const StepSkeleton = () => (
+    <div className="space-y-4 w-full">
+      <Skeleton className="h-12 w-3/4 rounded-lg" />
+      <Skeleton className="h-40 w-full rounded-lg" />
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </div>
+    </div>
+  );
+
+  // Render current step with animation
+  const renderStep = () => {
+    // Animation variants
+    const pageVariants = {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -20 }
+    };
+    
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={pageVariants}
+          transition={{ duration: 0.3 }}
+          className="w-full"
+        >
+          <Suspense fallback={<StepSkeleton />}>
+            {(() => {
+              switch (step) {
+                case 0:
+                  return <SplashScreen />;
+                case 1:
+                  return <WelcomeScreen />;
+                case 2:
+                  return <ProfileSetup />;
+                case 3:
+                  return <GoalSetting />;
+                case 4:
+                  return <InterestSelection />;
+                case 5:
+                  return <SubscriptionStep />;
+                case 6:
+                  return <CreateAccount />;
+                default:
+                  return <WelcomeScreen />;
+              }
+            })()}
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
+  // Only show navigation when not on splash screen
+  if (step === 0) {
+    return renderStep();
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setStep(Math.max(1, step - 1))}
-            disabled={step === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="text-sm text-muted-foreground">
-            Step {step} of {totalSteps}
+    <div className="min-h-screen flex flex-col bg-white light">
+      {/* Header with progress */}
+      <header className="p-4 sm:p-6">
+        <div className="max-w-3xl mx-auto">
+          {step > 2 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4"
+              onClick={() => setStep(step - 1)}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          )}
+          <Progress value={progressPercentage} className="h-2" />
+          <div className="text-right text-sm text-muted-foreground mt-1">
+            Step {actualStep} of {totalSteps}
           </div>
         </div>
-        <Progress value={progressPercentage} className="mt-4" />
       </header>
 
-      <main className="flex-1 container mx-auto p-4">
-        <div className="max-w-2xl mx-auto">
-          <Suspense fallback={<Skeleton className="h-[600px] w-full" />}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {renderStep()}
-              </motion.div>
-            </AnimatePresence>
-          </Suspense>
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-3xl mx-auto">
+          {renderStep()}
         </div>
       </main>
+      <footer className="p-4 text-center">
+        <Button 
+          variant="link" 
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => setLocation("/auth")}
+        >
+          Already have an account? Login here
+        </Button>
+      </footer>
     </div>
   );
 }
