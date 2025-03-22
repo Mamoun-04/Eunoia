@@ -99,27 +99,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mock subscription endpoint
   app.post("/api/subscribe", requireAuth, async (req, res) => {
     const { plan } = req.body;
-    if (!plan || !["free", "monthly", "yearly"].includes(plan)) {
+    if (!plan || !["monthly", "yearly"].includes(plan)) {
       return res.status(400).json({ message: "Invalid subscription plan" });
     }
 
     try {
       const endDate = new Date();
-      if (plan === "monthly") {
-        // 7-day trial then monthly
-        endDate.setDate(endDate.getDate() + 7);
-      } else if (plan === "yearly") {
-        endDate.setMonth(endDate.getMonth() + 12);
-      }
+      endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
       
       await storage.updateUser(req.user!.id, {
-        subscriptionStatus: plan === "free" ? "free" : "active",
-        subscriptionPlan: plan,
-        subscriptionEndDate: plan === "free" ? null : endDate,
-        isTrialing: plan === "monthly" ? true : false
+        subscriptionStatus: "active",
+        subscriptionEndDate: endDate
       });
 
-      res.json({ message: plan === "monthly" ? "Trial activated" : "Subscription activated" });
+      res.json({ message: "Subscription activated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to process subscription" });
     }

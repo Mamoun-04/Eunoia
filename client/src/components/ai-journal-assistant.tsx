@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useOnboarding } from '@/hooks/use-onboarding';
-import { useSubscription } from '@/hooks/use-subscription';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,11 +33,9 @@ export function AiJournalAssistant() {
 
   const { showOnboarding } = useOnboarding();
   
-  const { features } = useSubscription();
-  
-  // Only show on main pages, when not in onboarding, and for subscribed users
+  // Only show on main pages and when not in onboarding
   const allowedPages = ['/', '/entries', '/library'];
-  if (!allowedPages.includes(location) || showOnboarding || !features.hasAiAssistant) return null;
+  if (!allowedPages.includes(location) || showOnboarding) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

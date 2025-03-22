@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -61,23 +60,9 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
     }
   });
 
-  const handlePlanSelection = async (plan: 'free' | 'monthly' | 'yearly') => {
-    try {
-      await subscribeMutation.mutateAsync(plan);
-      // Refresh user data
-      await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      // Complete onboarding first
-      await onComplete({ plan });
-      // Then redirect using setLocation
-      setLocation('/', { replace: true });
-    } catch (error) {
-      console.error('Failed to activate subscription:', error);
-      toast({
-        title: "Error",
-        description: "Failed to activate subscription. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const handlePlanSelection = (plan: 'free' | 'monthly' | 'yearly' | 'trial') => {
+    subscribeMutation.mutate(plan);
+    onComplete({ plan });
   };
 
   const faq = [
@@ -124,7 +109,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
               </li>
             ))}
           </ul>
-          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('monthly')}>
+          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('trial')}>
             Start Free Trial
           </Button>
           <p className="text-xs text-muted-foreground text-center mt-2 font-['Inter']">
