@@ -112,7 +112,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
               </li>
             ))}
           </ul>
-          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('trial')}>
+          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('monthly')}>
             Start Free Trial
           </Button>
           <p className="text-xs text-muted-foreground text-center mt-2 font-['Inter']">
