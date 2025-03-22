@@ -1,8 +1,15 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 
-export function ProfileSetup({ onNext }: { onNext: () => void }) {
+export default function ProfileSetup() {
+  const { setStep } = useOnboarding();
+
+  const handleNext = () => {
+    setStep(3);
+  };
+
   return (
     <Card className="w-full max-w-md p-8 mx-auto bg-white">
       <div className="flex flex-col items-center text-center space-y-6">
@@ -22,7 +29,7 @@ export function ProfileSetup({ onNext }: { onNext: () => void }) {
         </div>
 
         <Button 
-          onClick={onNext}
+          onClick={handleNext}
           className="mt-8 bg-primary hover:bg-primary/90 text-white px-8 py-2 rounded-full flex items-center gap-2"
         >
           Get Started
