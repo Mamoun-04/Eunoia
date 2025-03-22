@@ -1,173 +1,212 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useLocation } from 'wouter';
-import { useOnboarding } from '@/hooks/use-onboarding';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { insertUserSchema } from '@shared/schema';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Lock } from 'lucide-react';
+import { useState } from "react";
+import { useOnboarding } from "@/hooks/use-onboarding";
+import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { insertUserSchema, userPreferencesSchema } from "../../../shared/schema";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
-// Extended schema with validation
+// Extend the user schema with validation rules
 const createAccountSchema = insertUserSchema.extend({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
-}).refine((data) => data.password === data.confirmPassword, {
+  confirmPassword: z.string(),
+  terms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions"
+  })
+}).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
-  path: ["confirmPassword"],
+  path: ["confirmPassword"]
 });
 
 type CreateAccountFormValues = z.infer<typeof createAccountSchema>;
 
 export default function CreateAccount() {
-  const { data, resetOnboarding } = useOnboarding();
+  const { data } = useOnboarding();
   const { registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
+  // Ensure subscriptionPlan is always a valid value
+  const safeSubscriptionPlan = data.subscriptionPlan || 'free';
+
   const form = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
+      username: "",
+      password: "",
+      confirmPassword: "",
+      terms: false
+    }
   });
 
   const onSubmit = async (values: CreateAccountFormValues) => {
     try {
-      // Remove the confirmPassword and email field as it's not in the User schema
-      const { confirmPassword, email, ...userData } = values;
-      
-      // Register the user
-      await registerMutation.mutateAsync(userData);
-      
-      // Show success toast
-      toast({
-        title: "Account created!",
-        description: `Welcome to Eunoia, ${values.username}!`,
+      // Create the user with the form values
+      await registerMutation.mutateAsync({
+        username: values.username,
+        password: values.password,
+        // Include user preferences from onboarding data
+        preferences: {
+          name: data.name,
+          profilePhoto: data.profilePhoto,
+          bio: data.bio,
+          goal: data.goal,
+          customGoal: data.customGoal,
+          interests: data.interests || [],
+          subscriptionPlan: safeSubscriptionPlan,
+          theme: "light" // Default theme
+        }
       });
-      
-      // Reset onboarding data
-      resetOnboarding();
-      
-      // Redirect to homepage
-      setLocation('/');
-    } catch (error) {
-      console.error(error);
+
+      // Show success message
       toast({
-        title: "Error creating account",
-        description: error instanceof Error ? error.message : "Please try again",
-        variant: "destructive",
+        title: "Account created",
+        description: "Welcome to Eunoia! Your account has been created successfully.",
+      });
+
+      // Redirect to the home page
+      setLocation("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem creating your account. Please try again.",
+        variant: "destructive"
       });
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-white/80 backdrop-blur-sm rounded-xl p-8 max-w-lg mx-auto shadow-sm"
+      className="w-full px-4"
     >
-      <div className="flex items-center justify-center mb-6">
-        <div className="bg-primary/10 p-3 rounded-full">
-          <Lock className="h-8 w-8 text-primary" />
-        </div>
-      </div>
-      
-      <h2 className="text-3xl font-serif font-bold mb-2 text-center">Create Your Account</h2>
-      <p className="text-center text-muted-foreground mb-8">
-        You're almost there! Set up your login details to begin your journaling journey.
-      </p>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="your.email@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="Choose a username" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="Create a password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="Confirm your password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="pt-4">
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={registerMutation.isPending}
-            >
-              {registerMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account & Start Journaling"
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+      <Card className="w-full max-w-lg mx-auto shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-primary">Create Your Account</CardTitle>
+          <CardDescription>Just one last step to get started</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <div className="mt-6 text-center text-sm text-muted-foreground">
-        By creating an account, you agree to our Terms of Service and Privacy Policy.
-      </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input 
+                          type={showPassword ? "text" : "password"} 
+                          placeholder="Create a password" 
+                          {...field} 
+                        />
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon"
+                          className="absolute right-1 top-1"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                          <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input 
+                          type={showConfirmPassword ? "text" : "password"} 
+                          placeholder="Confirm your password" 
+                          {...field} 
+                        />
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon"
+                          className="absolute right-1 top-1"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                          <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="terms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        className="mt-1"
+                        checked={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        I agree to the <span className="underline cursor-pointer text-primary">Terms of Service</span> and <span className="underline cursor-pointer text-primary">Privacy Policy</span>
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

@@ -7,7 +7,8 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   subscriptionStatus: text("subscription_status").default("free").notNull(),  
-  subscriptionEndDate: timestamp("subscription_end_date")
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  preferences: text("preferences"), // Stored as JSON string
 });
 
 export const entries = pgTable("entries", {
@@ -21,10 +22,29 @@ export const entries = pgTable("entries", {
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true
+// Define UserPreferences schema
+export const userPreferencesSchema = z.object({
+  name: z.string().optional(),
+  profilePhoto: z.string().optional(),
+  bio: z.string().optional(),
+  goal: z.string().optional(),
+  customGoal: z.string().optional(),
+  interests: z.array(z.string()).default([]),
+  subscriptionPlan: z.enum(['free', 'monthly', 'yearly']).default('free'),
+  theme: z.enum(['light', 'dark']).default('light')
 });
+
+export type UserPreferences = z.infer<typeof userPreferencesSchema>;
+
+// Extend the insert user schema to include preferences
+export const insertUserSchema = createInsertSchema(users)
+  .pick({
+    username: true,
+    password: true
+  })
+  .extend({
+    preferences: userPreferencesSchema.optional()
+  });
 
 export const insertEntrySchema = createInsertSchema(entries).pick({
   title: true,
