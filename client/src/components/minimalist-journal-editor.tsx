@@ -222,7 +222,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md max-h-[90vh] p-0 rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#f8f7f2] to-[#f4f3ed]">
+      <DialogContent 
+        className="max-w-md max-h-[90vh] p-0 rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2]"
+        aria-describedby="journal-editor-description"
+      >
+        <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
+        <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
+        
         <div className="absolute top-3 right-3 z-10">
           <Button
             variant="ghost"
@@ -242,7 +248,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           
           {/* Prompt Card */}
           <div className="prompt-card">
-            <p className="text-lg font-light text-primary/90">
+            <p className="text-lg font-normal text-primary/90 text-center">
               {currentPrompt}
             </p>
           </div>
@@ -272,6 +278,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             placeholder="Begin writing here..."
             value={form.getValues('content')}
             onChange={(e) => form.setValue('content', e.target.value)}
+            aria-label="Journal entry content"
           />
           
           {/* Image Preview */}
@@ -298,11 +305,12 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           
           {/* Action Bar */}
           <div className="action-bar">
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               {/* Camera Button */}
               <button 
                 className="action-button"
                 onClick={() => fileInputRef.current?.click()}
+                data-tooltip="Attach image"
               >
                 <Camera className="h-5 w-5" />
                 <input 
@@ -319,6 +327,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               <button 
                 className="action-button"
                 onClick={getAIAssistance}
+                data-tooltip="Need a prompt?"
               >
                 <Sparkles className="h-5 w-5" />
               </button>
@@ -336,6 +345,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                 }
               }}
               disabled={!form.getValues('content') || entryMutation.isPending}
+              data-tooltip="Save entry"
             >
               <ArrowRight className="h-5 w-5" />
             </button>

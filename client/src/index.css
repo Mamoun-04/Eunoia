@@ -229,49 +229,103 @@
 
 /* Minimalist journaling interface styles */
 .journal-interface {
-  @apply max-w-xl mx-auto p-4 md:p-6 lg:p-8;
+  @apply max-w-xl mx-auto p-6 md:p-6 lg:p-8;
 }
 
 .prompt-card {
-  @apply bg-primary/5 backdrop-blur-sm text-foreground rounded-2xl p-5 mb-6 border border-primary/10 shadow-lg transition-all duration-300;
-  animation: fade-in 0.5s ease-out;
+  @apply bg-primary/5 backdrop-blur-sm text-foreground rounded-xl p-6 mb-6 border border-primary/5 shadow-md transition-all duration-300 flex items-center justify-center;
+  animation: fade-in 0.6s ease-out;
 }
 
 .journal-progress {
-  @apply h-1 rounded-full bg-gray-100 mb-4 overflow-hidden;
+  @apply h-1 rounded-full bg-gray-100 mb-5 overflow-hidden;
 }
 
 .journal-progress-bar {
-  @apply h-full bg-primary/80 rounded-full transition-all duration-300 ease-out;
+  @apply h-full bg-primary/70 rounded-full transition-all duration-300 ease-out;
 }
 
 .section-title {
-  @apply text-xs uppercase tracking-widest text-primary/60 font-semibold mb-3;
+  @apply text-xs uppercase tracking-wider text-primary/50 font-medium mb-4 ml-0.5;
+  letter-spacing: 0.08em;
 }
 
 .sentence-starters {
-  @apply flex space-x-2 overflow-x-auto py-3 -mx-2 px-2 mb-5 custom-scrollbar;
+  @apply flex space-x-2 overflow-x-auto py-3 -mx-2 px-2 mb-5 pb-1 custom-scrollbar;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
 }
 
 .sentence-starter {
-  @apply bg-primary/5 hover:bg-primary/10 text-primary/90 text-sm px-4 py-2 rounded-full whitespace-nowrap transition-all flex-shrink-0 border border-primary/10;
+  @apply bg-indigo-50 hover:bg-indigo-100 text-primary/80 text-sm px-4 py-2 rounded-full whitespace-nowrap transition-all flex-shrink-0 border border-indigo-100;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sentence-starter:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sentence-starter:active {
+  transform: translateY(0);
 }
 
 .journal-textarea {
-  @apply w-full min-h-[180px] bg-white border border-gray-200 rounded-xl p-4 text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/30 resize-none mb-6;
-  font-family: 'EB Garamond', serif;
+  @apply w-full min-h-[200px] bg-white border border-gray-100 rounded-xl p-5 text-foreground placeholder:text-gray-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary/20 resize-none mb-8 shadow-sm;
+  font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+  background-color: #fffffe;
 }
 
 .action-bar {
-  @apply flex justify-between items-center;
+  @apply flex justify-between items-center px-2;
 }
 
 .action-button {
-  @apply bg-gray-100 hover:bg-gray-200 p-3 rounded-full text-primary/80 transition-all;
+  @apply bg-indigo-50 hover:bg-indigo-100 p-3 rounded-full text-primary/70 transition-all shadow-sm;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.action-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-button:hover::after {
+  opacity: 1;
 }
 
 .submit-button {
-  @apply bg-primary/80 hover:bg-primary p-3 rounded-full text-white transition-all;
+  @apply bg-primary/70 hover:bg-primary/90 p-3 rounded-full text-white transition-all shadow-sm;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fade-in {

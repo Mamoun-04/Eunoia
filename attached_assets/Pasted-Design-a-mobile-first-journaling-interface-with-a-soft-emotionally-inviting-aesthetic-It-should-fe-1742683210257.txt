@@ -1,0 +1,69 @@
+Design a mobile-first journaling interface with a soft, emotionally inviting aesthetic. It should feel warm, modern, and minimal, while guiding the user gently through the reflection process. The current layout appears slightly unbalanced, especially with the right side looking cropped. This redesign should address that and elevate the overall UX.
+
+✨ Visual Style
+Soft, calming pastel background (e.g., off-white or very light cream).
+
+Rounded corners throughout, but not overly pill-shaped — aim for warmth over playfulness.
+
+Gentle shadows and depth to create subtle visual layering.
+
+Use a friendly, serif or soft sans-serif font for the journaling elements (e.g., Cormorant Garamond, Inter, Nunito).
+
+📦 Layout Structure
+1. Prompt Card (Top)
+A rounded, floating card with subtle elevation.
+
+Text centered vertically and horizontally.
+
+Smooth fade-in on appearance.
+
+Example prompt: “What are you feeling grateful for today?”
+
+Fix cropping: Ensure equal padding/margin on both left and right sides (minimum 1.5rem), and that the prompt container does not overflow or clip on smaller screens.
+
+2. Section Header
+Uppercase label like “GRATITUDE” above the writing area.
+
+Use soft tracking and light color to reduce harshness.
+
+Align flush with left padding for visual consistency.
+
+3. Quick Sentence Starters
+Horizontally scrollable list of pill-style chips.
+
+Rounded (border-radius: 9999px), spaced evenly with gap: 0.5rem.
+
+Light pastel fill (e.g., #EEF2FF) and soft blue text.
+
+Use gentle hover/tap effects (scale or glow).
+
+Prevent overflow and ensure full visibility with padding on both sides.
+
+4. Text Input Area
+Large textarea with soft shadows and generous padding.
+
+Placeholder like “Begin writing here…” in light gray, italic serif.
+
+Rounded corners (border-radius: 1rem), cream background, slight border or inset shadow to feel like paper.
+
+Avoid hard edges or sharp contrast.
+
+5. Bottom Icon Buttons
+Replace large icons with floating circular buttons (icon inside a soft pastel bubble).
+
+Icons: 📷 (attach image), ✨ (inspire me / AI assist)
+
+Add tooltip on hover (e.g., “Attach image”, “Need a prompt?”)
+
+Align horizontally, with enough margin from edges and keyboard.
+
+🛠 Functional Suggestions
+Ensure prompt text wraps correctly on smaller screens without clipping or horizontal scroll.
+
+Add smooth animations: prompt slide-in, chip hover pop, soft icon bounce on tap.
+
+Automatically focus on text area after the user taps a chip.
+
+Image upload opens a simple preview modal (don't clutter the writing screen).
+
+Let me know if you want this converted into a working Figma frame, Tailw
