@@ -229,9 +229,9 @@
 
 /* Minimalist journaling interface styles */
 .journal-interface {
-  @apply p-6 sm:p-8 relative h-[100dvh] sm:h-auto;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
-  padding-top: 1rem;
+  @apply relative h-auto;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+  padding-top: 0.5rem;
 }
 
 .prompt-card {
@@ -252,17 +252,22 @@
   letter-spacing: 0.08em;
 }
 
+.sentence-starters-container {
+  @apply overflow-hidden mx-[-0.5rem] mb-4 sm:mb-5;
+}
+
 .sentence-starters {
-  @apply flex space-x-2 overflow-x-auto py-2 px-1 sm:py-3 sm:px-2 mb-4 sm:mb-5 custom-scrollbar;
+  @apply flex gap-2 py-2 px-2 overflow-x-auto custom-scrollbar;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  margin-left: -0.5rem;
-  margin-right: -0.5rem;
 }
 
 .sentence-starter {
   @apply bg-indigo-50 hover:bg-indigo-100 text-primary/80 text-sm px-4 py-2 rounded-full whitespace-nowrap transition-all flex-shrink-0 border border-indigo-100;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  scroll-snap-align: start;
 }
 
 .sentence-starter:hover {
@@ -275,13 +280,14 @@
 }
 
 .journal-textarea {
-  @apply w-full min-h-[200px] bg-white border border-gray-100 rounded-xl p-5 text-foreground placeholder:text-gray-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary/20 resize-none mb-8 shadow-sm;
+  @apply w-full min-h-[250px] bg-white border border-gray-100 rounded-xl p-4 sm:p-5 text-foreground placeholder:text-gray-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary/20 resize-none mb-8 shadow-sm;
   font-family: 'Cormorant Garamond', 'EB Garamond', serif;
   background-color: #fffffe;
 }
 
 .action-bar {
-  @apply flex justify-between items-center px-2;
+  @apply flex justify-between items-center px-2 pt-2 pb-4 sm:py-4 sticky bottom-0 bg-gradient-to-t from-[#f8f7f2] to-transparent;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
 .action-button {
@@ -314,6 +320,7 @@
   pointer-events: none;
   transition: opacity 0.2s ease;
   white-space: nowrap;
+  z-index: 50;
 }
 
 .action-button:hover::after {
@@ -322,7 +329,7 @@
 
 .submit-button {
   @apply bg-primary/70 hover:bg-primary/90 p-3 rounded-full text-white transition-all shadow-sm;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
 }
 
 .submit-button:hover {
