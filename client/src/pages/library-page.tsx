@@ -29,20 +29,36 @@ const SAMPLE_LESSONS = [
         prompt: "What is one specific moment from today that you're grateful for?"
       },
       {
-        id: "gratitude-level",
-        type: "slider",
-        prompt: "How grateful do you feel right now?"
+        id: "grateful-person",
+        type: "text",
+        prompt: "Write about someone who has positively impacted your life recently. What qualities do you appreciate about them?"
       },
       {
         id: "gratitude-impact",
         type: "multipleChoice",
-        prompt: "How has gratitude impacted your day?",
+        prompt: "How has practicing gratitude affected your mindset?",
         options: [
           "It's transformed my perspective",
           "I feel more content",
           "I notice small blessings more",
           "I'm still learning to be grateful"
         ]
+      },
+      {
+        id: "gratitude-expression",
+        type: "multipleChoice",
+        prompt: "How do you prefer to express gratitude to others?",
+        options: [
+          "Writing thank-you notes",
+          "Verbal appreciation",
+          "Acts of service",
+          "Small gifts or gestures"
+        ]
+      },
+      {
+        id: "gratitude-level",
+        type: "slider",
+        prompt: "How grateful do you feel in this moment? (1-10)"
       }
     ]
   },
@@ -55,20 +71,42 @@ const SAMPLE_LESSONS = [
       {
         id: "current-feelings",
         type: "text",
-        prompt: "What sensations and emotions are you experiencing right now?"
+        prompt: "What physical sensations and emotions are you experiencing right now?"
       },
       {
-        id: "presence-level",
-        type: "slider",
-        prompt: "How present do you feel in this moment?"
+        id: "environment",
+        type: "text",
+        prompt: "Describe three things you can observe in your immediate environment using your senses."
       },
       {
         id: "mindfulness-practice",
         type: "multipleChoice",
-        prompt: "What helps you stay present?",
+        prompt: "What mindfulness technique resonates with you most?",
         options: [
           "Breathing exercises",
-          "Physical sensations",
+          "Body scanning",
+          "Mindful walking",
+          "Sound awareness"
+        ]
+      },
+      {
+        id: "mindfulness-challenge",
+        type: "multipleChoice",
+        prompt: "What's your biggest challenge with staying present?",
+        options: [
+          "Racing thoughts",
+          "Physical discomfort",
+          "External distractions",
+          "Time constraints"
+        ]
+      },
+      {
+        id: "presence-level",
+        type: "slider",
+        prompt: "How present and grounded do you feel right now? (1-10)"
+      }
+    ]
+  }
           "Observing thoughts",
           "Connection with nature"
         ]
