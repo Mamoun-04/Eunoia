@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Lazy load the components to improve performance
 const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
@@ -61,31 +62,50 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // Render current step
+  // Render current step with animation
   const renderStep = () => {
+    // Animation variants
+    const pageVariants = {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -20 }
+    };
+    
     return (
-      <Suspense fallback={<StepSkeleton />}>
-        {(() => {
-          switch (step) {
-            case 0:
-              return <SplashScreen />;
-            case 1:
-              return <WelcomeScreen />;
-            case 2:
-              return <ProfileSetup />;
-            case 3:
-              return <GoalSetting />;
-            case 4:
-              return <InterestSelection />;
-            case 5:
-              return <SubscriptionStep />;
-            case 6:
-              return <CreateAccount />;
-            default:
-              return <WelcomeScreen />;
-          }
-        })()}
-      </Suspense>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={pageVariants}
+          transition={{ duration: 0.3 }}
+          className="w-full"
+        >
+          <Suspense fallback={<StepSkeleton />}>
+            {(() => {
+              switch (step) {
+                case 0:
+                  return <SplashScreen />;
+                case 1:
+                  return <WelcomeScreen />;
+                case 2:
+                  return <ProfileSetup />;
+                case 3:
+                  return <GoalSetting />;
+                case 4:
+                  return <InterestSelection />;
+                case 5:
+                  return <SubscriptionStep />;
+                case 6:
+                  return <CreateAccount />;
+                default:
+                  return <WelcomeScreen />;
+              }
+            })()}
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
     );
   };
 
@@ -112,7 +132,7 @@ export default function OnboardingPage() {
           )}
           <Progress value={progressPercentage} className="h-2" />
           <div className="text-right text-sm text-muted-foreground mt-1">
-            Step {step} of {totalSteps}
+            Step {actualStep} of {totalSteps}
           </div>
         </div>
       </header>
