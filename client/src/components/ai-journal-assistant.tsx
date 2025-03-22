@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useOnboarding } from '@/hooks/use-onboarding';
+import { useSubscription } from '@/hooks/use-subscription';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
