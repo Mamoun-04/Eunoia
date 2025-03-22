@@ -117,8 +117,12 @@ export default function LibraryPage() {
           {navigation.map((item) => (
             <Link key={item.name} href={item.href}>
               <Button
-                variant={location === item.href ? "default" : "ghost"}
-                className="w-full justify-start gap-2"
+                variant="ghost"
+                className={`w-full justify-start gap-2 ${
+                  location === item.href 
+                    ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                    : ""
+                }`}
               >
                 <item.icon className="h-5 w-5" />
                 {item.name}
