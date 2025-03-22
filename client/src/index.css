@@ -1,13 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;700&display=swap');
-@font-face {
-  font-family: 'The Seasons';
-  src: url('/fonts/the-seasons.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Hello Paris';
-  src: url('/fonts/hello-paris.woff2') format('woff2');
-}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;

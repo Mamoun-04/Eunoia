@@ -1,12 +1,10 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useOnboarding } from "@/hooks/use-onboarding";
 import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { JournalEditor } from "@/components/journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
-import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { useState } from "react";
 import {
   LayoutGrid,
@@ -23,7 +21,6 @@ import { SubscriptionDialog } from "@/components/subscription-dialog";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
-  const { showOnboarding, setShowOnboarding } = useOnboarding();
   const [isEditing, setIsEditing] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [location] = useLocation();
@@ -38,10 +35,6 @@ export default function HomePage() {
     { name: "Library", href: "/library", icon: BookOpen },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
-
-  if (showOnboarding) {
-    return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
-  }
 
   return (
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
@@ -135,9 +128,9 @@ export default function HomePage() {
                     <MoodSelector value={entry.mood} readonly />
                   </div>
                   {entry.imageUrl && (
-                    <img
-                      src={entry.imageUrl}
-                      alt="Entry image"
+                    <img 
+                      src={entry.imageUrl} 
+                      alt="Entry image" 
                       className="w-full rounded-lg mb-4 max-h-96 object-cover"
                     />
                   )}

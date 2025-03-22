@@ -6,7 +6,6 @@ const MemoryStore = createMemoryStore(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
   
@@ -45,12 +44,6 @@ export class MemStorage implements IStorage {
       (user) => user.username === username
     );
   }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email
-    );
-  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
@@ -79,7 +72,6 @@ export class MemStorage implements IStorage {
       ...insertEntry,
       id,
       userId,
-      imageUrl: null,
       createdAt: new Date()
     };
     this.entries.set(id, entry);
