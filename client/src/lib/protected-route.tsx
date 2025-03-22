@@ -15,7 +15,7 @@ export function ProtectedRoute({ component: Component, path }: ProtectedRoutePro
 
   useEffect(() => {
     // Only redirect if we're certain there's no user and loading is complete
-    if (!isLoading && !user) {
+    if (!isLoading && !user && window.location.pathname !== '/onboarding') {
       setLocation("/auth");
     }
   }, [user, isLoading, setLocation]);
