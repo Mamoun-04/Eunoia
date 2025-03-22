@@ -1,14 +1,11 @@
 
 import { useState } from "react";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { WelcomeStep } from "./welcome-step";
 import { ProfileStep } from "./profile-step";
 import { GoalStep } from "./goal-step";
 import { InterestsStep } from "./interests-step";
 import { SubscriptionStep } from "./subscription-step";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
+import { Progress } from "@/components/ui/progress";
 
 const STEPS = ["Welcome", "Profile", "Goal", "Interests", "Subscription"];
 
@@ -22,12 +19,9 @@ export function OnboardingFlow() {
     setData(prev => ({ ...prev, ...stepData }));
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+    } else {
+      // TODO: Handle onboarding completion
+      console.log("Onboarding complete", data);
     }
   };
 
@@ -42,7 +36,7 @@ export function OnboardingFlow() {
       case 3:
         return <InterestsStep onNext={handleStepComplete} />;
       case 4:
-        return <SubscriptionStep data={data} />;
+        return <SubscriptionStep onComplete={handleStepComplete} />;
       default:
         return null;
     }
@@ -51,19 +45,6 @@ export function OnboardingFlow() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="p-4 border-b">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-4 items-center">
-            {currentStep > 0 && (
-              <Button variant="ghost" size="sm" onClick={handleBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-            )}
-          </div>
-          <Link href="/auth" className="text-sm text-muted-foreground hover:text-foreground">
-            Return to Login
-          </Link>
-        </div>
         <Progress value={progress} className="w-full" />
         <div className="flex justify-between mt-2 text-sm text-muted-foreground">
           {STEPS.map((step, index) => (
