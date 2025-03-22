@@ -53,7 +53,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
         description: "Proceeding to account creation"
       });
       onComplete({ plan: data.plan });
-      setLocation("/create-account");
+      setLocation("/auth");
     },
     onError: (error: Error) => {
       toast({
