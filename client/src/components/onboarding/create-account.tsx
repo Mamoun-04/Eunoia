@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,9 +13,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Camera } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Extend the user schema with validation rules
 const createAccountSchema = insertUserSchema.extend({
   confirmPassword: z.string(),
   terms: z.boolean().refine(val => val === true, {
@@ -34,10 +35,9 @@ export default function CreateAccount() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  // Ensure subscriptionPlan is always a valid value
-  const safeSubscriptionPlan = data.subscriptionPlan || 'free';
-
   const form = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
@@ -48,57 +48,86 @@ export default function CreateAccount() {
     }
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImage(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const onSubmit = async (values: CreateAccountFormValues) => {
     try {
-      // Create the user with the form values
       await registerMutation.mutateAsync({
         username: values.username,
         password: values.password,
-        // Include user preferences from onboarding data
         preferences: {
           name: data.name,
-          profilePhoto: data.profilePhoto,
+          profilePhoto: imagePreview || undefined,
           bio: data.bio,
           goal: data.goal,
           customGoal: data.customGoal,
           interests: data.interests || [],
-          subscriptionPlan: safeSubscriptionPlan,
-          theme: "light" // Default theme
+          subscriptionPlan: data.subscriptionPlan || 'free',
+          theme: "light"
         }
       });
 
-      // Show success message
       toast({
-        title: "Account created",
-        description: "Welcome to Eunoia! Your account has been created successfully.",
+        title: "Account created!",
+        description: "Welcome to Eunoia"
       });
 
-      // Redirect to the home page
       setLocation("/home");
     } catch (error) {
       toast({
+        variant: "destructive",
         title: "Error",
-        description: "There was a problem creating your account. Please try again.",
-        variant: "destructive"
+        description: "Failed to create account. Please try again."
       });
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full px-4"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="flex flex-col items-center justify-center min-h-[80vh] p-4"
     >
-      <Card className="w-full max-w-lg mx-auto shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">Create Your Account</CardTitle>
-          <CardDescription>Just one last step to get started</CardDescription>
+      <Card className="w-full max-w-lg">
+        <CardHeader>
+          <CardTitle>Create your account</CardTitle>
+          <CardDescription>Enter your details to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative">
+                  <Avatar className="w-24 h-24">
+                    <AvatarImage src={imagePreview || undefined} />
+                    <AvatarFallback className="bg-primary/10">
+                      <Camera className="w-8 h-8" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Click to upload profile photo
+                </p>
+              </div>
+
               <FormField
                 control={form.control}
                 name="username"
@@ -106,7 +135,7 @@ export default function CreateAccount() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter a username" {...field} />
+                      <Input placeholder="Enter username" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,20 +150,19 @@ export default function CreateAccount() {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="Create a password" 
-                          {...field} 
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter password"
+                          {...field}
                         />
-                        <Button 
+                        <Button
                           type="button"
-                          variant="ghost" 
+                          variant="ghost"
                           size="icon"
-                          className="absolute right-1 top-1"
+                          className="absolute right-0 top-0"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                          <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
                         </Button>
                       </div>
                     </FormControl>
@@ -151,20 +179,19 @@ export default function CreateAccount() {
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input 
-                          type={showConfirmPassword ? "text" : "password"} 
-                          placeholder="Confirm your password" 
-                          {...field} 
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm password"
+                          {...field}
                         />
-                        <Button 
+                        <Button
                           type="button"
-                          variant="ghost" 
+                          variant="ghost"
                           size="icon"
-                          className="absolute right-1 top-1"
+                          className="absolute right-0 top-0"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                          <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
                         </Button>
                       </div>
                     </FormControl>
@@ -177,31 +204,29 @@ export default function CreateAccount() {
                 control={form.control}
                 name="terms"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormItem className="flex items-center space-x-2">
                     <FormControl>
                       <input
                         type="checkbox"
-                        className="mt-1"
                         checked={field.value}
                         onChange={field.onChange}
+                        className="accent-primary"
                       />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        I agree to the <span className="underline cursor-pointer text-primary">Terms of Service</span> and <span className="underline cursor-pointer text-primary">Privacy Policy</span>
-                      </FormLabel>
-                      <FormMessage />
-                    </div>
+                    <FormLabel className="text-sm font-normal">
+                      I agree to the terms and conditions
+                    </FormLabel>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+                {registerMutation.isPending ? "Creating account..." : "Create account"}
               </Button>
             </form>
           </Form>
