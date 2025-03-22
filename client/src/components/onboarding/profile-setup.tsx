@@ -12,11 +12,11 @@ export default function ProfileSetup() {
   };
 
   return (
-    <Card className="w-full max-w-md p-8 mx-auto bg-white">
+    <Card className="w-full max-w-md p-8 mx-auto bg-white min-h-[600px] flex flex-col justify-center">
       <div className="flex flex-col items-center text-center space-y-6">
-        <div className="relative w-64 h-64">
+        <div className="relative w-48 h-48">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center">
-            <div className="w-32 h-32 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
               <span className="text-4xl">✨</span>
             </div>
           </div>
