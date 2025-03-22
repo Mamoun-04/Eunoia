@@ -1,0 +1,104 @@
+Build a complete onboarding and registration flow for my mindful journaling app, Eunoia, using React (or Next.js) and Tailwind CSS. The design should be elegant, calm, mobile-friendly, and consistent with a premium journaling experience.
+
+Step-by-Step Flow:
+
+1. Splash Screen
+
+Show the Eunoia logo centered on a soft off-white background (#f9f7f1)
+
+Include a smooth fade-in or scale-up animation
+
+After 2 seconds, automatically redirect to the Welcome screen
+
+2. Welcome Screen
+
+Display a message: “Welcome to Eunoia – your space for mindful reflection”
+
+Include a “Get Started” button
+
+3. Profile Setup
+
+Input fields: Name, profile photo (upload), and short bio
+
+Include a “Skip” option
+
+4. Goal Setting
+
+Ask: “What’s your journaling goal?”
+
+Provide options like:
+
+Journal daily for 5 days
+
+Journal every day for 1 week
+
+Write 100 words a day
+
+Include a custom goal input
+
+5. Interest Selection
+
+Multi-select options: Mindfulness, Gratitude, Healing, Productivity, Reflection, etc.
+
+Use clean pill-style toggle buttons
+
+6. Subscription Page
+
+Title: “Unlock Your Mindful Journey”
+
+Show three plans in a three-column layout:
+
+Free Plan ($0/month) – limited access
+
+Monthly Plan ($3.99/month) – 7-day free trial
+
+Yearly Plan ($39.99/year) – highlight as “Best Value”
+
+Clearly list features for each plan
+
+Add CTA buttons under each plan
+
+7. Create Account
+
+After selecting a plan, prompt user to create an account
+
+Input fields:
+
+Email
+
+Username
+
+Password
+
+Confirm Password
+
+Validate email format and matching passwords
+
+On submit, create account, log user in automatically, and redirect to the main app
+
+8. App Access and Redirection
+
+Based on the selected plan, provide access:
+
+Free plan: Limited features, some features blurred or disabled
+
+Monthly, Yearly, or Free Trial: Full access to all features
+
+Automatically redirect users into the dashboard after account creation
+
+Navigation Requirements:
+
+Users should be able to navigate back and forth between any onboarding step
+
+Use a visible progress bar or step indicator
+
+Design Requirements:
+
+Clean, modern, and minimalist interface
+
+Soothing serif typography (e.g., Playfair Display for headers)
+
+Soft transitions and clear visual hierarchy
+
+Fully responsive and mobile-first layout
+
