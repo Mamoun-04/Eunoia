@@ -246,13 +246,6 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
           
-          {/* Prompt Card */}
-          <div className="prompt-card">
-            <p className="text-lg font-normal text-primary/90 text-center">
-              {currentPrompt}
-            </p>
-          </div>
-          
           {/* Section Title */}
           <div className="section-title">
             {sectionTitle}
