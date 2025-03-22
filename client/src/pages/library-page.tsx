@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { categoryOptions } from "@shared/schema";
 import { JournalEditor } from "@/components/journal-editor";
@@ -106,9 +105,46 @@ const SAMPLE_LESSONS = [
         prompt: "How present and grounded do you feel right now? (1-10)"
       }
     ]
-  }
+  },
+  {
+    id: "reflection",
+    title: "Daily Reflection",
+    topic: "Reflection",
+    description: "Take time to reflect on your day and gain insights from your experiences.",
+    questions: [
+      {
+        id: "day-highlights",
+        type: "text",
+        prompt: "What were the highlights of your day?"
+      },
+      {
+        id: "day-challenges",
+        type: "text",
+        prompt: "What challenges did you face today, and how did you handle them?"
+      },
+      {
+        id: "learning-experience",
+        type: "text",
+        prompt: "What did you learn or discover today?"
+      },
+      {
+        id: "self-reflection",
+        type: "multipleChoice",
+        prompt: "What area of your life needs the most attention right now?",
+        options: [
+          "Physical health",
+          "Mental health",
+          "Relationships",
+          "Career"
+        ]
+      },
+      {
+        id: "reflection-insights",
+        type: "multipleChoice",
+        prompt: "What insights or realizations did you gain today?",
+        options: [
           "Observing thoughts",
-          "Connection with nature"
+          "Connection with nature",
         ]
       }
     ]
@@ -140,7 +176,7 @@ export default function LibraryPage() {
       mood: "neutral",
       category: selectedLesson.topic
     };
-    
+
     // Here you would typically save the entry
     console.log("New entry:", entry);
     setSelectedLesson(null);
