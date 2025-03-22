@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { useOnboarding } from '@/hooks/use-onboarding';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,9 +31,11 @@ export function AiJournalAssistant() {
     }
   }, [messages]);
 
-  // Only show on main pages
+  const { showOnboarding } = useOnboarding();
+  
+  // Only show on main pages and when not in onboarding
   const allowedPages = ['/', '/entries', '/library'];
-  if (!allowedPages.includes(location)) return null;
+  if (!allowedPages.includes(location) || showOnboarding) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
