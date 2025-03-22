@@ -62,11 +62,15 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
   });
 
   const handlePlanSelection = async (plan: 'free' | 'monthly' | 'yearly') => {
-    await subscribeMutation.mutateAsync(plan);
-    // Refresh user data and redirect
-    await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-    setLocation('/');
-    onComplete({ plan });
+    try {
+      await subscribeMutation.mutateAsync(plan);
+      // Refresh user data and redirect
+      await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      onComplete({ plan });
+      setLocation('/');
+    } catch (error) {
+      console.error('Failed to activate subscription:', error);
+    }
   };
 
   const faq = [
