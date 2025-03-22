@@ -20,13 +20,14 @@ export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
   const [location, setLocation] = useLocation();
 
+  const { user } = useAuth();
+  
   // Redirect to home if already logged in
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("user");
-    if (isLoggedIn) {
+    if (user) {
       setLocation("/home");
     }
-  }, [setLocation]);
+  }, [user, setLocation]);
 
   // If step is 0 or 1, auto-advance to step 2 (profile setup)
   useEffect(() => {

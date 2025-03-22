@@ -1,26 +1,34 @@
 
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { Route, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   component: React.ComponentType;
   path: string;
 }
 
-export function ProtectedRoute({ component: Component, ...props }: ProtectedRouteProps) {
+export function ProtectedRoute({ component: Component, path }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
+    // Only redirect if we're certain there's no user and loading is complete
     if (!isLoading && !user) {
       setLocation("/auth");
     }
   }, [user, isLoading, setLocation]);
 
-  if (isLoading) {
-    return null; // Or a loading spinner
-  }
-
-  return user ? <Component {...props} /> : null;
+  return (
+    <Route path={path}>
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-border" />
+        </div>
+      ) : user ? (
+        <Component />
+      ) : null}
+    </Route>
+  );
 }
