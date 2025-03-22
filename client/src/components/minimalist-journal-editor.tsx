@@ -317,13 +317,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               transition={{ duration: 0.3 }}
             >
               <div className="w-full">
-                <div className="relative w-full aspect-[16/9]">
-                  <img 
-                    src={imagePreview} 
-                    alt="Journal entry" 
-                    className="absolute inset-0 w-full h-full rounded-lg object-cover"
-                  />
-                </div>
+                <img 
+                  src={imagePreview} 
+                  alt="Journal entry" 
+                  className="w-full rounded-lg object-contain max-h-[60vh]"
+                />
               </div>
               <motion.div
                 whileHover={{ scale: 1.1 }}
