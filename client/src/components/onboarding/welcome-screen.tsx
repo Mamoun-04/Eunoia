@@ -2,6 +2,7 @@ import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 export default function WelcomeScreen() {
   // Force light theme for welcome screen
