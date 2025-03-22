@@ -28,7 +28,8 @@ const SAMPLE_LESSONS = [
     title: "Daily Gratitude Practice",
     topic: "Gratitude",
     description: "Reflect on the blessings in your life and cultivate thankfulness.",
-    questions: Array(5).fill(null).map((_, i) => ({
+    questions: Array(5).fill(null).map((_, i) => [
+      {
         id: `gratitude-text-${i}`,
         type: "text",
         prompt: "What specific moment or person made you feel grateful today?"
@@ -53,45 +54,6 @@ const SAMPLE_LESSONS = [
   },
   // Generate 66 lessons with 5 prompts each
   ...Array(66).fill(null).map((_, index) => ({
-    id: `short-lesson-${index + 1}`,
-    title: [
-      "Morning Reflection",
-      "Evening Wind Down",
-      "Mindful Moment",
-      "Quick Check-in",
-      "Breath Awareness",
-      "Gratitude Snapshot",
-      "Joy Spotting",
-      "Peace Pause",
-      "Heart Check",
-      "Spirit Lift"
-    ][index % 10] + ` ${Math.floor(index / 10) + 1}`,
-    topic: [
-      "Self-Reflection",
-      "Mindfulness",
-      "Gratitude",
-      "Joy",
-      "Peace",
-      "Love",
-      "Hope",
-      "Faith",
-      "Wisdom",
-      "Growth"
-    ][index % 10],
-    description: "A 5-minute reflection exercise for quick spiritual connection.",
-    questions: Array(5).fill(null).map((_, i) => ({
-      id: `short-${index}-q${i}`,
-      type: ["text", "slider", "multipleChoice"][i % 3],
-      prompt: `Reflection prompt ${i + 1} for spiritual growth.`,
-      ...(i % 3 === 2 ? {
-        options: [
-          "Insight path A",
-          "Growth choice B",
-          "Reflection path C",
-          "Awareness choice D"
-        ]
-      } : {})
-    }))
     id: `short-lesson-${index + 1}`,
     title: [
       "Morning Reflection",
@@ -1741,7 +1703,7 @@ export default function LibraryPage() {
       (lengthFilter === "short" && lesson.questions.length === 5) ||
       (lengthFilter === "medium" && lesson.questions.length === 10) ||
       (lengthFilter === "long" && lesson.questions.length === 15);
-    return (titleMatch || topicMatch) && lengthMatch;
+    return titleMatch || topicMatch && lengthMatch;
   });
 
   const navigation = [
@@ -1833,15 +1795,15 @@ export default function LibraryPage() {
                       <Button variant="outline" className="gap-2">
                         <Filter className="h-4 w-4" />
                         {lengthFilter === "all" ? "All Lengths" : 
-                         lengthFilter === "short" ? "Short (5 prompts)" :
-                         lengthFilter === "medium" ? "Medium (10 prompts)" : "Long (15 prompts)"}
+                         lengthFilter === "short" ? "Short (5 min)" :
+                         lengthFilter === "medium" ? "Medium (10 min)" : "Long (15 min)"}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => setLengthFilter("all")}>All Lengths</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("short")}>Short (5 prompts)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("medium")}>Medium (10 prompts)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("long")}>Long (15 prompts)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("short")}>Short (5 min)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("medium")}>Medium (10 min)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLengthFilter("long")}>Long (15 min)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
