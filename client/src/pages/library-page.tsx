@@ -82,13 +82,6 @@ export default function LibraryPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
 
-  const navigation = [
-    { name: "Today", href: "/", icon: CalendarDays },
-    { name: "Entries", href: "/entries", icon: PenSquare },
-    { name: "Library", href: "/library", icon: BookOpen },
-    { name: "Settings", href: "/settings", icon: Settings },
-  ];
-
   const handleLessonComplete = (answers: Record<string, any>) => {
     const entry = {
       title: selectedLesson.title,
@@ -152,26 +145,7 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {/* Mobile Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
-          <nav className="flex justify-around p-2">
-            {navigation.map((item) => {
-              const isActive = location === item.href;
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="icon"
-                    className="flex flex-col items-center gap-1 h-auto py-2"
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-xs">{item.name}</span>
-                  </Button>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+        
 
         {selectedCategory && (
           <JournalEditor
