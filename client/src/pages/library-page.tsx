@@ -29,7 +29,6 @@ const SAMPLE_LESSONS = [
     topic: "Gratitude",
     description: "Reflect on the blessings in your life and cultivate thankfulness.",
     questions: Array(5).fill(null).map((_, i) => ({
-      {
         id: `gratitude-text-${i}`,
         type: "text",
         prompt: "What specific moment or person made you feel grateful today?"
