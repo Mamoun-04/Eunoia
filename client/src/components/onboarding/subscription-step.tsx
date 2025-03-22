@@ -64,12 +64,18 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
   const handlePlanSelection = async (plan: 'free' | 'monthly' | 'yearly') => {
     try {
       await subscribeMutation.mutateAsync(plan);
-      // Refresh user data and redirect
+      // Refresh user data
       await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       onComplete({ plan });
-      setLocation('/');
+      // Use replace to prevent going back to onboarding
+      setLocation('/', { replace: true });
     } catch (error) {
       console.error('Failed to activate subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to activate subscription. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
