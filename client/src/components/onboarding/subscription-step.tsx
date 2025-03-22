@@ -66,9 +66,10 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
       await subscribeMutation.mutateAsync(plan);
       // Refresh user data
       await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      // Complete onboarding first
       await onComplete({ plan });
-      // Redirect to today page
-      window.location.href = '/';
+      // Then redirect using setLocation
+      setLocation('/', { replace: true });
     } catch (error) {
       console.error('Failed to activate subscription:', error);
       toast({
