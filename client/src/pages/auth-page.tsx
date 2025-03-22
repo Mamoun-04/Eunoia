@@ -33,7 +33,7 @@ export default function AuthPage() {
               Writing the story of you.
             </CardDescription>
           </CardHeader>
-          
+
           <div className="p-6 pt-2">
             <div className="mb-4 text-center">
               {mode === "login" ? (
@@ -48,7 +48,7 @@ export default function AuthPage() {
                 </>
               )}
             </div>
-            
+
             {mode === "login" ? (
               <>
                 <LoginForm onSubmit={(data) => {
@@ -56,15 +56,7 @@ export default function AuthPage() {
                     onSuccess: () => setLocation("/home")
                   });
                 }} />
-                <div className="mt-3 text-center">
-                  <Button 
-                    variant="link" 
-                    className="text-[#0000CC]"
-                    onClick={() => setMode("register")}
-                  >
-                    Need an account? Register here
-                  </Button>
-                </div>
+                {/* Removed registration button */}
               </>
             ) : (
               <>
@@ -84,7 +76,7 @@ export default function AuthPage() {
                 </div>
               </>
             )}
-            
+
             <div className="mt-6 text-center">
               <Button 
                 variant="ghost" 
