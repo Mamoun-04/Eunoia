@@ -253,12 +253,11 @@
 }
 
 .sentence-starters-container {
-  @apply overflow-hidden mx-[-0.5rem] mb-4 sm:mb-5;
+  @apply overflow-visible mx-[-0.5rem] mb-4 sm:mb-5;
 }
 
 .sentence-starters {
-  @apply flex gap-2 py-2 px-2 overflow-x-auto custom-scrollbar;
-  scroll-snap-type: x mandatory;
+  @apply flex flex-wrap gap-2 py-2 px-2 overflow-x-auto custom-scrollbar;
   -webkit-overflow-scrolling: touch;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
