@@ -422,40 +422,16 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           </DialogTitle>
         </DialogHeader>
         
-        {/* Mobile-friendly filters */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6 px-4">
-          <select 
-            className="mobile-select"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as typeof selectedCategory)}
-          >
-            <option value="all">All Categories</option>
-            <option value="streak">Streaks</option>
-            <option value="word-count">Word Count</option>
-            <option value="entry-frequency">Entry Frequency</option>
-            <option value="general">General</option>
-            <option value="multimedia">Multimedia</option>
-            <option value="community">Community</option>
-          </select>
-          
-          <select 
-            className="mobile-select"
-            value={selectedTier}
-            onChange={(e) => setSelectedTier(e.target.value as AchievementTier | 'all')}
-          >
-            <option value="all">All Tiers</option>
-            <option value="diamond">Diamond</option>
-            <option value="platinum">Platinum</option>
-            <option value="gold">Gold</option>
-            <option value="silver">Silver</option>
-            <option value="bronze">Bronze</option>
-          </select>
-          
-          <div className="achievement-total-badge">
+        {/* Top section - Achievement Stats */}
+        <div className="flex justify-center gap-4 flex-wrap mb-6">
+          <div className="achievement-total-badge relative px-6 py-2.5 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 shadow-md">
             <span className="font-semibold text-foreground/90">
               {achievementStats.unlockedCount} / {ACHIEVEMENTS.length} Achieved
             </span>
           </div>
+          
+          {/* Tier badges with consistent colors */}
+          {(['diamond', 'platinum', 'gold', 'silver', 'bronze'] as const).map(tier => {
             // Define consistent tier styling
             const tierColor = {
               'diamond': "from-blue-400/30 to-purple-500/30 border-blue-400/40",
@@ -505,7 +481,7 @@ export function BadgesDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
         {/* Main achievements grid */}
         <div className="flex-1 overflow-y-auto py-4 px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredAchievements.map(achievement => {
                 const isUnlocked = achievement.checkUnlocked(entries);
                 const progress = achievementStats.progressMap[achievement.id];
