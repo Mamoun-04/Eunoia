@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
+  const { setShowOnboarding } = useOnboarding();
   const [, setLocation] = useLocation();
 
   // Redirect if already logged in
@@ -18,6 +19,16 @@ export default function AuthPage() {
     setLocation("/");
     return null;
   }
+
+  const handleRegister = async (data: any) => {
+    try {
+      await registerMutation.mutateAsync(data);
+      setShowOnboarding(true);
+      setLocation("/");
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 gap-0">
