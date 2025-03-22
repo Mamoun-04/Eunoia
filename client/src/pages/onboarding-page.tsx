@@ -11,10 +11,11 @@ import { motion, AnimatePresence } from "framer-motion";
 // Lazy load the components to improve performance
 const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
 const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
+const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
 const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
 const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
 const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
-const CreateAccountWithProfile = lazy(() => import("@/components/onboarding/create-account-with-profile"));
+const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
 
 export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
@@ -29,20 +30,27 @@ export default function OnboardingPage() {
     }
   }, [user, setLocation]);
 
-  // If step is 0, auto-advance to step 1 (welcome screen)
+  // If step is 0 or 1, auto-advance to step 2 (profile setup)
   useEffect(() => {
     if (step === 0) {
       const timer = setTimeout(() => {
-        setStep(1); // Go to welcome screen
+        setStep(2); // Skip welcome screen, go directly to profile setup
       }, 2000);
       
       return () => clearTimeout(timer);
     }
+    
+    // If somehow we end up on step 1 (welcome screen) in the onboarding flow,
+    // immediately advance to step 2 to prevent circular issues
+    if (step === 1) {
+      setStep(2);
+    }
   }, [step, setStep]);
 
-  // Calculate progress percentage
-  const totalSteps = 5; // Steps 1-5: Welcome, Goal, Interests, Subscription, Account creation
-  const progressPercentage = ((step - 1) / totalSteps) * 100;
+  // Calculate progress percentage - adjusted for starting at step 2
+  const totalSteps = 5; // Steps 2-6: Profile, Goal, Interests, Subscription, Account creation
+  const actualStep = step > 1 ? step - 1 : 1; // Adjust for the welcome screen being skipped
+  const progressPercentage = ((actualStep - 1) / totalSteps) * 100;
 
   // Loading fallback component
   const StepSkeleton = () => (
@@ -84,13 +92,15 @@ export default function OnboardingPage() {
                 case 1:
                   return <WelcomeScreen />;
                 case 2:
-                  return <GoalSetting />;
+                  return <ProfileSetup />;
                 case 3:
-                  return <InterestSelection />;
+                  return <GoalSetting />;
                 case 4:
-                  return <SubscriptionStep />;
+                  return <InterestSelection />;
                 case 5:
-                  return <CreateAccountWithProfile />;
+                  return <SubscriptionStep />;
+                case 6:
+                  return <CreateAccount />;
                 default:
                   return <WelcomeScreen />;
               }
@@ -111,7 +121,7 @@ export default function OnboardingPage() {
       {/* Header with progress */}
       <header className="p-4 sm:p-6">
         <div className="max-w-3xl mx-auto">
-          {step > 1 && step < 5 && ( // Don't show back button on welcome or final screen
+          {step > 2 && (
             <Button
               variant="ghost"
               size="sm"
@@ -124,7 +134,7 @@ export default function OnboardingPage() {
           )}
           <Progress value={progressPercentage} className="h-2" />
           <div className="text-right text-sm text-muted-foreground mt-1">
-            Step {step} of {totalSteps}
+            Step {actualStep} of {totalSteps}
           </div>
         </div>
       </header>
@@ -135,17 +145,15 @@ export default function OnboardingPage() {
           {renderStep()}
         </div>
       </main>
-      {step < 5 && ( // Only show login link on steps before the final account creation step
-        <footer className="p-4 text-center">
-          <Button 
-            variant="link" 
-            className="text-muted-foreground hover:text-foreground"
-            onClick={() => setLocation("/auth")}
-          >
-            Already have an account? Login here
-          </Button>
-        </footer>
-      )}
+      <footer className="p-4 text-center">
+        <Button 
+          variant="link" 
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => setLocation("/auth")}
+        >
+          Already have an account? Login here
+        </Button>
+      </footer>
     </div>
   );
 }
