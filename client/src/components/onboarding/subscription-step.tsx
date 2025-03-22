@@ -12,18 +12,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const plans = [
-  {
-    name: "Free",
-    price: "0",
-    features: [
-      "Basic journaling features",
-      "3 entries per day",
-      "Basic analytics",
-    ],
-  },
-  {
-    name: "Pro",
+const subscriptionPlans = {
+  monthly: {
+    name: "Monthly",
     price: "9.99",
     features: [
       "Unlimited entries",
@@ -32,7 +23,17 @@ const plans = [
       "Priority support",
     ],
   },
-];
+  yearly: {
+    name: "Yearly",
+    price: "99.99",
+    features: [
+      "All Monthly features",
+      "2 months free",
+      "Early access to new features",
+      "Personal journal coach",
+    ],
+  },
+};
 
 export function SubscriptionStep({ data }: { data: any }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +51,6 @@ export function SubscriptionStep({ data }: { data: any }) {
 
       if (!response.ok) throw new Error("Subscription failed");
 
-      // After successful subscription, register the user
       await registerMutation.mutateAsync(data);
       setLocation("/");
 
@@ -79,63 +79,66 @@ export function SubscriptionStep({ data }: { data: any }) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {plans.map((plan) => (
-          <Card key={plan.name} className="p-6">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-2xl font-bold">{plan.name}</h3>
-                <p className="text-3xl font-bold mt-2">
-                  ${plan.price}
-                  <span className="text-lg text-muted-foreground">/month</span>
-                </p>
-              </div>
-
-              <ul className="space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                className="w-full"
-                onClick={() => handleSubscribe(plan.name.toLowerCase())}
-                disabled={isLoading}
-              >
-                {isLoading ? "Processing..." : `Get Started with ${plan.name}`}
-              </Button>
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-2xl font-bold">{subscriptionPlans.monthly.name}</h3>
+              <p className="text-3xl font-bold mt-2">
+                ${subscriptionPlans.monthly.price}
+                <span className="text-lg text-muted-foreground">/month</span>
+              </p>
             </div>
-          </Card>
-        ))}
-      </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-['Playfair Display'] font-semibold mb-4">
-          Frequently Asked Questions
-        </h2>
-        <Accordion type="single" collapsible className="w-full">
-          {[
-            {
-              question: "What happens after the free trial?",
-              answer: "After your 7-day free trial ends, you'll automatically continue with our monthly premium plan. You can cancel anytime before the trial ends to switch to our free plan. We'll notify you before the trial ends."
-            },
-            {
-              question: "Can I cancel my subscription?",
-              answer: "Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your current billing period."
-            },
-            {
-              question: "What payment methods do you accept?",
-              answer: "We accept all major credit cards (Visa, MasterCard, American Express) and PayPal for subscription payments."
-            }
-          ].map((item, i) => (
-            <AccordionItem key={i} value={`item-${i}`}>
-              <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+            <ul className="space-y-3">
+              {subscriptionPlans.monthly.features.map((feature) => (
+                <li key={feature} className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-500" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              className="w-full"
+              onClick={() => handleSubscribe("monthly")}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Start Monthly Plan"}
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-primary/5 relative overflow-hidden">
+          <div className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+            Best Value
+          </div>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-2xl font-bold">{subscriptionPlans.yearly.name}</h3>
+              <p className="text-3xl font-bold mt-2">
+                ${subscriptionPlans.yearly.price}
+                <span className="text-lg text-muted-foreground">/year</span>
+              </p>
+            </div>
+
+            <ul className="space-y-3">
+              {subscriptionPlans.yearly.features.map((feature) => (
+                <li key={feature} className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-500" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              className="w-full"
+              onClick={() => handleSubscribe("yearly")}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Start Yearly Plan"}
+            </Button>
+          </div>
+        </Card>
       </div>
     </div>
   );
