@@ -60,8 +60,11 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
     }
   });
 
-  const handlePlanSelection = (plan: 'free' | 'monthly' | 'yearly' | 'trial') => {
-    subscribeMutation.mutate(plan);
+  const handlePlanSelection = async (plan: 'free' | 'monthly' | 'yearly') => {
+    await subscribeMutation.mutateAsync(plan);
+    // Refresh user data and redirect
+    await queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+    setLocation('/');
     onComplete({ plan });
   };
 

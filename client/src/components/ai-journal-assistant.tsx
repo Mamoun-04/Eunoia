@@ -33,9 +33,11 @@ export function AiJournalAssistant() {
 
   const { showOnboarding } = useOnboarding();
   
-  // Only show on main pages and when not in onboarding
+  const { features } = useSubscription();
+  
+  // Only show on main pages, when not in onboarding, and for subscribed users
   const allowedPages = ['/', '/entries', '/library'];
-  if (!allowedPages.includes(location) || showOnboarding) return null;
+  if (!allowedPages.includes(location) || showOnboarding || !features.hasAiAssistant) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
