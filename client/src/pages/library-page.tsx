@@ -70,7 +70,7 @@ const SAMPLE_LESSONS = [
       "Wisdom",
       "Growth"
     ][index % 10],
-    description: "A quick reflection practice to center your mind and heart.",
+    description: "A 5-minute reflection practice to center your mind and heart.",
     questions: Array(5).fill(null).map((_, i) => ({
       id: `short-${index}-q${i}`,
       type: ["text", "slider", "multipleChoice"][i % 3],
@@ -112,7 +112,7 @@ const SAMPLE_LESSONS = [
       "Personal Truth",
       "Sacred Journey"
     ][index % 10],
-    description: "A comprehensive reflection practice for deeper understanding.",
+    description: "A 10-minute comprehensive reflection practice for deeper understanding.",
     questions: Array(10).fill(null).map((_, i) => ({
       id: `medium-${index}-q${i}`,
       type: ["text", "slider", "multipleChoice"][i % 3],
@@ -154,7 +154,7 @@ const SAMPLE_LESSONS = [
       "Personal Transformation",
       "Eternal Journey"
     ][index % 10],
-    description: "An in-depth spiritual journey for profound self-discovery.",
+    description: "A 15-minute in-depth spiritual journey for profound self-discovery.",
     questions: Array(15).fill(null).map((_, i) => ({
       id: `long-${index}-q${i}`,
       type: ["text", "slider", "multipleChoice"][i % 3],
