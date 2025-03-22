@@ -1,6 +1,7 @@
 import { useEffect, lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import { useOnboarding } from "@/hooks/use-onboarding";
+import { useAuth } from "@/hooks/use-auth";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
