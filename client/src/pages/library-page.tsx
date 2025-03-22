@@ -1703,7 +1703,7 @@ export default function LibraryPage() {
       (lengthFilter === "short" && lesson.questions.length === 5) ||
       (lengthFilter === "medium" && lesson.questions.length === 10) ||
       (lengthFilter === "long" && lesson.questions.length === 15);
-    return titleMatch || topicMatch && lengthMatch;
+    return (titleMatch || topicMatch) && lengthMatch;
   });
 
   const navigation = [
