@@ -48,17 +48,24 @@ export default function HomePage() {
         </div>
 
         <nav className="flex flex-col gap-2">
-          {navigation.map((item) => (
-            <Link key={item.name} href={item.href}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2"
-              >
-                <item.icon className="h-5 w-5" />
-                {item.name}
-              </Button>
-            </Link>
-          ))}
+          {navigation.map((item) => {
+            const isActive = location === item.href;
+            return (
+              <Link key={item.name} href={item.href}>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start gap-2 ${
+                    isActive
+                      ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                      : ""
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.name}
+                </Button>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="mt-auto flex flex-col gap-2">
