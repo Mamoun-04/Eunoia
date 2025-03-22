@@ -4,6 +4,7 @@ import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { JournalEditor } from "@/components/journal-editor";
+import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
 import { useState } from "react";
 import {
@@ -195,7 +196,7 @@ export default function HomePage() {
       </div>
 
       {isEditing && (
-        <JournalEditor
+        <MinimalistJournalEditor
           entry={selectedEntry}
           onClose={() => {
             setIsEditing(false);

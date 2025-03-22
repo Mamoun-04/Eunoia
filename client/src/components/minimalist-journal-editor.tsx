@@ -222,13 +222,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md max-h-[90vh] p-0 rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#121212] to-[#1e1e1e]">
+      <DialogContent className="max-w-md max-h-[90vh] p-0 rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#f8f7f2] to-[#f4f3ed]">
         <div className="absolute top-3 right-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="rounded-full bg-black/20 hover:bg-black/40 text-white/70 hover:text-white/90"
+            className="rounded-full bg-primary/10 hover:bg-primary/20 text-primary/80 hover:text-primary"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -242,7 +242,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           
           {/* Prompt Card */}
           <div className="prompt-card">
-            <p className="text-lg font-light text-white/90">
+            <p className="text-lg font-light text-primary/90">
               {currentPrompt}
             </p>
           </div>
@@ -285,7 +285,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 bg-black/30 hover:bg-black/50 text-white/80 rounded-full h-8 w-8"
+                className="absolute top-2 right-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-full h-8 w-8"
                 onClick={() => {
                   setImagePreview(null);
                   form.setValue("imageUrl", "");

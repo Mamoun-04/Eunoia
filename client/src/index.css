@@ -233,20 +233,20 @@
 }
 
 .prompt-card {
-  @apply bg-black/20 backdrop-blur-sm text-white/90 rounded-2xl p-5 mb-6 border border-white/10 shadow-lg transition-all duration-300;
+  @apply bg-primary/5 backdrop-blur-sm text-foreground rounded-2xl p-5 mb-6 border border-primary/10 shadow-lg transition-all duration-300;
   animation: fade-in 0.5s ease-out;
 }
 
 .journal-progress {
-  @apply h-1 rounded-full bg-black/30 mb-4 overflow-hidden;
+  @apply h-1 rounded-full bg-gray-100 mb-4 overflow-hidden;
 }
 
 .journal-progress-bar {
-  @apply h-full bg-primary/70 rounded-full transition-all duration-300 ease-out;
+  @apply h-full bg-primary/80 rounded-full transition-all duration-300 ease-out;
 }
 
 .section-title {
-  @apply text-xs uppercase tracking-widest text-white/50 font-semibold mb-3;
+  @apply text-xs uppercase tracking-widest text-primary/60 font-semibold mb-3;
 }
 
 .sentence-starters {
@@ -254,11 +254,11 @@
 }
 
 .sentence-starter {
-  @apply bg-white/10 hover:bg-white/20 text-white/80 text-sm px-4 py-2 rounded-full whitespace-nowrap transition-all flex-shrink-0 border border-white/5;
+  @apply bg-primary/5 hover:bg-primary/10 text-primary/90 text-sm px-4 py-2 rounded-full whitespace-nowrap transition-all flex-shrink-0 border border-primary/10;
 }
 
 .journal-textarea {
-  @apply w-full min-h-[180px] bg-black/10 border border-white/10 rounded-xl p-4 text-white/90 placeholder:text-white/40 focus:outline-none resize-none mb-6;
+  @apply w-full min-h-[180px] bg-white border border-gray-200 rounded-xl p-4 text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/30 resize-none mb-6;
   font-family: 'EB Garamond', serif;
 }
 
@@ -267,7 +267,7 @@
 }
 
 .action-button {
-  @apply bg-black/20 hover:bg-black/30 p-3 rounded-full text-white/80 transition-all;
+  @apply bg-gray-100 hover:bg-gray-200 p-3 rounded-full text-primary/80 transition-all;
 }
 
 .submit-button {
