@@ -235,9 +235,7 @@ export default function CreateAccountWithProfile() {
                     <Avatar className="w-24 h-24">
                       <AvatarImage src={imagePreview || undefined} />
                       <AvatarFallback className="text-3xl bg-primary/10">
-                        {typeof form.watch("displayName") === 'string' && form.watch("displayName").length > 0
-                          ? form.watch("displayName").charAt(0).toUpperCase() 
-                          : "?"}
+                        {"?"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-center">
