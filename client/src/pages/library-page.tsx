@@ -110,75 +110,76 @@ export default function LibraryPage() {
     <div className="min-h-screen bg-background pb-16">
       <div className="container mx-auto py-8 px-4">
         <div className="mb-8">
-        {!selectedLesson ? (
-          <>
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
-              <p className="text-muted-foreground">
-                Choose a lesson below to begin your reflection journey
-              </p>
-            </div>
+          {!selectedLesson ? (
+            <>
+              <div className="mb-8">
+                <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
+                <p className="text-muted-foreground">
+                  Choose a lesson below to begin your reflection journey
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {SAMPLE_LESSONS.map((lesson) => (
-                <Card
-                  key={lesson.id}
-                  className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
-                  onClick={() => setSelectedLesson(lesson)}
-                >
-                  <Sparkles className="h-8 w-8 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">{lesson.title}</h3>
-                  <p className="text-muted-foreground text-sm mb-4">{lesson.description}</p>
-                  <div className="text-sm text-primary">{lesson.questions.length} prompts • 5 min</div>
-                </Card>
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {SAMPLE_LESSONS.map((lesson) => (
+                  <Card
+                    key={lesson.id}
+                    className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => setSelectedLesson(lesson)}
+                  >
+                    <Sparkles className="h-8 w-8 mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold mb-2">{lesson.title}</h3>
+                    <p className="text-muted-foreground text-sm mb-4">{lesson.description}</p>
+                    <div className="text-sm text-primary">{lesson.questions.length} prompts • 5 min</div>
+                  </Card>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="max-w-2xl mx-auto">
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedLesson(null)}
+                className="mb-4"
+              >
+                ← Back to Lessons
+              </Button>
+              <GuidedLesson
+                {...selectedLesson}
+                onComplete={handleLessonComplete}
+                onClose={() => setSelectedLesson(null)}
+              />
             </div>
-          </>
-        ) : (
-          <div className="max-w-2xl mx-auto">
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedLesson(null)}
-              className="mb-4"
-            >
-              ← Back to Lessons
-            </Button>
-            <GuidedLesson
-              {...selectedLesson}
-              onComplete={handleLessonComplete}
-              onClose={() => setSelectedLesson(null)}
-            />
-          </div>
+          )}
+        </div>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
+          <nav className="flex justify-around p-2">
+            {navigation.map((item) => {
+              const isActive = location === item.href;
+              return (
+                <Link key={item.name} href={item.href}>
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    size="icon"
+                    className="flex flex-col items-center gap-1 h-auto py-2"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="text-xs">{item.name}</span>
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {selectedCategory && (
+          <JournalEditor
+            initialCategory={selectedCategory}
+            onClose={() => setSelectedCategory(null)}
+          />
         )}
       </div>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
-        <nav className="flex justify-around p-2">
-          {navigation.map((item) => {
-            const isActive = location === item.href;
-            return (
-              <Link key={item.name} href={item.href}>
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="icon"
-                  className="flex flex-col items-center gap-1 h-auto py-2"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs">{item.name}</span>
-                </Button>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {selectedCategory && (
-        <JournalEditor
-          initialCategory={selectedCategory}
-          onClose={() => setSelectedCategory(null)}
-        />
-      )}
     </div>
   );
 }
