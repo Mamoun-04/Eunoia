@@ -1,6 +1,5 @@
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 
@@ -10,8 +9,8 @@ export default function WelcomeScreen() {
     document.documentElement.classList.add('light');
     return () => document.documentElement.classList.remove('light');
   }, []);
+  
   const { setStep } = useOnboarding();
-  const [, setLocation] = useLocation();
 
   // Animation variants
   const containerVariants = {
@@ -34,14 +33,8 @@ export default function WelcomeScreen() {
     }
   };
 
-  const handleNewUser = () => {
-    // Set to step 2 directly (profile setup) to skip welcome screen in onboarding
-    setStep(2);
-    setLocation("/onboarding");
-  };
-
-  const handleLogin = () => {
-    setLocation("/auth");
+  const handleContinue = () => {
+    setStep(3); // Go to the next step (goal setting)
   };
 
   return (
@@ -49,50 +42,46 @@ export default function WelcomeScreen() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full min-h-screen bg-[#f8f7f2] p-4 flex flex-col items-center justify-center"
+      className="w-full max-w-3xl mx-auto px-4 py-6 text-center"
     >
-      <div className="max-w-md w-full space-y-12 text-center">
+      <div className="space-y-10">
         {/* Logo/Branding */}
         <motion.div variants={itemVariants} className="space-y-2">
-          <h1 className="text-5xl font-serif font-bold text-[#0000CC]">EUNOIA</h1>
-          <p className="text-md font-serif italic text-[#0000CC]">Writing the story of you.</p>
+          <h1 className="text-5xl font-serif font-bold text-primary">EUNOIA</h1>
+          <p className="text-lg font-serif italic text-primary">Writing the story of you.</p>
+        </motion.div>
+        
+        {/* Welcome Message */}
+        <motion.div variants={itemVariants} className="space-y-4">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Welcome to Your Journey of Mindful Journaling
+          </h2>
+          <p className="text-lg text-gray-700">
+            Congratulations on taking the first step toward self-discovery and mental clarity!
+          </p>
         </motion.div>
         
         {/* Description */}
-        <motion.div variants={itemVariants} className="space-y-6 px-4">
-          <p className="text-gray-700">
-            Your mindful journaling companion for self-reflection and personal growth.
+        <motion.div variants={itemVariants} className="space-y-6 px-4 max-w-xl mx-auto">
+          <p className="text-gray-700 leading-relaxed">
+            Eunoia offers you a calm space for reflection, with daily prompts, mood tracking, 
+            and personal insights to nurture your mental wellbeing. Your journal becomes a mirror 
+            to your growth, capturing moments of clarity and guiding you through challenges.
           </p>
           
-          <div className="pt-4 space-y-6">
-            {/* Two main buttons */}
-            <motion.div variants={itemVariants}>
-              <Button 
-                size="lg" 
-                className="w-full bg-[#0000CC] hover:bg-[#0000CC]/90"
-                onClick={handleLogin}
-              >
-                Login
-              </Button>
-              <p className="text-xs mt-2 text-gray-500">Already have an account</p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="w-full border-[#0000CC] text-[#0000CC] hover:bg-[#0000CC]/10"
-                onClick={handleNewUser}
-              >
-                New User
-              </Button>
-              <p className="text-xs mt-2 text-gray-500">Complete the full onboarding</p>
-            </motion.div>
+          <div className="pt-6">
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto px-10 py-6 text-lg bg-primary hover:bg-primary/90"
+              onClick={handleContinue}
+            >
+              Begin Your Journey
+            </Button>
           </div>
         </motion.div>
         
         {/* Footer */}
-        <motion.div variants={itemVariants} className="text-xs text-gray-500">
+        <motion.div variants={itemVariants} className="text-sm text-gray-500 pt-6">
           <p>© 2025 Eunoia - Mindful Journaling</p>
         </motion.div>
       </div>
