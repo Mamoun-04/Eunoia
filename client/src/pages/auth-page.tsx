@@ -39,6 +39,19 @@ export default function AuthPage() {
               <RegisterForm onSubmit={(data) => registerMutation.mutate(data)} />
             </TabsContent>
           </Tabs>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Want the full experience?
+            </p>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-primary"
+              onClick={() => setLocation("/onboarding")}
+            >
+              Try our guided onboarding
+            </Button>
+          </div>
         </Card>
       </div>
 

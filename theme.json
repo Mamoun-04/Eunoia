@@ -1,41 +1,6 @@
-
 {
-  "variant": "professional",
-  "primary": "hsl(240, 100%, 50%)",
+  "primary": "#8E6C88",
+  "variant": "tint",
   "appearance": "light",
-  "radius": 0.75,
-  "colors": {
-    "light": {
-      "background": "hsl(0, 0%, 100%)",
-      "foreground": "hsl(240, 100%, 15%)",
-      "muted": "hsl(240, 20%, 95%)",
-      "muted-foreground": "hsl(240, 20%, 40%)",
-      "border": "hsl(240, 20%, 90%)",
-      "input": "hsl(240, 20%, 90%)",
-      "accent": "hsl(240, 100%, 97%)",
-      "accent-foreground": "hsl(240, 100%, 15%)",
-      "primary": "hsl(240, 100%, 50%)",
-      "primary-foreground": "hsl(0, 0%, 100%)",
-      "card": "hsl(0, 0%, 100%)",
-      "card-foreground": "hsl(240, 100%, 15%)"
-    },
-    "dark": {
-      "background": "hsl(0, 0%, 5%)",
-      "foreground": "hsl(0, 0%, 98%)",
-      "muted": "hsl(0, 0%, 10%)",
-      "muted-foreground": "hsl(0, 0%, 65%)",
-      "border": "hsl(0, 0%, 15%)",
-      "input": "hsl(0, 0%, 15%)",
-      "accent": "hsl(240, 100%, 50%)",
-      "accent-foreground": "hsl(0, 0%, 98%)",
-      "primary": "hsl(240, 100%, 50%)",
-      "primary-foreground": "hsl(0, 0%, 98%)",
-      "sidebar": {
-        "background": "hsl(0, 0%, 7%)",
-        "foreground": "hsl(0, 0%, 98%)",
-        "muted": "hsl(0, 0%, 15%)",
-        "border": "hsl(0, 0%, 15%)"
-      }
-    }
-  }
+  "radius": 0.5
 }

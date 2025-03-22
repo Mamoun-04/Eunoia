@@ -10,7 +10,9 @@ import HomePage from "@/pages/home-page";
 import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
+import OnboardingPage from "@/pages/onboarding-page";
 import { AuthProvider } from "@/hooks/use-auth";
+import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { ProtectedRoute } from "./lib/protected-route";
 
 function Router() {
@@ -21,6 +23,7 @@ function Router() {
       <Route path="/library" component={LibraryPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/onboarding" component={OnboardingPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -32,9 +35,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
-        <AiJournalAssistant />
+        <OnboardingProvider>
+          <Router />
+          <Toaster />
+          <AiJournalAssistant />
+        </OnboardingProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
