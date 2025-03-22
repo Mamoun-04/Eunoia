@@ -285,7 +285,7 @@
 }
 
 .action-bar {
-  @apply flex justify-between items-center px-2 pt-2 pb-4 sm:py-4 sticky bottom-0 bg-gradient-to-t from-[#f8f7f2] to-transparent;
+  @apply flex justify-between items-center px-2 pt-2 pb-4 sm:py-4 sticky bottom-0;
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
