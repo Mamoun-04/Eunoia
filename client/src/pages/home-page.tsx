@@ -13,11 +13,14 @@ import {
   BookOpen,
   Settings,
   CalendarDays,
-  MessageSquare
+  MessageSquare,
+  Edit,
+  Image
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
 import { SubscriptionDialog } from "@/components/subscription-dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();

@@ -8,51 +8,100 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertEntrySchema, categoryOptions } from "@shared/schema";
+import { insertEntrySchema, categoryOptions, Entry } from "@shared/schema";
 import { MoodSelector } from "./mood-selector";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { Image as ImageIcon, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 
 type Props = {
   onClose: () => void;
   initialCategory?: string;
+  entry?: Entry; // Added for editing existing entries
 };
 
-export function JournalEditor({ onClose, initialCategory }: Props) {
+export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   const { toast } = useToast();
+  const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
     defaultValues: {
-      title: "",
-      content: "",
-      mood: "neutral",
-      category: initialCategory || "Daily Reflection",
-      imageUrl: "",
+      title: entry?.title || "",
+      content: entry?.content || "",
+      mood: entry?.mood || "neutral",
+      category: entry?.category || initialCategory || "Daily Reflection",
+      imageUrl: entry?.imageUrl || "",
     },
   });
 
-  const createEntryMutation = useMutation({
+  // Handle image upload
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Image too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageDataUrl = event.target?.result as string;
+      setImagePreview(imageDataUrl);
+      form.setValue("imageUrl", imageDataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    form.setValue("imageUrl", "");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Create or update entry mutation
+  const entryMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/entries", data);
-      return res.json();
+      // If we have an existing entry, update it
+      if (entry) {
+        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
+        return res.json();
+      } else {
+        // Otherwise create a new one
+        const res = await apiRequest("POST", "/api/entries", data);
+        return res.json();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
       toast({
-        title: "Entry saved",
-        description: "Your journal entry has been saved successfully.",
+        title: entry ? "Entry updated" : "Entry saved",
+        description: entry 
+          ? "Your journal entry has been updated successfully." 
+          : "Your journal entry has been saved successfully.",
       });
       onClose();
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to save entry",
+        title: entry ? "Failed to update entry" : "Failed to save entry",
         description: error.message,
         variant: "destructive",
       });
@@ -64,7 +113,7 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
       <DialogContent className="sm:max-w-2xl">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => createEntryMutation.mutate(data))}
+            onSubmit={form.handleSubmit((data) => entryMutation.mutate(data))}
             className="space-y-4"
           >
             <FormField
@@ -96,19 +145,52 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
               )}
             />
 
-
+            {/* Image Upload Field */}
             <FormField
               control={form.control}
-              name="prompt"
+              name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Prompt</FormLabel>
+                  <FormLabel>Image (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      readOnly
-                      className="min-h-[80px] bg-muted"
-                      {...field}
-                    />
+                    <div className="space-y-4">
+                      {imagePreview ? (
+                        <div className="relative">
+                          <img 
+                            src={imagePreview} 
+                            alt="Entry preview" 
+                            className="w-full h-auto max-h-64 rounded-lg object-cover mx-auto"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 hover:bg-background"
+                            onClick={removeImage}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div 
+                          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <ImageIcon className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+                          <p className="text-sm font-medium mb-1">Click to upload an image</p>
+                          <p className="text-xs text-muted-foreground">JPG, PNG or GIF (max 5MB)</p>
+                        </div>
+                      )}
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        {...field}
+                        value="" // Reset the value to allow the same file to be selected again
+                      />
+                    </div>
                   </FormControl>
                 </FormItem>
               )}
@@ -137,9 +219,9 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
               </Button>
               <Button
                 type="submit"
-                disabled={createEntryMutation.isPending}
+                disabled={entryMutation.isPending}
               >
-                Save Entry
+                {entry ? "Update Entry" : "Save Entry"}
               </Button>
             </div>
           </form>

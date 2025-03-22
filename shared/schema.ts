@@ -50,7 +50,8 @@ export const insertEntrySchema = createInsertSchema(entries).pick({
   title: true,
   content: true,
   mood: true,
-  category: true
+  category: true,
+  imageUrl: true
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
