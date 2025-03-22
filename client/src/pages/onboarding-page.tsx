@@ -116,19 +116,7 @@ export default function OnboardingPage() {
           {renderStep()}
         </div>
       </main>
-      
-      {/* Footer with login option */}
-      <footer className="py-4 text-center">
-        <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
-        <Button 
-          variant="link" 
-          size="sm" 
-          onClick={() => setLocation("/auth")}
-          className="text-primary"
-        >
-          Go back to login
-        </Button>
-      </footer>
+      {/* No footer with login option - users must complete onboarding */}
     </div>
   );
 }

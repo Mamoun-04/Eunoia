@@ -4,73 +4,89 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
 
   // Redirect if already logged in
-  if (user) {
-    setLocation("/");
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      setLocation("/home");
+    }
+  }, [user, setLocation]);
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 gap-0">
+    <div className="min-h-screen grid lg:grid-cols-2 gap-0 bg-[#f8f7f2]">
       {/* Form Section */}
       <div className="flex items-center justify-center p-8">
-        <Card className="w-full max-w-md p-6">
-          <h1 className="text-3xl font-bold mb-6 text-center">Welcome to Eunoia</h1>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <LoginForm onSubmit={(data) => loginMutation.mutate(data)} />
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <RegisterForm onSubmit={(data) => registerMutation.mutate(data)} />
-            </TabsContent>
-          </Tabs>
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-serif font-bold text-[#0000CC]">EUNOIA</CardTitle>
+            <CardDescription className="font-serif italic text-[#0000CC]">
+              Writing the story of you.
+            </CardDescription>
+          </CardHeader>
           
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              New user? Get the full experience.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-2 w-full text-primary border-primary hover:bg-primary/10"
-              onClick={() => setLocation("/onboarding")}
-            >
-              Start the guided onboarding
-            </Button>
+          <div className="p-6 pt-2">
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Register</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <LoginForm onSubmit={(data) => {
+                  loginMutation.mutate(data, {
+                    onSuccess: () => setLocation("/home")
+                  });
+                }} />
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <RegisterForm onSubmit={(data) => {
+                  registerMutation.mutate(data, {
+                    onSuccess: () => setLocation("/home")
+                  });
+                }} />
+              </TabsContent>
+            </Tabs>
+            
+            <div className="mt-6 text-center">
+              <Button 
+                variant="ghost" 
+                className="text-[#0000CC] hover:bg-[#0000CC]/10 flex items-center justify-center gap-2"
+                onClick={() => setLocation("/")}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to welcome screen
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
 
       {/* Hero Section */}
-      <div className="hidden lg:flex flex-col items-center justify-center bg-primary/5 p-8">
+      <div className="hidden lg:flex flex-col items-center justify-center bg-[#0000CC]/5 p-8">
         <div className="max-w-lg text-center">
-          <h2 className="text-4xl font-bold mb-4">Your Journey to Mindfulness</h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <h2 className="text-4xl font-serif font-bold mb-4 text-[#0000CC]">Your Journey to Mindfulness</h2>
+          <p className="text-lg text-gray-600 mb-8">
             Start your mindful journaling practice with Eunoia. Track your moods,
             reflect on your day, and discover insights about yourself.
           </p>
           <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="p-4 rounded-lg bg-background/80">
-              <h3 className="font-bold mb-2">Daily Reflections</h3>
-              <p className="text-sm text-muted-foreground">Guided prompts for meaningful journaling</p>
+            <div className="p-4 rounded-lg bg-white shadow-sm">
+              <h3 className="font-bold mb-2 text-[#0000CC]">Daily Reflections</h3>
+              <p className="text-sm text-gray-600">Guided prompts for meaningful journaling</p>
             </div>
-            <div className="p-4 rounded-lg bg-background/80">
-              <h3 className="font-bold mb-2">Mood Tracking</h3>
-              <p className="text-sm text-muted-foreground">Visual insights into your emotional journey</p>
+            <div className="p-4 rounded-lg bg-white shadow-sm">
+              <h3 className="font-bold mb-2 text-[#0000CC]">Mood Tracking</h3>
+              <p className="text-sm text-gray-600">Visual insights into your emotional journey</p>
             </div>
           </div>
         </div>

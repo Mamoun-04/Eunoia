@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 export default function SplashScreen() {
   // Logo animation variants
   const logoVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
+    hidden: { opacity: 0, scale: 0.95 },
     visible: { 
       opacity: 1, 
       scale: 1,
       transition: { 
-        duration: 0.8, 
+        duration: 1.2, 
         ease: "easeOut" 
       }
     }
@@ -16,12 +17,13 @@ export default function SplashScreen() {
 
   // Text animation variants
   const taglineVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 5 },
     visible: { 
       opacity: 1,
+      y: 0,
       transition: { 
-        delay: 0.4, 
-        duration: 0.6
+        delay: 0.6, 
+        duration: 1
       }
     }
   };
@@ -40,9 +42,17 @@ export default function SplashScreen() {
     })
   };
 
+  // Add a subtle fade-in effect to the background
+  useEffect(() => {
+    document.body.style.backgroundColor = "#f8f7f2";
+    return () => {
+      document.body.style.backgroundColor = "";
+    };
+  }, []);
+
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center bg-[#f8f7f2]">
-      <div className="relative max-w-sm px-8">
+      <div className="relative">
         {/* Logo container */}
         <motion.div
           variants={logoVariants}
@@ -51,9 +61,9 @@ export default function SplashScreen() {
           className="text-center"
         >
           <motion.h1 
-            className="text-6xl md:text-7xl font-serif font-bold text-[#0000CC]"
+            className="text-5xl sm:text-6xl md:text-7xl font-serif text-[#0000CC]"
             style={{ 
-              letterSpacing: "-0.02em",
+              letterSpacing: "0.01em",
               fontFamily: "serif"
             }}
           >
@@ -66,7 +76,7 @@ export default function SplashScreen() {
           variants={taglineVariants}
           initial="hidden"
           animate="visible"
-          className="mt-2 text-sm text-[#0000CC] text-center italic"
+          className="mt-2 text-sm sm:text-base text-[#0000CC] text-center italic"
           style={{ fontFamily: "serif" }}
         >
           Writing the story of you.

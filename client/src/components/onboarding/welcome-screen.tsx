@@ -1,64 +1,94 @@
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 
 export default function WelcomeScreen() {
   const { setStep } = useOnboarding();
+  const [, setLocation] = useLocation();
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.8,
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const handleNewUser = () => {
+    setStep(1);
+    setLocation("/onboarding");
+  };
+
+  const handleLogin = () => {
+    setLocation("/auth");
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full px-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="w-full min-h-screen bg-[#f8f7f2] p-4 flex flex-col items-center justify-center"
     >
-      <Card className="w-full max-w-3xl mx-auto shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-3xl text-center font-bold text-primary">Welcome to Eunoia</CardTitle>
-          <CardDescription className="text-center text-lg">
-            Your journey to mindful self-reflection begins here
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Eunoia is a mindful journaling app designed to help you:
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="mr-2 text-primary text-xl">✦</span>
-                <span>Capture your thoughts and emotions in a meaningful way</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2 text-primary text-xl">✦</span>
-                <span>Reflect on your personal growth journey</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2 text-primary text-xl">✦</span>
-                <span>Find moments of mindfulness in your daily life</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2 text-primary text-xl">✦</span>
-                <span>Track your moods and emotional patterns</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2 text-primary text-xl">✦</span>
-                <span>Receive AI-guided journaling assistance when needed</span>
-              </li>
-            </ul>
+      <div className="max-w-md w-full space-y-12 text-center">
+        {/* Logo/Branding */}
+        <motion.div variants={itemVariants} className="space-y-2">
+          <h1 className="text-5xl font-serif font-bold text-[#0000CC]">EUNOIA</h1>
+          <p className="text-md font-serif italic text-[#0000CC]">Writing the story of you.</p>
+        </motion.div>
+        
+        {/* Description */}
+        <motion.div variants={itemVariants} className="space-y-6 px-4">
+          <p className="text-gray-700">
+            Your mindful journaling companion for self-reflection and personal growth.
+          </p>
+          
+          <div className="pt-4 space-y-6">
+            {/* Two main buttons */}
+            <motion.div variants={itemVariants}>
+              <Button 
+                size="lg" 
+                className="w-full bg-[#0000CC] hover:bg-[#0000CC]/90"
+                onClick={handleLogin}
+              >
+                Login
+              </Button>
+              <p className="text-xs mt-2 text-gray-500">Already have an account</p>
+            </motion.div>
+            
+            <motion.div variants={itemVariants}>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="w-full border-[#0000CC] text-[#0000CC] hover:bg-[#0000CC]/10"
+                onClick={handleNewUser}
+              >
+                New User
+              </Button>
+              <p className="text-xs mt-2 text-gray-500">Complete the full onboarding</p>
+            </motion.div>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button 
-            size="lg" 
-            className="w-full sm:w-auto"
-            onClick={() => setStep(2)}
-          >
-            Let's Get Started
-          </Button>
-        </CardFooter>
-      </Card>
+        </motion.div>
+        
+        {/* Footer */}
+        <motion.div variants={itemVariants} className="text-xs text-gray-500">
+          <p>© 2025 Eunoia - Mindful Journaling</p>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }
