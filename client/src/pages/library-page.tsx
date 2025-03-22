@@ -5,6 +5,10 @@ import { GuidedLesson } from "@/components/guided-lesson";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import {
   LogOut,
   Settings,
@@ -164,6 +168,29 @@ export default function LibraryPage() {
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
+  const { toast } = useToast();
+  const createEntryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/entries", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      toast({
+        title: "Entry saved",
+        description: "Your guided lesson entry has been saved successfully.",
+      });
+      setSelectedLesson(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to save entry",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLessonComplete = (answers: Record<string, any>) => {
     const entry = {
       title: selectedLesson.title,
@@ -177,9 +204,7 @@ export default function LibraryPage() {
       category: selectedLesson.topic
     };
 
-    // Here you would typically save the entry
-    console.log("New entry:", entry);
-    setSelectedLesson(null);
+    createEntryMutation.mutate(entry);
   };
 
   return (
