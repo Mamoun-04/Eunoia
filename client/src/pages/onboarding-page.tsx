@@ -145,7 +145,15 @@ export default function OnboardingPage() {
           {renderStep()}
         </div>
       </main>
-      {/* No footer with login option - users must complete onboarding */}
+      <footer className="p-4 text-center">
+        <Button 
+          variant="link" 
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => setLocation("/auth")}
+        >
+          Already have an account? Login here
+        </Button>
+      </footer>
     </div>
   );
 }
