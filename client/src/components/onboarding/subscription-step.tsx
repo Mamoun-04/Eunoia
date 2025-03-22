@@ -14,12 +14,10 @@ import {
 import { useState } from 'react';
 
 const FREE_FEATURES = [
-  "1 journal entry per day",
+  "3 journal entries per week",
   "Basic mood tracking",
-  "1 guided journaling lesson daily",
-  "Limited AI chat assistant (15 mins/day)",
-  "Standard support",
-  "Basic data encryption",
+  "5 guided journaling lessons",
+  "Limited AI chat assistant access",
   "Text-only entries"
 ];
 
@@ -41,16 +39,21 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
   const { toast } = useToast();
 
   const subscribeMutation = useMutation({
-    mutationFn: async (plan: 'free' | 'monthly' | 'yearly' | 'trial') => {
+    mutationFn: async (plan: string) => {
       const res = await apiRequest("POST", "/api/subscribe", { plan });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Subscription failed');
+      }
       return res.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Plan activated",
-        description: data.message || "Your plan has been activated successfully!"
+        title: "Plan selected",
+        description: "Proceeding to account creation"
       });
-      setLocation("/create-account"); // Redirect to create account screen
+      onComplete({ plan: data.plan });
+      setLocation("/create-account");
     },
     onError: (error: Error) => {
       toast({
@@ -61,16 +64,9 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
     }
   });
 
-  const handlePlanSelection = (plan: 'free' | 'monthly' | 'yearly' | 'trial') => {
+  const handlePlanSelection = (plan: string) => {
     subscribeMutation.mutate(plan);
-    onComplete({ plan });
   };
-
-  const faq = [
-    { question: "What happens after the free trial?", answer: "After your 7-day free trial, your subscription will automatically convert to a paid monthly plan unless you cancel." },
-    { question: "Can I cancel my subscription?", answer: "Yes, you can cancel your subscription at any time from your account settings." },
-    { question: "What payment methods do you accept?", answer: "We accept all major credit cards and PayPal." }
-  ];
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
@@ -110,7 +106,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
               </li>
             ))}
           </ul>
-          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('trial')}>
+          <Button className="w-full font-['Inter']" onClick={() => handlePlanSelection('monthly')}>
             Start Free Trial
           </Button>
           <p className="text-xs text-muted-foreground text-center mt-2 font-['Inter']">
@@ -145,24 +141,25 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
       <div className="mt-8">
         <h2 className="text-xl font-['Playfair Display'] font-semibold mb-4">Frequently Asked Questions</h2>
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="after-trial">
-            <AccordionTrigger>What happens after the free trial?</AccordionTrigger>
-            <AccordionContent className="font-['Times New Roman']">
-              After your 7-day free trial ends, you'll automatically continue with our monthly premium plan. You can cancel anytime before the trial ends to switch to our free plan. We'll notify you before the trial ends.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="cancel">
-            <AccordionTrigger>Can I cancel my subscription?</AccordionTrigger>
-            <AccordionContent className="font-['Times New Roman']">
-              Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your current billing period.
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="payment">
-            <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
-            <AccordionContent className="font-['Times New Roman']">
-              We accept all major credit cards (Visa, MasterCard, American Express) and PayPal for subscription payments.
-            </AccordionContent>
-          </AccordionItem>
+          {[
+            {
+              question: "What happens after the free trial?",
+              answer: "After your 7-day free trial ends, you'll automatically continue with our monthly premium plan. You can cancel anytime before the trial ends to switch to our free plan. We'll notify you before the trial ends."
+            },
+            {
+              question: "Can I cancel my subscription?",
+              answer: "Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your current billing period."
+            },
+            {
+              question: "What payment methods do you accept?",
+              answer: "We accept all major credit cards (Visa, MasterCard, American Express) and PayPal for subscription payments."
+            }
+          ].map((item, i) => (
+            <AccordionItem key={i} value={`item-${i}`}>
+              <AccordionTrigger>{item.question}</AccordionTrigger>
+              <AccordionContent>{item.answer}</AccordionContent>
+            </AccordionItem>
+          ))}
         </Accordion>
       </div>
     </div>
