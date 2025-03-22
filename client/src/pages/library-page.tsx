@@ -66,6 +66,25 @@ const SAMPLE_LESSONS = [
     id: "mindfulness",
     title: "Present Moment Awareness",
     topic: "Mindfulness",
+    description: "Practice being present and aware of your current experience.",
+    questions: [
+      {
+        id: "present-moment",
+        type: "text",
+        prompt: "What sensations do you notice in your body right now?"
+      },
+      {
+        id: "mindful-activity",
+        type: "multipleChoice",
+        prompt: "Which mindfulness practice resonates with you most?",
+        options: [
+          "Breathing exercises",
+          "Body scan meditation",
+          "Observing thoughts",
+          "Connection with nature"
+        ]
+      }
+    ]
     description: "Connect with the present moment and find peace in stillness.",
     questions: [
       {
