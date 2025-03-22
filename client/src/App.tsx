@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useState } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AiJournalAssistant } from "@/components/ai-journal-assistant";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +14,9 @@ import OnboardingPage from "@/pages/onboarding-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { ProtectedRoute } from "./lib/protected-route";
+
+// Lazy load the splash screen
+const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
 
 function Router() {
   return (
@@ -30,7 +33,25 @@ function Router() {
 }
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
+  
+  useEffect(() => {
+    // Show splash screen for 2.5 seconds
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <Suspense fallback={<div className="h-screen w-full bg-white" />}>
+        <SplashScreen />
+      </Suspense>
+    );
+  }
   
   return (
     <QueryClientProvider client={queryClient}>

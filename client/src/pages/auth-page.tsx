@@ -42,14 +42,14 @@ export default function AuthPage() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Want the full experience?
+              New user? Get the full experience.
             </p>
             <Button 
-              variant="link" 
-              className="p-0 h-auto text-primary"
+              variant="outline" 
+              className="mt-2 w-full text-primary border-primary hover:bg-primary/10"
               onClick={() => setLocation("/onboarding")}
             >
-              Try our guided onboarding
+              Start the guided onboarding
             </Button>
           </div>
         </Card>

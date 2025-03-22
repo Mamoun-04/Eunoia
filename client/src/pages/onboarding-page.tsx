@@ -7,13 +7,13 @@ import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load the components to improve performance
-const SplashScreen = lazy(() => import("../components/onboarding/splash-screen"));
-const WelcomeScreen = lazy(() => import("../components/onboarding/welcome-screen"));
-const ProfileSetup = lazy(() => import("../components/onboarding/profile-setup"));
-const GoalSetting = lazy(() => import("../components/onboarding/goal-setting"));
-const InterestSelection = lazy(() => import("../components/onboarding/interest-selection"));
-const SubscriptionStep = lazy(() => import("../components/onboarding/subscription-step"));
-const CreateAccount = lazy(() => import("../components/onboarding/create-account"));
+const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
+const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
+const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
+const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
+const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
+const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
+const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
 
 export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
@@ -88,7 +88,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f9f7f1]">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header with progress */}
       <header className="p-4 sm:p-6">
         <div className="max-w-3xl mx-auto">
@@ -116,6 +116,19 @@ export default function OnboardingPage() {
           {renderStep()}
         </div>
       </main>
+      
+      {/* Footer with login option */}
+      <footer className="py-4 text-center">
+        <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
+        <Button 
+          variant="link" 
+          size="sm" 
+          onClick={() => setLocation("/auth")}
+          className="text-primary"
+        >
+          Go back to login
+        </Button>
+      </footer>
     </div>
   );
 }
