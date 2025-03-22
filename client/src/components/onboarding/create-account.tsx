@@ -74,7 +74,7 @@ export default function CreateAccount() {
       });
 
       // Redirect to the home page
-      setLocation("/");
+      setLocation("/home");
     } catch (error) {
       toast({
         title: "Error",

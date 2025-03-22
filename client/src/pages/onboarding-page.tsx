@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("user");
     if (isLoggedIn) {
-      setLocation("/");
+      setLocation("/home");
     }
   }, [setLocation]);
 
