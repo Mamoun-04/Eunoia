@@ -102,8 +102,8 @@ export function AiJournalAssistant() {
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 p-4 h-full">
+            <div className="space-y-4 min-h-full">
               {messages.map((msg, i) => (
                 <div
                   key={i}
