@@ -168,8 +168,10 @@ const SAMPLE_LESSONS = [
         ]
       } : {})
     }))
-  }))
-];
+  })),
+  {
+    id: "gratitude-starter",
+    title: "Gratitude Practice",
     topic: "Gratitude",
     description: "Reflect on the blessings in your life and cultivate thankfulness.",
     questions: [
