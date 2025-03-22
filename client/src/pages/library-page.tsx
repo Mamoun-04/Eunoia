@@ -1522,7 +1522,9 @@ const SAMPLE_LESSONS = [
         ]
       }
     ]
-  },
+  }
+];
+
 export default function LibraryPage() {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const { logoutMutation } = useAuth();
