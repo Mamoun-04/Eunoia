@@ -7,13 +7,13 @@ import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load the components to improve performance
-const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
-const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
-const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
-const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
-const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
-const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
-const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
+const SplashScreen = lazy(() => import("../components/onboarding/splash-screen"));
+const WelcomeScreen = lazy(() => import("../components/onboarding/welcome-screen"));
+const ProfileSetup = lazy(() => import("../components/onboarding/profile-setup"));
+const GoalSetting = lazy(() => import("../components/onboarding/goal-setting"));
+const InterestSelection = lazy(() => import("../components/onboarding/interest-selection"));
+const SubscriptionStep = lazy(() => import("../components/onboarding/subscription-step"));
+const CreateAccount = lazy(() => import("../components/onboarding/create-account"));
 
 export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
