@@ -8,9 +8,10 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function AuthPage() {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -35,15 +36,54 @@ export default function AuthPage() {
           
           <div className="p-6 pt-2">
             <div className="mb-4 text-center">
-              <h3 className="text-xl font-medium">Welcome back</h3>
-              <p className="text-sm text-gray-500">Sign in to access your journal</p>
+              {mode === "login" ? (
+                <>
+                  <h3 className="text-xl font-medium">Welcome back</h3>
+                  <p className="text-sm text-gray-500">Sign in to access your journal</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-medium">Create an account</h3>
+                  <p className="text-sm text-gray-500">Start your journaling journey today</p>
+                </>
+              )}
             </div>
             
-            <LoginForm onSubmit={(data) => {
-              loginMutation.mutate(data, {
-                onSuccess: () => setLocation("/home")
-              });
-            }} />
+            {mode === "login" ? (
+              <>
+                <LoginForm onSubmit={(data) => {
+                  loginMutation.mutate(data, {
+                    onSuccess: () => setLocation("/home")
+                  });
+                }} />
+                <div className="mt-3 text-center">
+                  <Button 
+                    variant="link" 
+                    className="text-[#0000CC]"
+                    onClick={() => setMode("register")}
+                  >
+                    Need an account? Register here
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <RegisterForm onSubmit={(data) => {
+                  registerMutation.mutate(data, {
+                    onSuccess: () => setLocation("/onboarding")
+                  });
+                }} />
+                <div className="mt-3 text-center">
+                  <Button 
+                    variant="link" 
+                    className="text-[#0000CC]"
+                    onClick={() => setMode("login")}
+                  >
+                    Already have an account? Login here
+                  </Button>
+                </div>
+              </>
+            )}
             
             <div className="mt-6 text-center">
               <Button 

@@ -12,17 +12,34 @@ import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { ProtectedRoute } from "./lib/protected-route";
+import { Loader2 } from "lucide-react";
 
 // Lazy load the splash screen
 const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
 
 function Router() {
+  const { user, isLoading } = useAuth();
+
+  // A function to determine if we should show welcome screen or redirect to home
+  const HomeRouteComponent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-border" />
+        </div>
+      );
+    }
+    
+    // If user is logged in, show HomePage, otherwise show WelcomeScreen
+    return user ? <HomePage /> : <WelcomeScreen />;
+  };
+
   return (
     <Switch>
-      <Route path="/" component={WelcomeScreen} />
+      <Route path="/" component={HomeRouteComponent} />
       <ProtectedRoute path="/home" component={HomePage} />
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/library" component={LibraryPage} />

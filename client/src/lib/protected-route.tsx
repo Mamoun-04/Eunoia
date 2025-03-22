@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ component: Component, path }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     // Only redirect if we're certain there's no user and loading is complete
@@ -19,6 +19,12 @@ export function ProtectedRoute({ component: Component, path }: ProtectedRoutePro
       setLocation("/auth");
     }
   }, [user, isLoading, setLocation]);
+
+  // This prevents the component from rendering at all if the user is not logged in
+  // and the authentication check is complete
+  if (!isLoading && !user) {
+    return null;
+  }
 
   return (
     <Route path={path}>
