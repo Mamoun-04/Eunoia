@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,7 @@ const PREMIUM_FEATURES = [
 ];
 
 export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => void }) {
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const subscribeMutation = useMutation({
@@ -44,7 +44,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
         title: "Plan activated",
         description: data.message || "Your plan has been activated successfully!"
       });
-      navigate("/");
+      setLocation("/");
     },
     onError: (error: Error) => {
       toast({
