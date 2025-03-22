@@ -17,6 +17,7 @@ export const entries = pgTable("entries", {
   content: text("content").notNull(),
   mood: text("mood").notNull(),
   category: text("category").notNull(),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 

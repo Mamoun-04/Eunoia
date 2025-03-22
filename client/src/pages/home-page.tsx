@@ -120,6 +120,13 @@ export default function HomePage() {
                     </div>
                     <MoodSelector value={entry.mood} readonly />
                   </div>
+                  {entry.imageUrl && (
+                    <img 
+                      src={entry.imageUrl} 
+                      alt="Entry image" 
+                      className="w-full rounded-lg mb-4 max-h-96 object-cover"
+                    />
+                  )}
                   <div
                     className="prose dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: entry.content }}

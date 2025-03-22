@@ -33,6 +33,7 @@ export function JournalEditor({ onClose, initialCategory }: Props) {
       content: "",
       mood: "neutral",
       category: initialCategory || "Daily Reflection",
+      imageUrl: "",
     },
   });
 
