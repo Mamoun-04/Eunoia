@@ -18,8 +18,9 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X, UploadCloud } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 
 type Props = {
@@ -142,11 +143,14 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] p-4 md:p-6">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
+        <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
+          {entry ? "Edit Journal Entry" : "New Journal Entry"}
+        </h2>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((data) => entryMutation.mutate(data))}
-            className="space-y-4 overflow-y-auto max-h-[calc(90vh-8rem)] pr-1"
+            className="space-y-5 overflow-y-auto max-h-[calc(90vh-10rem)] pr-1.5 custom-scrollbar"
           >
             <FormField
               control={form.control}
@@ -207,12 +211,32 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                         </div>
                       ) : (
                         <div 
-                          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 md:p-6 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer"
+                          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 md:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
                           onClick={() => fileInputRef.current?.click()}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                              const file = e.dataTransfer.files[0];
+                              // Create a synthetic event object with the file
+                              const syntheticEvent = {
+                                target: {
+                                  files: e.dataTransfer.files
+                                }
+                              } as React.ChangeEvent<HTMLInputElement>;
+                              
+                              handleImageUpload(syntheticEvent);
+                            }
+                          }}
                         >
-                          <ImageIcon className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm font-medium">Click to upload an image</p>
-                          <p className="text-xs text-muted-foreground mt-1">JPG, PNG or GIF (max 5MB)</p>
+                          <UploadCloud className="h-8 w-8 mx-auto mb-3 text-primary/60 group-hover:text-primary/80 transition-all duration-200 group-hover:scale-110" />
+                          <p className="text-sm font-medium group-hover:text-primary/90 transition-colors">Drag and drop or click to upload</p>
+                          <p className="text-xs text-muted-foreground mt-1.5 group-hover:text-primary/70 transition-colors">JPG, PNG or GIF (max 5MB)</p>
                         </div>
                       )}
                       <input 
@@ -238,8 +262,12 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                   <FormLabel>Your thoughts</FormLabel>
                   <FormControl>
                     <textarea
-                      className="w-full min-h-[150px] max-h-[300px] resize-y rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                      placeholder="Write your thoughts here..."
+                      className="w-full min-h-[180px] max-h-[350px] resize-y rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all leading-relaxed"
+                      placeholder="Write your thoughts here... What's on your mind today?"
+                      style={{ 
+                        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.02)"
+                      }}
                       {...field}
                     />
                   </FormControl>
