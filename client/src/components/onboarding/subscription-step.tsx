@@ -147,7 +147,7 @@ export function SubscriptionStep({ onComplete }: { onComplete: (data: any) => vo
           <AccordionItem value="after-trial">
             <AccordionTrigger>What happens after the free trial?</AccordionTrigger>
             <AccordionContent className="font-['Times New Roman']">
-              After your 7-day free trial ends, you'll be automatically switched to the free plan unless you choose to subscribe to a premium plan. Don't worry - we'll notify you before the trial ends.
+              After your 7-day free trial ends, you'll automatically continue with our monthly premium plan. You can cancel anytime before the trial ends to switch to our free plan. We'll notify you before the trial ends.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="cancel">
