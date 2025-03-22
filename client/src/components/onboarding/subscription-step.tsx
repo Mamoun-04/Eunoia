@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useOnboarding } from '@/hooks/use-onboarding';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Check, Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useOnboarding } from "@/hooks/use-onboarding";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Check, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 type PlanFeature = {
   name: string;
@@ -15,46 +15,52 @@ type PlanFeature = {
   };
 };
 
+const features: PlanFeature[] = [
+  { 
+    name: "Unlimited journal entries", 
+    included: { free: true, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Basic mood tracking", 
+    included: { free: true, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Daily mindfulness reminders", 
+    included: { free: true, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Access to guided journaling prompts", 
+    included: { free: false, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Advanced mood analytics", 
+    included: { free: false, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Unlimited AI journal assistant", 
+    included: { free: false, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Journal entry themes", 
+    included: { free: false, monthly: true, yearly: true } 
+  },
+  { 
+    name: "Priority support", 
+    included: { free: false, monthly: false, yearly: true } 
+  },
+  { 
+    name: "Advanced journaling insights", 
+    included: { free: false, monthly: false, yearly: true } 
+  },
+  { 
+    name: "Early access to new features", 
+    included: { free: false, monthly: false, yearly: true } 
+  },
+];
+
 export default function SubscriptionStep() {
   const { data, updateData, setStep } = useOnboarding();
-  const [selectedPlan, setSelectedPlan] = useState<'free' | 'monthly' | 'yearly'>(
-    data.subscriptionPlan || 'free'
-  );
-
-  const planFeatures: PlanFeature[] = [
-    { 
-      name: 'Basic journaling', 
-      included: { free: true, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Mood tracking', 
-      included: { free: true, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Daily reminders', 
-      included: { free: true, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Unlimited entries', 
-      included: { free: false, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'AI writing assistance', 
-      included: { free: false, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Advanced analytics', 
-      included: { free: false, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Guided journal prompts', 
-      included: { free: false, monthly: true, yearly: true } 
-    },
-    { 
-      name: 'Priority support', 
-      included: { free: false, monthly: false, yearly: true } 
-    },
-  ];
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'monthly' | 'yearly'>(data.subscriptionPlan || 'free');
 
   const handleContinue = () => {
     updateData({ subscriptionPlan: selectedPlan });
@@ -63,159 +69,137 @@ export default function SubscriptionStep() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-4xl mx-auto"
+      className="w-full px-4"
     >
-      <div className="flex items-center justify-center mb-6">
-        <div className="bg-primary/10 p-3 rounded-full">
-          <Sparkles className="h-8 w-8 text-primary" />
-        </div>
-      </div>
-      
-      <h2 className="text-3xl font-serif font-bold mb-2 text-center">Unlock Your Mindful Journey</h2>
-      <p className="text-center text-muted-foreground mb-8 max-w-md mx-auto">
-        Choose the plan that's right for you. All plans include a 7-day free trial.
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Free Plan */}
-        <Card 
-          className={`p-6 relative border-2 transition-all ${
-            selectedPlan === 'free' ? 'border-primary' : 'border-muted'
-          }`}
-        >
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-            <Badge variant="outline" className="bg-background">Free Plan</Badge>
+      <Card className="w-full max-w-4xl mx-auto shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-primary">Choose Your Plan</CardTitle>
+          <CardDescription>Select the best plan for your journaling needs</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Free Plan */}
+            <div 
+              className={`border rounded-xl p-5 cursor-pointer transition-all ${
+                selectedPlan === 'free' 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+              }`}
+              onClick={() => setSelectedPlan('free')}
+            >
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-semibold">Free</h3>
+                <p className="text-2xl font-bold mt-2">$0</p>
+                <p className="text-sm text-muted-foreground">Forever</p>
+              </div>
+              <ul className="space-y-2">
+                {features.map((feature, index) => (
+                  <li 
+                    key={index} 
+                    className={`flex items-center ${
+                      !feature.included.free ? 'text-muted-foreground' : ''
+                    }`}
+                  >
+                    {feature.included.free ? (
+                      <Check className="h-4 w-4 mr-2 text-primary" />
+                    ) : (
+                      <span className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="text-sm">{feature.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Monthly Plan */}
+            <div 
+              className={`border rounded-xl p-5 cursor-pointer transition-all ${
+                selectedPlan === 'monthly' 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+              }`}
+              onClick={() => setSelectedPlan('monthly')}
+            >
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-semibold">Premium</h3>
+                <Badge variant="outline" className="mb-1">Popular</Badge>
+                <p className="text-2xl font-bold mt-2">$4.99</p>
+                <p className="text-sm text-muted-foreground">per month</p>
+              </div>
+              <ul className="space-y-2">
+                {features.map((feature, index) => (
+                  <li 
+                    key={index} 
+                    className={`flex items-center ${
+                      !feature.included.monthly ? 'text-muted-foreground' : ''
+                    }`}
+                  >
+                    {feature.included.monthly ? (
+                      <Check className="h-4 w-4 mr-2 text-primary" />
+                    ) : (
+                      <span className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="text-sm">{feature.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Yearly Plan */}
+            <div 
+              className={`border rounded-xl p-5 cursor-pointer transition-all ${
+                selectedPlan === 'yearly' 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+              }`}
+              onClick={() => setSelectedPlan('yearly')}
+            >
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-semibold">Premium Plus</h3>
+                <Badge className="bg-gradient-to-r from-amber-500 to-amber-300 text-white border-none mb-1">
+                  <Sparkles className="h-3 w-3 mr-1" /> Best Value
+                </Badge>
+                <p className="text-2xl font-bold mt-2">$39.99</p>
+                <p className="text-sm text-muted-foreground">per year</p>
+                <p className="text-xs mt-1 text-emerald-600 font-medium">Save $19.89</p>
+              </div>
+              <ul className="space-y-2">
+                {features.map((feature, index) => (
+                  <li 
+                    key={index} 
+                    className={`flex items-center ${
+                      !feature.included.yearly ? 'text-muted-foreground' : ''
+                    }`}
+                  >
+                    {feature.included.yearly ? (
+                      <Check className="h-4 w-4 mr-2 text-primary" />
+                    ) : (
+                      <span className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="text-sm">{feature.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="pt-4 text-center mb-4">
-            <h3 className="text-2xl font-bold">$0</h3>
-            <p className="text-muted-foreground">Forever</p>
-          </div>
-          
-          <ul className="space-y-2 mb-8">
-            {planFeatures.map((feature, index) => (
-              <li 
-                key={index} 
-                className={`flex items-center gap-2 ${
-                  !feature.included.free ? 'text-muted-foreground' : ''
-                }`}
-              >
-                {feature.included.free ? (
-                  <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                ) : (
-                  <span className="h-4 w-4 block flex-shrink-0"></span>
-                )}
-                <span className="text-sm">{feature.name}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <Button 
-            variant={selectedPlan === 'free' ? 'default' : 'outline'} 
-            className="w-full"
-            onClick={() => setSelectedPlan('free')}
-          >
-            {selectedPlan === 'free' ? 'Selected' : 'Select'}
-          </Button>
-        </Card>
-        
-        {/* Monthly Plan */}
-        <Card 
-          className={`p-6 relative border-2 transition-all ${
-            selectedPlan === 'monthly' ? 'border-primary' : 'border-muted'
-          }`}
-        >
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-            <Badge variant="outline" className="bg-background">Monthly Plan</Badge>
-          </div>
-          <div className="pt-4 text-center mb-4">
-            <h3 className="text-2xl font-bold">$3.99</h3>
-            <p className="text-muted-foreground">per month</p>
-          </div>
-          
-          <ul className="space-y-2 mb-8">
-            {planFeatures.map((feature, index) => (
-              <li 
-                key={index} 
-                className={`flex items-center gap-2 ${
-                  !feature.included.monthly ? 'text-muted-foreground' : ''
-                }`}
-              >
-                {feature.included.monthly ? (
-                  <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                ) : (
-                  <span className="h-4 w-4 block flex-shrink-0"></span>
-                )}
-                <span className="text-sm">{feature.name}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <Button 
-            variant={selectedPlan === 'monthly' ? 'default' : 'outline'} 
-            className="w-full"
-            onClick={() => setSelectedPlan('monthly')}
-          >
-            {selectedPlan === 'monthly' ? 'Selected' : 'Select'}
-          </Button>
-        </Card>
-        
-        {/* Yearly Plan */}
-        <Card 
-          className={`p-6 relative border-2 transition-all ${
-            selectedPlan === 'yearly' ? 'border-primary' : 'border-muted'
-          }`}
-        >
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-            <Badge className="bg-primary text-primary-foreground">Best Value</Badge>
-          </div>
-          <div className="pt-4 text-center mb-4">
-            <h3 className="text-2xl font-bold">$39.99</h3>
-            <p className="text-muted-foreground">per year</p>
-          </div>
-          
-          <ul className="space-y-2 mb-4">
-            {planFeatures.map((feature, index) => (
-              <li 
-                key={index} 
-                className={`flex items-center gap-2 ${
-                  !feature.included.yearly ? 'text-muted-foreground' : ''
-                }`}
-              >
-                {feature.included.yearly ? (
-                  <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                ) : (
-                  <span className="h-4 w-4 block flex-shrink-0"></span>
-                )}
-                <span className="text-sm">{feature.name}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <div className="text-center text-sm text-green-600 mb-4">
-            Save 17% compared to monthly
+
+          <div className="pt-6 flex justify-center">
+            <Button 
+              onClick={handleContinue}
+              className="w-full sm:w-auto"
+            >
+              Continue with {selectedPlan === 'free' ? 'Free Plan' : selectedPlan === 'monthly' ? 'Monthly Premium' : 'Yearly Premium Plus'}
+            </Button>
           </div>
           
-          <Button 
-            variant={selectedPlan === 'yearly' ? 'default' : 'outline'} 
-            className="w-full"
-            onClick={() => setSelectedPlan('yearly')}
-          >
-            {selectedPlan === 'yearly' ? 'Selected' : 'Select'}
-          </Button>
-        </Card>
-      </div>
-      
-      <div className="text-center">
-        <Button onClick={handleContinue} size="lg">
-          Continue
-        </Button>
-        <p className="text-sm text-muted-foreground mt-2">
-          7-day free trial, cancel anytime. No credit card required.
-        </p>
-      </div>
+          <p className="text-center text-xs text-muted-foreground">
+            You can change your plan anytime after registration. No credit card required for the free plan.
+          </p>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

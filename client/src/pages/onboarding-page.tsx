@@ -1,16 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import { useOnboarding } from "@/hooks/use-onboarding";
-import SplashScreen from "@/components/onboarding/splash-screen";
-import WelcomeScreen from "@/components/onboarding/welcome-screen";
-import ProfileSetup from "@/components/onboarding/profile-setup";
-import GoalSetting from "@/components/onboarding/goal-setting";
-import InterestSelection from "@/components/onboarding/interest-selection";
-import SubscriptionStep from "@/components/onboarding/subscription-step";
-import CreateAccount from "@/components/onboarding/create-account";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load the components to improve performance
+const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
+const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
+const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
+const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
+const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
+const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
+const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
 
 export default function OnboardingPage() {
   const { step, setStep } = useOnboarding();
@@ -39,26 +42,44 @@ export default function OnboardingPage() {
   const totalSteps = 6; // Not counting splash screen
   const progressPercentage = ((step - 1) / totalSteps) * 100;
 
+  // Loading fallback component
+  const StepSkeleton = () => (
+    <div className="space-y-4 w-full">
+      <Skeleton className="h-12 w-3/4 rounded-lg" />
+      <Skeleton className="h-40 w-full rounded-lg" />
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </div>
+    </div>
+  );
+
   // Render current step
   const renderStep = () => {
-    switch (step) {
-      case 0:
-        return <SplashScreen />;
-      case 1:
-        return <WelcomeScreen />;
-      case 2:
-        return <ProfileSetup />;
-      case 3:
-        return <GoalSetting />;
-      case 4:
-        return <InterestSelection />;
-      case 5:
-        return <SubscriptionStep />;
-      case 6:
-        return <CreateAccount />;
-      default:
-        return <WelcomeScreen />;
-    }
+    return (
+      <Suspense fallback={<StepSkeleton />}>
+        {(() => {
+          switch (step) {
+            case 0:
+              return <SplashScreen />;
+            case 1:
+              return <WelcomeScreen />;
+            case 2:
+              return <ProfileSetup />;
+            case 3:
+              return <GoalSetting />;
+            case 4:
+              return <InterestSelection />;
+            case 5:
+              return <SubscriptionStep />;
+            case 6:
+              return <CreateAccount />;
+            default:
+              return <WelcomeScreen />;
+          }
+        })()}
+      </Suspense>
+    );
   };
 
   // Only show navigation when not on splash screen
