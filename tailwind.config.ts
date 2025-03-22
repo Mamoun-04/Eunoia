@@ -5,8 +5,9 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     fontFamily: {
-      sans: ['Spectral', 'Helvetica Neue', 'Helvetica', 'system-ui', 'sans-serif'],
-      serif: ['Playfair Display', 'serif'],
+      sans: ['Inter', 'system-ui', 'sans-serif'],
+      serif: ['Playfair Display', 'Times New Roman', 'serif'],
+      display: ['The Seasons', 'Hello Paris', 'serif'],
     },
     extend: {
       borderRadius: {
