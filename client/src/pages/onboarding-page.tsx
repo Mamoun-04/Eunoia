@@ -117,7 +117,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white light">
       {/* Header with progress */}
       <header className="p-4 sm:p-6">
         <div className="max-w-3xl mx-auto">

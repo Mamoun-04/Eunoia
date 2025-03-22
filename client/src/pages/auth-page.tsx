@@ -11,6 +11,11 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function AuthPage() {
+  // Force light theme for auth page
+  useEffect(() => {
+    document.documentElement.classList.add('light');
+    return () => document.documentElement.classList.remove('light');
+  }, []);
   const [mode, setMode] = useState<"login" | "register">("login");
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();

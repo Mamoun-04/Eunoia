@@ -4,6 +4,11 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 
 export default function WelcomeScreen() {
+  // Force light theme for welcome screen
+  useEffect(() => {
+    document.documentElement.classList.add('light');
+    return () => document.documentElement.classList.remove('light');
+  }, []);
   const { setStep } = useOnboarding();
   const [, setLocation] = useLocation();
 
