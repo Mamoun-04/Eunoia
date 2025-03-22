@@ -240,7 +240,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           </Button>
         </div>
         
-        <div className="journal-interface custom-scrollbar overflow-y-auto max-h-[90vh]">
+        <div className="journal-interface custom-scrollbar overflow-y-auto max-h-[100dvh] sm:max-h-[90vh] pb-safe">
           {/* Progress Bar */}
           <div className="journal-progress">
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
