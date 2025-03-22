@@ -229,8 +229,9 @@
 
 /* Minimalist journaling interface styles */
 .journal-interface {
-  @apply max-w-xl mx-auto p-6 md:p-8;
-  height: calc(90vh - 2rem);
+  @apply max-w-xl mx-auto p-4 sm:p-6 md:p-8;
+  min-height: calc(100dvh - 4rem);
+  height: 100%;
 }
 
 .prompt-card {

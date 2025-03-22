@@ -223,7 +223,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        className="sm:max-w-[600px] h-[90vh] p-0 mx-4 rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2]"
+        className="sm:max-w-[600px] min-h-[100dvh] sm:h-[90vh] p-0 mx-0 sm:mx-4 rounded-none sm:rounded-xl border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2]"
         aria-describedby="journal-editor-description"
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
