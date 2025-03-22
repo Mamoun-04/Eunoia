@@ -34,28 +34,16 @@ export default function AuthPage() {
           </CardHeader>
           
           <div className="p-6 pt-2">
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <LoginForm onSubmit={(data) => {
-                  loginMutation.mutate(data, {
-                    onSuccess: () => setLocation("/home")
-                  });
-                }} />
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <RegisterForm onSubmit={(data) => {
-                  registerMutation.mutate(data, {
-                    onSuccess: () => setLocation("/home")
-                  });
-                }} />
-              </TabsContent>
-            </Tabs>
+            <div className="mb-4 text-center">
+              <h3 className="text-xl font-medium">Welcome back</h3>
+              <p className="text-sm text-gray-500">Sign in to access your journal</p>
+            </div>
+            
+            <LoginForm onSubmit={(data) => {
+              loginMutation.mutate(data, {
+                onSuccess: () => setLocation("/home")
+              });
+            }} />
             
             <div className="mt-6 text-center">
               <Button 

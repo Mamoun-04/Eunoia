@@ -29,7 +29,8 @@ export default function WelcomeScreen() {
   };
 
   const handleNewUser = () => {
-    setStep(1);
+    // Set to step 2 directly (profile setup) to skip welcome screen in onboarding
+    setStep(2);
     setLocation("/onboarding");
   };
 

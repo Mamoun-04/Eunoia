@@ -27,20 +27,27 @@ export default function OnboardingPage() {
     }
   }, [setLocation]);
 
-  // If step is 0, show splash screen and then auto-advance
+  // If step is 0 or 1, auto-advance to step 2 (profile setup)
   useEffect(() => {
     if (step === 0) {
       const timer = setTimeout(() => {
-        setStep(1);
+        setStep(2); // Skip welcome screen, go directly to profile setup
       }, 2000);
       
       return () => clearTimeout(timer);
     }
+    
+    // If somehow we end up on step 1 (welcome screen) in the onboarding flow,
+    // immediately advance to step 2 to prevent circular issues
+    if (step === 1) {
+      setStep(2);
+    }
   }, [step, setStep]);
 
-  // Calculate progress percentage
-  const totalSteps = 6; // Not counting splash screen
-  const progressPercentage = ((step - 1) / totalSteps) * 100;
+  // Calculate progress percentage - adjusted for starting at step 2
+  const totalSteps = 5; // Steps 2-6: Profile, Goal, Interests, Subscription, Account creation
+  const actualStep = step > 1 ? step - 1 : 1; // Adjust for the welcome screen being skipped
+  const progressPercentage = ((actualStep - 1) / totalSteps) * 100;
 
   // Loading fallback component
   const StepSkeleton = () => (
@@ -92,7 +99,7 @@ export default function OnboardingPage() {
       {/* Header with progress */}
       <header className="p-4 sm:p-6">
         <div className="max-w-3xl mx-auto">
-          {step > 1 && (
+          {step > 2 && (
             <Button
               variant="ghost"
               size="sm"
