@@ -5,13 +5,23 @@ import { ProfileStep } from "./profile-step";
 import { GoalStep } from "./goal-step";
 import { InterestsStep } from "./interests-step";
 import { SubscriptionStep } from "./subscription-step";
+import { CreateAccountStep } from "./create-account-step";
 import { Progress } from "@/components/ui/progress";
 
-const STEPS = ["Welcome", "Profile", "Goal", "Interests", "Subscription"];
+const STEPS = ["Welcome", "Profile", "Goal", "Interests", "Subscription", "Create Account"];
+
+type OnboardingData = {
+  plan?: 'free' | 'monthly' | 'yearly' | 'trial';
+  name?: string;
+  bio?: string;
+  image?: string | null;
+  interests?: string[];
+  goal?: string;
+};
 
 export function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState({});
+  const [data, setData] = useState<OnboardingData>({});
 
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
@@ -37,6 +47,12 @@ export function OnboardingFlow() {
         return <InterestsStep onNext={handleStepComplete} />;
       case 4:
         return <SubscriptionStep onComplete={handleStepComplete} />;
+      case 5:
+        return data.plan ? (
+          <CreateAccountStep plan={data.plan} onComplete={handleStepComplete} />
+        ) : (
+          <SubscriptionStep onComplete={handleStepComplete} />
+        );
       default:
         return null;
     }

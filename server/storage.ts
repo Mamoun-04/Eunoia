@@ -79,6 +79,7 @@ export class MemStorage implements IStorage {
       ...insertEntry,
       id,
       userId,
+      imageUrl: null,
       createdAt: new Date()
     };
     this.entries.set(id, entry);
