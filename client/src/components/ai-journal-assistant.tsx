@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, X, Send, Maximize2, Minimize2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,6 +15,7 @@ interface Message {
 
 export function AiJournalAssistant() {
   const [location] = useLocation();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{
@@ -30,9 +32,9 @@ export function AiJournalAssistant() {
     }
   }, [messages]);
 
-  // Only show on main pages
-  const allowedPages = ['/', '/entries', '/library'];
-  if (!allowedPages.includes(location)) return null;
+  // Only show on main pages and when user is logged in
+  const allowedPages = ['/', '/home', '/entries', '/library'];
+  if (!user || !allowedPages.includes(location)) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
