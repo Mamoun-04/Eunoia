@@ -25,7 +25,7 @@ import { useState, useRef, useEffect } from "react";
 type Props = {
   onClose: () => void;
   initialCategory?: string;
-  entry?: Entry; // Added for editing existing entries
+  entry?: Entry | null; // Added for editing existing entries, can be null
 };
 
 export function JournalEditor({ onClose, initialCategory, entry }: Props) {
@@ -187,7 +187,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                         ref={fileInputRef}
                         onChange={handleImageUpload}
                         className="hidden"
-                        {...field}
+                        // Don't use {...field} as it would override ref and onChange
                         value="" // Reset the value to allow the same file to be selected again
                       />
                     </div>

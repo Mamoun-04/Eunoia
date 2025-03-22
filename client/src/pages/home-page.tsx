@@ -25,7 +25,9 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [viewEntryId, setViewEntryId] = useState<number | null>(null);
   const [location] = useLocation();
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
@@ -117,32 +119,55 @@ export default function HomePage() {
                 </Button>
               </Card>
             ) : (
-              entries.map((entry) => (
-                <Card key={entry.id} className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {entries.map((entry) => (
+                  <Card 
+                    key={entry.id} 
+                    className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setViewEntryId(entry.id)}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-semibold line-clamp-1">
                         {entry.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(entry.createdAt), "PPP")}
-                      </p>
+                      <MoodSelector value={entry.mood} readonly />
                     </div>
-                    <MoodSelector value={entry.mood} readonly />
-                  </div>
-                  {entry.imageUrl && (
-                    <img 
-                      src={entry.imageUrl} 
-                      alt="Entry image" 
-                      className="w-full rounded-lg mb-4 max-h-96 object-cover"
-                    />
-                  )}
-                  <div
-                    className="prose dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: entry.content }}
-                  />
-                </Card>
-              ))
+                    
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {format(new Date(entry.createdAt), "PPP")}
+                    </p>
+                    
+                    {entry.imageUrl && (
+                      <div className="relative aspect-video mb-2 overflow-hidden rounded-md">
+                        <img 
+                          src={entry.imageUrl} 
+                          alt="Entry thumbnail" 
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-sm text-muted-foreground line-clamp-1">
+                        {entry.content.length > 60 
+                          ? `${entry.content.substring(0, 60)}...` 
+                          : entry.content}
+                      </span>
+                      <Button 
+                        size="icon" 
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEntry(entry);
+                          setIsEditing(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -171,8 +196,63 @@ export default function HomePage() {
 
       {isEditing && (
         <JournalEditor
-          onClose={() => setIsEditing(false)}
+          entry={selectedEntry}
+          onClose={() => {
+            setIsEditing(false);
+            setSelectedEntry(null);
+          }}
         />
+      )}
+      
+      {/* Entry Viewing Dialog */}
+      {viewEntryId !== null && (
+        <Dialog open={viewEntryId !== null} onOpenChange={() => setViewEntryId(null)}>
+          <DialogContent className="sm:max-w-2xl">
+            {(() => {
+              const entry = entries.find(e => e.id === viewEntryId);
+              if (!entry) return null;
+              
+              return (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-2xl font-bold">{entry.title}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(entry.createdAt), "PPP")}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MoodSelector value={entry.mood} readonly />
+                      <Button 
+                        size="icon" 
+                        variant="ghost"
+                        onClick={() => {
+                          setSelectedEntry(entry);
+                          setIsEditing(true);
+                          setViewEntryId(null);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {entry.imageUrl && (
+                    <img 
+                      src={entry.imageUrl} 
+                      alt="Entry image" 
+                      className="w-full h-auto rounded-lg object-cover mx-auto" 
+                    />
+                  )}
+                  
+                  <div className="prose dark:prose-invert max-w-none">
+                    {entry.content}
+                  </div>
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
       )}
 
       <SubscriptionDialog
