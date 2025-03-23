@@ -116,29 +116,6 @@ export default function SubscriptionStep() {
                 </li>
               ))}
             </ul>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-between"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMoreFeatures(prev => ({ ...prev, free: !prev.free }));
-              }}
-            >
-              {showMoreFeatures.free ? 'Show less' : 'Show more features'}
-              {showMoreFeatures.free ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-
-            {showMoreFeatures.free && (
-              <ul className="space-y-3 mt-4">
-                {plans.free.extraFeatures.map(feature => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </Card>
 
           {/* Premium Plan */}
