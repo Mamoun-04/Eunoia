@@ -41,7 +41,6 @@ const plans = {
       'Unlimited photo uploads',
       'Full achievement tracking',
       'Unlimited AI assistant access',
-      'Premium features access',
       'Priority support'
     ]
   }
