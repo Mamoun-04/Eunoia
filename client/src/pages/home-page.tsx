@@ -209,7 +209,7 @@ export default function HomePage() {
                         <div className="p-5">
                           <div className="flex justify-between items-start">
                             <h3 className="text-lg font-medium mb-1">
-                              {entry.title}
+                              {entry.content.split(' ').slice(0, 5).join(' ')}...
                             </h3>
                             <Button 
                               size="icon" 
