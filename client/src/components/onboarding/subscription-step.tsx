@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     question: "Can I change my plan later?",
-    answer: "Absolutely! You can upgrade, downgrade, or cancel your plan at any time. We'll prorate any remaining time on your current plan."
+    answer: "Absolutely! You can upgrade, downgrade, or cancel your plan at any time. You'll have access to premium features until the end of your current billing period."
   },
   {
     question: "What happens to my entries if I cancel?",
