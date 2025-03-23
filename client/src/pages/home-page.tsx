@@ -38,7 +38,7 @@ export default function HomePage() {
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
   });
-  
+
   // Filter entries based on search query
   const filteredEntries = entries.filter(entry => 
     searchQuery ? entry.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
@@ -271,7 +271,7 @@ export default function HomePage() {
           }}
         />
       )}
-      
+
       {/* Entry Viewing Dialog */}
       {viewEntryId !== null && (
         <Dialog open={viewEntryId !== null} onOpenChange={() => setViewEntryId(null)}>
@@ -279,7 +279,7 @@ export default function HomePage() {
             {(() => {
               const entry = entries.find(e => e.id === viewEntryId);
               if (!entry) return null;
-              
+
               return (
                 <div className="space-y-6">
                   <div className="flex justify-between items-start">
@@ -289,8 +289,7 @@ export default function HomePage() {
                         {format(new Date(entry.createdAt), "PPP")}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <MoodSelector value={entry.mood} readonly />
+                    <div>
                       <Button 
                         size="icon" 
                         variant="ghost"
@@ -304,7 +303,7 @@ export default function HomePage() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   {entry.imageUrl && (
                     <img 
                       src={entry.imageUrl} 
@@ -312,7 +311,7 @@ export default function HomePage() {
                       className="w-full h-auto rounded-lg object-cover mx-auto" 
                     />
                   )}
-                  
+
                   <div className="prose dark:prose-invert max-w-none">
                     {entry.content}
                   </div>
