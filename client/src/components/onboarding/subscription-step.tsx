@@ -182,9 +182,8 @@ export default function SubscriptionStep() {
 
               <Button
                 variant="ghost"
-                className="w-full justify-between"
-                onClick={(e) => {
-                  e.stopPropagation();
+                className="w-full justify-between cursor-pointer"
+                onClick={() => {
                   setShowMoreFeatures((prev) => ({
                     ...prev,
                     premium: !prev.premium,
