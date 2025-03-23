@@ -154,7 +154,7 @@ export default function SubscriptionStep() {
               <span className="text-xs bg-primary text-white px-4 py-2 rounded-full font-medium">
                 Unlock Your Best Self
               </span>
-            </divv>
+            </div>
 
             <div className="mb-6">
               <div className="relative">
