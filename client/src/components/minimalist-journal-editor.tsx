@@ -333,6 +333,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               type="text"
               placeholder="Entry Title"
               className="w-full text-xl font-medium bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-muted-foreground/50"
+              {...form.register("title")}
             />
           </div>
 
