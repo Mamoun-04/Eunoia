@@ -248,8 +248,6 @@ export default function SubscriptionStep() {
           </Accordion>
         </div>
       </div>
-
-      
     </motion.div>
   );
 }
