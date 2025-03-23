@@ -290,6 +290,7 @@ export default function HomePage() {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <MoodSelector value={entry.mood} readonly />
                       <Button 
                         size="icon" 
                         variant="ghost"
@@ -305,19 +306,15 @@ export default function HomePage() {
                   </div>
                   
                   {entry.imageUrl && (
-                    <div className="overflow-hidden rounded-lg">
-                      <img 
-                        src={entry.imageUrl} 
-                        alt="Entry image" 
-                        className="w-full h-auto object-cover mx-auto max-h-[400px]" 
-                      />
-                    </div>
+                    <img 
+                      src={entry.imageUrl} 
+                      alt="Entry image" 
+                      className="w-full h-auto rounded-lg object-cover mx-auto" 
+                    />
                   )}
                   
                   <div className="prose dark:prose-invert max-w-none">
-                    {entry.content.split('\n').map((paragraph, index) => (
-                      <p key={index}>{paragraph}</p>
-                    ))}
+                    {entry.content}
                   </div>
                 </div>
               );
