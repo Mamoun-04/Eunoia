@@ -18,7 +18,8 @@ import {
   Trophy,
   TrendingUp,
   BarChart,
-  Target
+  Target,
+  Home
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -121,7 +122,7 @@ export default function EntriesPage() {
   });
 
   const navigation = [
-    { name: "Today", href: "/", icon: CalendarDays },
+    { name: "Home", href: "/", icon: Home },
     { name: "Entries", href: "/entries", icon: PenSquare },
     { name: "Library", href: "/library", icon: BookOpen },
     { name: "Settings", href: "/settings", icon: Settings },

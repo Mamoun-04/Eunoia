@@ -13,6 +13,7 @@ import {
   PenSquare,
   BookOpen,
   Search,
+  Home,
   Filter
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -94,7 +95,7 @@ export default function LibraryPage() {
   });
 
   const navigation = [
-    { name: "Today", href: "/", icon: CalendarDays },
+    { name: "Home", href: "/", icon: Home },
     { name: "Entries", href: "/entries", icon: PenSquare },
     { name: "Library", href: "/library", icon: BookOpen },
     { name: "Settings", href: "/settings", icon: Settings },
