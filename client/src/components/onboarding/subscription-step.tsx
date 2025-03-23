@@ -143,17 +143,18 @@ export default function SubscriptionStep() {
 
           {/* Premium Plan */}
           <Card
-            className={`p-8 cursor-pointer transition-all relative overflow-hidden bg-gradient-to-br from-violet-50/30 via-blue-50/20 to-white/10 dark:from-violet-950/30 dark:via-blue-950/20 dark:to-transparent backdrop-blur-sm hover:scale-[1.02] ${
+            className={`p-8 cursor-pointer relative overflow-hidden bg-white dark:bg-zinc-900 ${
               selectedPlan === "premium"
-                ? "ring-2 ring-primary/50 shadow-xl shadow-primary/20 before:absolute before:inset-0 before:bg-primary/5 before:animate-pulse-slow"
-                : "hover:shadow-lg hover:shadow-primary/10"
-            } rounded-2xl transition-transform duration-300`}
+                ? "ring-2 ring-primary shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
+                : "hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
+            } rounded-2xl transition-all duration-300 hover:translate-y-[-2px]`}
             onClick={() => setSelectedPlan("premium")}
           >
-            <div className="absolute -top-px left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <div className="absolute top-3 right-3 text-xs bg-gradient-to-r from-violet-500/90 to-primary/90 text-white px-4 py-2 rounded-full font-medium shadow-lg shadow-primary/20 backdrop-blur-sm">
-              Unlock Your Best Self
-            </div>
+            <div className="absolute top-3 right-3">
+              <span className="text-xs bg-primary text-white px-4 py-2 rounded-full font-medium">
+                Unlock Your Best Self
+              </span>
+            </divv>
 
             <div className="mb-6">
               <div className="relative">
@@ -193,7 +194,7 @@ export default function SubscriptionStep() {
 
               <Button
                 variant="ghost"
-                className="w-full justify-between cursor-pointer"
+                className="w-full justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800/50"
                 onClick={() => {
                   setShowMoreFeatures((prev) => ({
                     ...prev,
@@ -201,27 +202,30 @@ export default function SubscriptionStep() {
                   }));
                 }}
               >
-                {showMoreFeatures.premium ? "Show less" : "Show more features"}
+                <span className="font-medium">
+                  {showMoreFeatures.premium ? "Hide features" : "Show more features"}
+                </span>
                 {showMoreFeatures.premium ? (
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="h-4 w-4 text-primary transition-transform duration-200" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-4 w-4 text-primary transition-transform duration-200" />
                 )}
               </Button>
 
-              {showMoreFeatures.premium && (
-                <ul className="space-y-3 mt-4">
-                  {plans.premium.extraFeatures.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className={`space-y-3 mt-4 transition-all duration-300 ${
+                showMoreFeatures.premium ? 'opacity-100 max-h-[500px]' : 'opacity-0 max-h-0 overflow-hidden'
+              }`}>
+                {plans.premium.extraFeatures.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span className="text-zinc-700 dark:text-zinc-300">{feature}</span>
+                  </li>
+                ))}
+              </div>
+              
               <Button 
                 size="lg" 
-                className="w-full mt-6 bg-primary" 
+                className="w-full mt-6 bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all font-medium" 
                 onClick={() => handleContinue()}
               >
                 Continue with Premium {isYearly ? "Yearly" : "Monthly"}
