@@ -156,59 +156,60 @@ export default function SubscriptionStep() {
                     /month
                   </span>
                 </div>
-              {isYearly && (
-                <div className="mt-2">
-                  <div className="text-sm text-muted-foreground">
-                    Billed ${plans.premium.yearlyPrice}/year
+                {isYearly && (
+                  <div className="mt-2">
+                    <div className="text-sm text-muted-foreground">
+                      Billed ${plans.premium.yearlyPrice}/year
+                    </div>
+                    <div className="text-sm text-primary font-medium mt-1">
+                      Save ${(3.99 * 12 - 34.99).toFixed(2)} per year
+                    </div>
                   </div>
-                  <div className="text-sm text-primary font-medium mt-1">
-                    Save ${(3.99 * 12 - 34.99).toFixed(2)} per year
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <ul className="space-y-4 my-6">
-              {plans.premium.topFeatures.map((feature) => (
-                <li key={feature} className="flex items-center gap-3 group">
-                  <div className="relative">
-                    <Check className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                  <span className="text-base">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-between"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMoreFeatures((prev) => ({
-                  ...prev,
-                  premium: !prev.premium,
-                }));
-              }}
-            >
-              {showMoreFeatures.premium ? "Show less" : "Show more features"}
-              {showMoreFeatures.premium ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
-
-            {showMoreFeatures.premium && (
-              <ul className="space-y-3 mt-4">
-                {plans.premium.extraFeatures.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span>{feature}</span>
+              <ul className="space-y-4 my-6">
+                {plans.premium.topFeatures.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 group">
+                    <div className="relative">
+                      <Check className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    <span className="text-base">{feature}</span>
                   </li>
                 ))}
               </ul>
-            )}
+
+              <Button
+                variant="ghost"
+                className="w-full justify-between"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMoreFeatures((prev) => ({
+                    ...prev,
+                    premium: !prev.premium,
+                  }));
+                }}
+              >
+                {showMoreFeatures.premium ? "Show less" : "Show more features"}
+                {showMoreFeatures.premium ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+
+              {showMoreFeatures.premium && (
+                <ul className="space-y-3 mt-4">
+                  {plans.premium.extraFeatures.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </Card>
         </div>
 
