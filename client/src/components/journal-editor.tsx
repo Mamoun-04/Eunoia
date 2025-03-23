@@ -14,8 +14,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertEntrySchema, categoryOptions, Entry } from "@shared/schema";
 import { MoodSelector } from "./mood-selector";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Image as ImageIcon, X, UploadCloud } from "lucide-react";
@@ -47,6 +47,19 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
       imageUrl: entry?.imageUrl || "",
     },
   });
+  
+  // Update word count when content changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'content' || name === undefined) {
+        const content = value.content as string || '';
+        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+        setWordCount(words);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,7 +330,14 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your thoughts</FormLabel>
+                  <div className="flex justify-between items-center">
+                    <FormLabel>Your thoughts</FormLabel>
+                    <div className="text-xs text-muted-foreground px-2 py-1 bg-muted/30 rounded-full">
+                      {wordCount} / 300 words {wordCount > 300 && 
+                        <span className="text-destructive font-semibold"> (Free limit)</span>
+                      }
+                    </div>
+                  </div>
                   <FormControl>
                     <textarea
                       className="w-full min-h-[180px] max-h-[350px] resize-y rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all leading-relaxed"
