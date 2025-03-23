@@ -30,9 +30,9 @@ export default function GoalSelection() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
       className="w-full px-4 py-8 max-w-4xl mx-auto"
     >
       <div className="mb-8">
@@ -49,8 +49,9 @@ export default function GoalSelection() {
         {goals.map((goal) => (
           <motion.div
             key={goal.id}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2 }}
           >
             <Card 
               className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
