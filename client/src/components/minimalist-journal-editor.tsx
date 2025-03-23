@@ -44,20 +44,21 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
   const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
-  const [progress, setProgress] = useState<number>(0);
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
   const [wordCount, setWordCount] = useState<number>(
     entry?.content ? entry.content.trim().split(/\s+/).length : 0
   );
+  const [isOverLimit, setIsOverLimit] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
     defaultValues: {
       title: entry?.title || "",
       content: entry?.content || "",
-      mood: entry?.mood || "neutral",
+      mood: "neutral", // Default mood, but will be hidden from UI
       category: entry?.category || initialCategory || "Daily Reflection",
       imageUrl: entry?.imageUrl || "",
     },
