@@ -290,7 +290,6 @@ export default function HomePage() {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <MoodSelector value={entry.mood} readonly />
                       <Button 
                         size="icon" 
                         variant="ghost"
