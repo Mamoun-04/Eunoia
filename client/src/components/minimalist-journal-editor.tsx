@@ -249,11 +249,50 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       onClose();
     },
     onError: (error: Error) => {
-      toast({
-        title: entry ? "Failed to update entry" : "Failed to save entry",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Check if it's a free user limit error
+      const errorMessage = error.message;
+      const isLimitError = 
+        errorMessage.includes("Free users") && 
+        (
+          errorMessage.includes("entries per day") || 
+          errorMessage.includes("words per entry") ||
+          errorMessage.includes("image per day")
+        );
+      
+      if (isLimitError) {
+        toast({
+          title: "Premium Feature",
+          description: (
+            <div className="space-y-2">
+              <p>{errorMessage}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => {
+                  // Here we would open the subscription dialog
+                  // You could implement a state/context to control this
+                  // For simplicity, we'll just show another toast for now
+                  toast({
+                    title: "Upgrade to Premium",
+                    description: "Unlock unlimited entries, images, and word count!",
+                  });
+                }}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: entry ? "Failed to update entry" : "Failed to save entry",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 

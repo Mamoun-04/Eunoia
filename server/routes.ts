@@ -37,17 +37,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Journal entries routes
-  app.post("/api/upload", requireAuth, upload.single('image'), async (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "No image provided" });
+  app.post("/api/upload", requireAuth, async (req, res) => {
+    try {
+      // Check if user can add an image (free user limit)
+      const canAddImage = await storage.canAddImage(req.user!.id);
+      if (!canAddImage.allowed) {
+        return res.status(403).json({ message: canAddImage.reason });
+      }
+
+      // Process the upload
+      upload.single('image')(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ message: err.message });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({ message: "No image provided" });
+        }
+        
+        const imageUrl = `/uploads/${req.file.filename}`;
+        res.json({ url: imageUrl });
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to process image upload" });
     }
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ url: imageUrl });
   });
 
   app.post("/api/entries", requireAuth, async (req, res) => {
     try {
+      // Check if user can create an entry (free user limit)
+      const canCreateEntry = await storage.canCreateEntry(req.user!.id);
+      if (!canCreateEntry.allowed) {
+        return res.status(403).json({ message: canCreateEntry.reason });
+      }
+
+      // Get content limit
+      const contentLimit = await storage.getEntryContentLimit(req.user!.id);
+      
+      // Check content length (word count)
       const data = insertEntrySchema.parse(req.body);
+      const wordCount = data.content.trim().split(/\s+/).length;
+      
+      if (wordCount > contentLimit) {
+        return res.status(403).json({ 
+          message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+        });
+      }
+      
       const entry = await storage.createEntry(req.user!.id, data);
       res.status(201).json(entry);
     } catch (error) {
@@ -73,6 +109,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.getEntry(parseInt(req.params.id));
       if (!entry || entry.userId !== req.user!.id) {
         return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // If the updated entry contains content, check content limits for free users
+      if (req.body.content) {
+        // Get word limit
+        const contentLimit = await storage.getEntryContentLimit(req.user!.id);
+        
+        // Count words in the new content
+        const wordCount = req.body.content.trim().split(/\s+/).length;
+        
+        // Enforce the limit for free users
+        if (wordCount > contentLimit) {
+          return res.status(403).json({ 
+            message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+          });
+        }
       }
 
       const updatedEntry = await storage.updateEntry(entry.id, req.body);

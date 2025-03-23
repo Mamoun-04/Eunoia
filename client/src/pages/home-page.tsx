@@ -18,7 +18,8 @@ import {
   MessageSquare,
   Edit,
   Image,
-  Search
+  Search,
+  X
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
