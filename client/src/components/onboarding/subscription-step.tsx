@@ -132,27 +132,30 @@ export default function SubscriptionStep() {
 
           {/* Premium Plan */}
           <Card
-            className={`p-6 cursor-pointer transition-all relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 ${
+            className={`p-8 cursor-pointer transition-all relative overflow-hidden bg-gradient-to-br from-violet-50/30 via-blue-50/20 to-white/10 dark:from-violet-950/30 dark:via-blue-950/20 dark:to-transparent backdrop-blur-sm hover:scale-[1.02] ${
               selectedPlan === "premium"
-                ? "ring-2 ring-primary shadow-lg shadow-primary/20"
-                : ""
-            }`}
+                ? "ring-2 ring-primary/50 shadow-xl shadow-primary/20 before:absolute before:inset-0 before:bg-primary/5 before:animate-pulse-slow"
+                : "hover:shadow-lg hover:shadow-primary/10"
+            } rounded-2xl transition-transform duration-300`}
             onClick={() => setSelectedPlan("premium")}
           >
-            <div className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-medium shadow-sm">
-              Most Popular
+            <div className="absolute -top-px left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            <div className="absolute top-3 right-3 text-xs bg-gradient-to-r from-violet-500/90 to-primary/90 text-white px-4 py-2 rounded-full font-medium shadow-lg shadow-primary/20 backdrop-blur-sm">
+              Unlock Your Best Self
             </div>
 
             <div className="mb-6">
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                {plans.premium.name}
-              </h3>
-              <div className="text-4xl font-bold mt-3 flex items-baseline">
-                ${isYearly ? "2.92" : "3.99"}
-                <span className="text-base font-normal text-muted-foreground ml-1">
-                  /month
-                </span>
-              </div>
+              <div className="relative">
+                <h3 className="text-2xl font-bold font-serif bg-gradient-to-r from-violet-600 to-primary bg-clip-text text-transparent">
+                  {plans.premium.name}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1 font-light">For serious journalers</p>
+                <div className="text-5xl font-light mt-4 flex items-baseline tracking-tight transition-transform duration-300 hover:scale-105">
+                  <span className="font-normal">${isYearly ? "2.92" : "3.99"}</span>
+                  <span className="text-base font-light text-muted-foreground ml-1">
+                    /month
+                  </span>
+                </div>
               {isYearly && (
                 <div className="mt-2">
                   <div className="text-sm text-muted-foreground">
@@ -165,11 +168,14 @@ export default function SubscriptionStep() {
               )}
             </div>
 
-            <ul className="space-y-3 mb-4">
+            <ul className="space-y-4 my-6">
               {plans.premium.topFeatures.map((feature) => (
-                <li key={feature} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>{feature}</span>
+                <li key={feature} className="flex items-center gap-3 group">
+                  <div className="relative">
+                    <Check className="h-5 w-5 text-primary transition-transform duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <span className="text-base">{feature}</span>
                 </li>
               ))}
             </ul>
