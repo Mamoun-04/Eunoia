@@ -327,11 +327,17 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
           
-          {/* Section Title and Word Count */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="section-title">
-              {sectionTitle}
-            </div>
+          {/* Title Input */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Entry Title"
+              className="w-full text-xl font-medium bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-muted-foreground/50"
+            />
+          </div>
+
+          {/* Word Count */}
+          <div className="flex justify-end mb-4">
             <div className="text-xs text-muted-foreground/80 font-medium bg-background/40 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
               {wordCount} / 300 words {wordCount > 300 && 
                 <span className="text-destructive font-semibold"> (Free limit)</span>
@@ -339,10 +345,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             </div>
           </div>
           
-          {/* Sentence Starters */}
+          {/* Simplified Sentence Starters */}
           <div className="sentence-starters-container">
             <div className="sentence-starters">
-              {SENTENCE_STARTERS.map((starter, index) => (
+              {['Today I felt...', 'I\'m grateful for...', 'Looking forward to...'].map((starter, index) => (
                 <motion.button 
                   key={index}
                   className="sentence-starter"
