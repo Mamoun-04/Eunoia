@@ -128,6 +128,17 @@ export default function SubscriptionStep() {
                 </li>
               ))}
             </ul>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full mt-6" 
+              onClick={() => handleContinue()}
+            >
+              Continue with Free Plan
+            </Button>
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              You can upgrade anytime
+            </p>
           </Card>
 
           {/* Premium Plan */}
@@ -208,6 +219,16 @@ export default function SubscriptionStep() {
                   ))}
                 </ul>
               )}
+              <Button 
+                size="lg" 
+                className="w-full mt-6 bg-primary" 
+                onClick={() => handleContinue()}
+              >
+                Continue with Premium {isYearly ? "Yearly" : "Monthly"}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                Cancel anytime. No questions asked.
+              </p>
             </div>
           </Card>
         </div>
@@ -228,22 +249,7 @@ export default function SubscriptionStep() {
         </div>
       </div>
 
-      {/* Fixed Bottom CTA */}
-      <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t mt-auto">
-        <div className="max-w-md mx-auto px-4">
-          <Button size="lg" className="w-full" onClick={handleContinue}>
-            Continue with{" "}
-            {selectedPlan === "free"
-              ? "Free Plan"
-              : `Premium ${isYearly ? "Yearly" : "Monthly"}`}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            {selectedPlan === "free"
-              ? "You can upgrade anytime"
-              : "Cancel anytime. No questions asked."}
-          </p>
-        </div>
-      </div>
+      
     </motion.div>
   );
 }
