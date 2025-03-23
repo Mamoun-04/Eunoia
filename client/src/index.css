@@ -361,3 +361,12 @@
   font-weight: bold;
   border: 1px solid hsl(var(--primary));
 }
+
+/* Postcard layout styling */
+.postcard-layout {
+  @apply flex flex-col overflow-hidden;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}

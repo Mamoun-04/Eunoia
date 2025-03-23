@@ -305,15 +305,19 @@ export default function HomePage() {
                   </div>
                   
                   {entry.imageUrl && (
-                    <img 
-                      src={entry.imageUrl} 
-                      alt="Entry image" 
-                      className="w-full h-auto rounded-lg object-cover mx-auto" 
-                    />
+                    <div className="overflow-hidden rounded-lg">
+                      <img 
+                        src={entry.imageUrl} 
+                        alt="Entry image" 
+                        className="w-full h-auto object-cover mx-auto max-h-[400px]" 
+                      />
+                    </div>
                   )}
                   
                   <div className="prose dark:prose-invert max-w-none">
-                    {entry.content}
+                    {entry.content.split('\n').map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
                   </div>
                 </div>
               );
