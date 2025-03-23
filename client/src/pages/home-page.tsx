@@ -205,12 +205,20 @@ export default function HomePage() {
                       </>
                     ) : (
                       <>
-                        {/* Card without image (text only) */}
+                        {/* Card without image */}
                         <div className="p-5">
-                          <div className="flex justify-between items-start">
-                            <h3 className="text-lg font-medium mb-1">
+                          <div className="flex flex-col gap-1">
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
+                            </div>
+                            <h3 className="text-lg font-medium">
                               {entry.title}
                             </h3>
+                            <p className="text-sm text-muted-foreground line-clamp-3">
+                              {entry.content}
+                            </p>
+                          </div>
+                          <div className="flex justify-end mt-4">
                             <Button 
                               size="icon" 
                               variant="ghost"
@@ -224,12 +232,6 @@ export default function HomePage() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground mb-3">
-                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
-                          </p>
-                          <p className="text-sm text-muted-foreground/90 line-clamp-4">
-                            {entry.content}
-                          </p>
                         </div>
                       </>
                     )}
