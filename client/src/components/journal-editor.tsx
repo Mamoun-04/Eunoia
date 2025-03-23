@@ -32,6 +32,9 @@ type Props = {
 export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
+  const [wordCount, setWordCount] = useState<number>(
+    entry?.content ? entry.content.trim().split(/\s+/).length : 0
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({

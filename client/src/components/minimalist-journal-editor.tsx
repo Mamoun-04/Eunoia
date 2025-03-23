@@ -46,6 +46,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
   const [progress, setProgress] = useState<number>(0);
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
+  const [wordCount, setWordCount] = useState<number>(
+    entry?.content ? entry.content.trim().split(/\s+/).length : 0
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -84,7 +87,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     return () => clearInterval(interval);
   }, [currentPrompt, form]);
 
-  // Update progress bar based on content length and adjust textarea height
+  // Update progress bar, word count, and adjust textarea height
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'content' || name === undefined) {
@@ -92,6 +95,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         // Consider "complete" at 100 characters, scale accordingly
         const newProgress = Math.min(content.length / 100, 1) * 100;
         setProgress(newProgress);
+        
+        // Update word count
+        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+        setWordCount(words);
         
         // Auto-grow textarea
         if (textareaRef.current) {
@@ -320,9 +327,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
           
-          {/* Section Title */}
-          <div className="section-title">
-            {sectionTitle}
+          {/* Section Title and Word Count */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="section-title">
+              {sectionTitle}
+            </div>
+            <div className="text-xs text-muted-foreground/80 font-medium bg-background/40 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+              {wordCount} / 300 words {wordCount > 300 && 
+                <span className="text-destructive font-semibold"> (Free limit)</span>
+              }
+            </div>
           </div>
           
           {/* Sentence Starters */}
