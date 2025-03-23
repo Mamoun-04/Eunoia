@@ -102,8 +102,9 @@ export const subscriptionPlans = {
     interval: "month"
   },
   yearly: {
-    price: 39.99,
+    price: 34.99,
     name: "Yearly Plan", 
-    interval: "year"
+    interval: "year",
+    monthlyPrice: 2.92
   }
 } as const;

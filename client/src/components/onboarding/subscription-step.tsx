@@ -119,26 +119,31 @@ export default function SubscriptionStep() {
 
           {/* Premium Plan */}
           <Card 
-            className={`p-6 cursor-pointer transition-all ${
-              selectedPlan === 'premium' ? 'ring-2 ring-primary' : ''
+            className={`p-6 cursor-pointer transition-all relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 ${
+              selectedPlan === 'premium' ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
             }`}
             onClick={() => setSelectedPlan('premium')}
           >
-            <div className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
-              Popular Choice
+            <div className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-medium shadow-sm">
+              Most Popular
             </div>
             
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold">{plans.premium.name}</h3>
-              <div className="text-3xl font-bold mt-2">
-                ${isYearly ? '3.99' : '4.99'}
-                <span className="text-base font-normal text-muted-foreground">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">{plans.premium.name}</h3>
+              <div className="text-4xl font-bold mt-3 flex items-baseline">
+                ${isYearly ? '2.92' : '3.99'}
+                <span className="text-base font-normal text-muted-foreground ml-1">
                   /month
                 </span>
               </div>
               {isYearly && (
-                <div className="text-sm text-muted-foreground">
-                  Billed ${plans.premium.yearlyPrice}/year
+                <div className="mt-2">
+                  <div className="text-sm text-muted-foreground">
+                    Billed ${plans.premium.yearlyPrice}/year
+                  </div>
+                  <div className="text-sm text-primary font-medium mt-1">
+                    Save ${((3.99 * 12) - 34.99).toFixed(2)} per year
+                  </div>
                 </div>
               )}
             </div>
