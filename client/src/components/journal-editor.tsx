@@ -46,7 +46,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   });
 
   // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -71,28 +71,44 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
       return;
     }
 
+    // Set local preview for immediate feedback
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageDataUrl = event.target?.result as string;
       setImagePreview(imageDataUrl);
-      form.setValue("imageUrl", imageDataUrl);
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload the file to the server
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+      
+      const data = await response.json();
+      form.setValue("imageUrl", data.url);
       
       toast({
         title: "Image uploaded",
-        description: "Your image has been added to the entry.",
+        description: "Your image has been successfully uploaded.",
         variant: "default",
       });
-    };
-    
-    reader.onerror = () => {
+    } catch (error) {
       toast({
         title: "Upload failed",
-        description: "There was a problem processing your image. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
         variant: "destructive",
       });
-    };
-    
-    reader.readAsDataURL(file);
+    }
   };
 
   const removeImage = () => {
