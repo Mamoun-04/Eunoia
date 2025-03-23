@@ -97,12 +97,12 @@ export const categoryOptions = [
 
 export const subscriptionPlans = {
   monthly: {
-    price: 14.99,
+    price: 3.99,
     name: "Monthly Plan",
     interval: "month"
   },
   yearly: {
-    price: 89.99,
+    price: 39.99,
     name: "Yearly Plan", 
     interval: "year"
   }

@@ -18,31 +18,31 @@ const plans = {
     name: 'Free',
     price: 0,
     topFeatures: [
-      'Basic journal entries',
-      'Simple mood tracking',
-      'Daily reflection prompts'
+      'Limited entries per day',
+      'Limited guided journaling lessons',
+      'Basic theme options'
     ],
     extraFeatures: [
-      'Basic analytics',
-      'Web access',
-      'Standard support'
+      'Limited photo uploads',
+      'Basic features only',
+      'No achievement tracking'
     ]
   },
   premium: {
     name: 'Premium',
-    monthlyPrice: 4.99,
+    monthlyPrice: 3.99,
     yearlyPrice: 39.99,
     topFeatures: [
       'Unlimited journal entries',
-      'AI journal assistant',
-      'Advanced analytics & insights'
+      'Unlimited guided journaling lessons',
+      'Full theme customization'
     ],
     extraFeatures: [
-      'Custom categories & tags',
-      'Priority support',
-      'Cloud backup & sync',
-      'Premium guided prompts',
-      'Advanced mood analytics'
+      'Unlimited photo uploads',
+      'Full achievement tracking',
+      'Unlimited AI assistant access',
+      'Premium features access',
+      'Priority support'
     ]
   }
 };
