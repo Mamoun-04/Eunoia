@@ -8,6 +8,7 @@ import { JournalEditor } from "@/components/journal-editor";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
 import { useState } from "react";
+import { EntryMasonryGrid } from "@/components/entry-masonry-grid";
 import {
   LayoutGrid,
   LogOut,
@@ -184,15 +185,14 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredEntries.map((entry) => (
-                  <Card 
-                    key={entry.id} 
-                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col"
-                    onClick={() => setViewEntryId(entry.id)}
-                  >
-                    {entry.imageUrl ? (
-                      <>
+              <EntryMasonryGrid 
+                entries={filteredEntries}
+                onEdit={(entry) => {
+                  setSelectedEntry(entry);
+                  setIsEditing(true);
+                }}
+                onView={(id) => setViewEntryId(id)}
+              />
                         {/* Card with image */}
                         <div className="relative overflow-hidden rounded-t-xl aspect-square">
                           <img 
