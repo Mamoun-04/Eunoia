@@ -279,7 +279,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   });
 
   return (
-    <div>
+    <>
       <Dialog open onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
           <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
@@ -290,164 +290,164 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
               onSubmit={form.handleSubmit((data) => entryMutation.mutate(data))}
               className="space-y-5 overflow-y-auto max-h-[calc(90vh-10rem)] pr-1.5 custom-scrollbar"
             >
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Entry title..." {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Entry title..." {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="mood"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>How are you feeling?</FormLabel>
-                  <FormControl>
-                    <MoodSelector
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Image Upload Field */}
-            <FormField
-              control={form.control}
-              name="imageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image (Optional)</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      {imagePreview ? (
-                        <div className="relative overflow-hidden rounded-lg transition-all group">
-                          <div className="aspect-video w-full max-w-full overflow-hidden rounded-lg">
-                            <img 
-                              src={imagePreview} 
-                              alt="Entry preview" 
-                              className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 hover:bg-background shadow-sm transition-all"
-                            onClick={removeImage}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div 
-                          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 md:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
-                          onClick={() => fileInputRef.current?.click()}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                              const file = e.dataTransfer.files[0];
-                              // Create a synthetic event object with the file
-                              const syntheticEvent = {
-                                target: {
-                                  files: e.dataTransfer.files
-                                }
-                              } as React.ChangeEvent<HTMLInputElement>;
-                              
-                              handleImageUpload(syntheticEvent);
-                            }
-                          }}
-                        >
-                          <UploadCloud className="h-8 w-8 mx-auto mb-3 text-primary/60 group-hover:text-primary/80 transition-all duration-200 group-hover:scale-110" />
-                          <p className="text-sm font-medium group-hover:text-primary/90 transition-colors">Drag and drop or click to upload</p>
-                          <p className="text-xs text-muted-foreground mt-1.5 group-hover:text-primary/70 transition-colors">JPG, PNG or GIF (max 5MB)</p>
-                        </div>
-                      )}
-                      <input 
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        // Don't use {...field} as it would override ref and onChange
-                        value="" // Reset the value to allow the same file to be selected again
+              <FormField
+                control={form.control}
+                name="mood"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>How are you feeling?</FormLabel>
+                    <FormControl>
+                      <MoodSelector
+                        value={field.value}
+                        onChange={field.onChange}
                       />
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel>Your thoughts</FormLabel>
-                    <div className="text-xs text-muted-foreground px-2 py-1 bg-muted/30 rounded-full">
-                      {wordCount} / {wordLimit} words {!isPremium && wordCount >= wordLimit * 0.9 && 
-                        <span className="text-destructive font-semibold"> (Free limit)</span>
-                      }
-                    </div>
-                  </div>
-                  <FormControl>
-                    <textarea
-                      className="w-full min-h-[180px] max-h-[350px] resize-y rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all leading-relaxed"
-                      placeholder="Write your thoughts here... What's on your mind today?"
-                      style={{ 
-                        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.02)"
-                      }}
-                      {...field}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+              {/* Image Upload Field */}
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image (Optional)</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        {imagePreview ? (
+                          <div className="relative overflow-hidden rounded-lg transition-all group">
+                            <div className="aspect-video w-full max-w-full overflow-hidden rounded-lg">
+                              <img 
+                                src={imagePreview} 
+                                alt="Entry preview" 
+                                className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 hover:bg-background shadow-sm transition-all"
+                              onClick={removeImage}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div 
+                            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 md:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              
+                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                const file = e.dataTransfer.files[0];
+                                // Create a synthetic event object with the file
+                                const syntheticEvent = {
+                                  target: {
+                                    files: e.dataTransfer.files
+                                  }
+                                } as React.ChangeEvent<HTMLInputElement>;
+                                
+                                handleImageUpload(syntheticEvent);
+                              }
+                            }}
+                          >
+                            <UploadCloud className="h-8 w-8 mx-auto mb-3 text-primary/60 group-hover:text-primary/80 transition-all duration-200 group-hover:scale-110" />
+                            <p className="text-sm font-medium group-hover:text-primary/90 transition-colors">Drag and drop or click to upload</p>
+                            <p className="text-xs text-muted-foreground mt-1.5 group-hover:text-primary/70 transition-colors">JPG, PNG or GIF (max 5MB)</p>
+                          </div>
+                        )}
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          // Don't use {...field} as it would override ref and onChange
+                          value="" // Reset the value to allow the same file to be selected again
+                        />
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={entryMutation.isPending}
-              >
-                {entry ? "Update Entry" : "Save Entry"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-    
-    <PremiumFeatureModal
-      open={showPremiumFeatureModal}
-      onOpenChange={setShowPremiumFeatureModal}
-      feature={premiumFeature}
-      onSubscribe={() => {
-        // This would be called after successful subscription
-        setIsPremium(true);
-        setWordLimit(1000);
-        // Close the modal
-        setShowPremiumFeatureModal(false);
-      }}
-    />
-    </div>
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between items-center">
+                      <FormLabel>Your thoughts</FormLabel>
+                      <div className="text-xs text-muted-foreground px-2 py-1 bg-muted/30 rounded-full">
+                        {wordCount} / {wordLimit} words {!isPremium && wordCount >= wordLimit * 0.9 && 
+                          <span className="text-destructive font-semibold"> (Free limit)</span>
+                        }
+                      </div>
+                    </div>
+                    <FormControl>
+                      <textarea
+                        className="w-full min-h-[180px] max-h-[350px] resize-y rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all leading-relaxed"
+                        placeholder="Write your thoughts here... What's on your mind today?"
+                        style={{ 
+                          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                          boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.02)"
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={entryMutation.isPending}
+                >
+                  {entry ? "Update Entry" : "Save Entry"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      <PremiumFeatureModal
+        open={showPremiumFeatureModal}
+        onOpenChange={setShowPremiumFeatureModal}
+        feature={premiumFeature}
+        onSubscribe={() => {
+          // This would be called after successful subscription
+          setIsPremium(true);
+          setWordLimit(1000);
+          // Close the modal
+          setShowPremiumFeatureModal(false);
+        }}
+      />
+    </>
   );
 }
