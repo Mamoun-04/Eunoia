@@ -36,9 +36,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   const [wordCount, setWordCount] = useState<number>(
     entry?.content ? entry.content.trim().split(/\s+/).length : 0
   );
-  const [canUploadImage, setCanUploadImage] = useState(true); // Added state for image upload control
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
     defaultValues: {
@@ -49,7 +48,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
       imageUrl: entry?.imageUrl || "",
     },
   });
-
+  
   // Update word count when content changes
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -59,7 +58,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
         setWordCount(words);
       }
     });
-
+    
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
@@ -96,26 +95,25 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
       setImagePreview(imageDataUrl);
     };
     reader.readAsDataURL(file);
-
+    
     // Upload the file to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
-
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         throw new Error('Image upload failed');
       }
-
+      
       const data = await response.json();
       form.setValue("imageUrl", data.url);
-      setCanUploadImage(false); // Disable upload after successful upload
-
+      
       toast({
         title: "Image uploaded",
         description: "Your image has been successfully uploaded.",
@@ -136,8 +134,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    setCanUploadImage(true); // Enable upload after removing image
-
+    
     toast({
       title: "Image removed",
       description: "The image has been removed from your entry.",
@@ -178,7 +175,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
           errorMessage.includes("words per entry") ||
           errorMessage.includes("image per day")
         );
-
+      
       if (isLimitError) {
         toast({
           title: "Premium Feature",
@@ -286,39 +283,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                         </div>
                       ) : (
                         <div 
-                          className={`border-2 border-dashed ${
-                            canUploadImage 
-                              ? "border-muted-foreground/25 hover:border-primary/30 hover:bg-primary/5 cursor-pointer" 
-                              : "border-muted-foreground/10 bg-muted/5 cursor-not-allowed"
-                          } rounded-lg p-6 md:p-8 text-center transition-all duration-200 group`}
-                          onClick={() => {
-                            if (canUploadImage) {
-                              fileInputRef.current?.click();
-                            } else {
-                              toast({
-                                title: "Free User Limit Reached",
-                                description: (
-                                  <div className="space-y-2">
-                                    <p>Free users can only upload 1 image per day. Upgrade to Premium for unlimited image uploads!</p>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="mt-2 w-full"
-                                      onClick={() => {
-                                        toast({
-                                          title: "Upgrade to Premium",
-                                          description: "Unlock unlimited entries, images, and word count!",
-                                        });
-                                      }}
-                                    >
-                                      Upgrade to Premium
-                                    </Button>
-                                  </div>
-                                ),
-                                duration: 5000,
-                              });
-                            }
-                          }}
+                          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 md:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer group"
+                          onClick={() => fileInputRef.current?.click()}
                           onDragOver={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -326,7 +292,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                           onDrop={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-
+                            
                             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                               const file = e.dataTransfer.files[0];
                               // Create a synthetic event object with the file
@@ -335,7 +301,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                                   files: e.dataTransfer.files
                                 }
                               } as React.ChangeEvent<HTMLInputElement>;
-
+                              
                               handleImageUpload(syntheticEvent);
                             }
                           }}
