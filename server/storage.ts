@@ -8,6 +8,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
+  deleteUser(id: number, feedback?: string): Promise<void>;
   
   createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
   getEntries(userId: number): Promise<Entry[]>;
@@ -115,6 +116,23 @@ export class MemStorage implements IStorage {
 
   async deleteEntry(id: number): Promise<void> {
     this.entries.delete(id);
+  }
+  
+  async deleteUser(id: number, feedback?: string): Promise<void> {
+    // Optionally store feedback before deletion
+    if (feedback) {
+      // In a real application, we might store this feedback in a separate table
+      console.log(`User ${id} deletion feedback: ${feedback}`);
+    }
+    
+    // Delete all user's entries
+    const userEntries = await this.getEntries(id);
+    for (const entry of userEntries) {
+      await this.deleteEntry(entry.id);
+    }
+    
+    // Delete the user
+    this.users.delete(id);
   }
 
   // Free user limit implementation methods

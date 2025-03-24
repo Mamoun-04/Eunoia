@@ -221,6 +221,35 @@ User message: ${message}`;
       res.status(500).json({ error: 'Failed to process chat message' });
     }
   });
+  
+  // Delete account endpoint
+  app.post("/api/delete-account", requireAuth, async (req, res) => {
+    try {
+      const { feedback, reason } = req.body;
+      
+      // Format the feedback
+      let formattedFeedback = "";
+      if (reason) {
+        formattedFeedback = `Reason: ${reason}`;
+        if (reason === "Other" && feedback) {
+          formattedFeedback += `, Details: ${feedback}`;
+        }
+      }
+      
+      // Delete the user and all associated data
+      await storage.deleteUser(req.user!.id, formattedFeedback);
+      
+      // Logout the user
+      req.logout((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Error during logout" });
+        }
+        res.status(200).json({ message: "Account deleted successfully" });
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
