@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { useState } from "react";
 import { BadgesDialog } from "@/components/badges-dialog";
@@ -32,12 +32,12 @@ import { Badge } from "@/components/ui/badge";
 // Helper function to calculate streaks
 const calculateStreak = (entries: Entry[]) => {
   if (entries.length === 0) return 0;
-  
+
   const sortedDates = entries
     .map(e => new Date(e.createdAt).toISOString().split('T')[0])
     .sort()
     .reverse();
-    
+
   let streak = 1;
   for (let i = 1; i < sortedDates.length; i++) {
     const curr = new Date(sortedDates[i]);
@@ -46,7 +46,7 @@ const calculateStreak = (entries: Entry[]) => {
     if (diffDays === 1) streak++;
     else break;
   }
-  
+
   return streak;
 };
 
@@ -116,6 +116,7 @@ export default function EntriesPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
   const [showBadges, setShowBadges] = useState(false);
+  const queryClient = useQueryClient(); // Added queryClient
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
@@ -138,10 +139,10 @@ export default function EntriesPage() {
   const totalWords = entries.reduce((acc, entry) => {
     return acc + entry.content.split(/\s+/).filter(word => word.length > 0).length;
   }, 0);
-  
+
   // Calculate current streak
   const currentStreak = calculateStreak(entries);
-  
+
   // Get next milestone for streaks
   const streakMilestones = [3, 7, 14, 30, 90, 365];
   const nextStreakMilestone = streakMilestones.find(m => m > currentStreak) || currentStreak;
@@ -278,7 +279,7 @@ export default function EntriesPage() {
                   View All
                 </Button>
               </div>
-              
+
               <div className="flex flex-col gap-6">
                 {/* Streak Achievement Progress */}
                 <div className="flex flex-col gap-3">
@@ -295,7 +296,7 @@ export default function EntriesPage() {
                       {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 w-full">
                     <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
@@ -313,7 +314,7 @@ export default function EntriesPage() {
                       {currentStreak}/{nextStreakMilestone}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-1">
                     <div className="text-xs text-muted-foreground">
                       {currentStreak >= nextStreakMilestone 
@@ -328,7 +329,7 @@ export default function EntriesPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Words Achievement Progress */}
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -344,7 +345,7 @@ export default function EntriesPage() {
                       {totalWords.toLocaleString()} words
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 w-full">
                     <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       {totalWords >= 1000 && (
@@ -375,7 +376,7 @@ export default function EntriesPage() {
                        totalWords >= 1000 ? `${Math.round(totalWords/1000)}/5K` : `${totalWords}/1K`}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-1">
                     <div className="text-xs text-muted-foreground">
                       {totalWords >= 100000 
@@ -399,7 +400,7 @@ export default function EntriesPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Entry Frequency Progress */}
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -415,7 +416,7 @@ export default function EntriesPage() {
                       {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 w-full">
                     <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
@@ -446,7 +447,7 @@ export default function EntriesPage() {
                        entries.length >= 5 ? '10' : '5'}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-1">
                     <div className="text-xs text-muted-foreground">
                       {entries.length >= 365 
@@ -472,7 +473,7 @@ export default function EntriesPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <BadgesDialog open={showBadges} onOpenChange={setShowBadges} />
               </div>
             </div>
@@ -490,6 +491,12 @@ export default function EntriesPage() {
                       {format(new Date(entry.createdAt), "MMM d, yyyy")}
                     </p>
                   </div>
+                  {/*Added delete button here */}
+                  <Button variant="destructive" size="icon" onClick={() => {
+                    //Implementation to delete the entry
+                  }}>
+                    X
+                  </Button>
                 </div>
                 <p className="text-sm line-clamp-2">{entry.content}</p>
               </Card>
