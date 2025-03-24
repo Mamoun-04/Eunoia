@@ -168,7 +168,7 @@ export default function HomePage() {
                     {entry.imageUrl ? (
                       <>
                         {/* Card with image (postcard style) */}
-                        <div className="relative aspect-[3/2] overflow-hidden">
+                        <div className="relative aspect-[3/2] overflow-hidden rounded-t-xl">
                           <img 
                             src={entry.imageUrl} 
                             alt="Journal entry" 
@@ -190,11 +190,9 @@ export default function HomePage() {
                           </div>
                         </div>
                         <div className="p-4">
-                          <div className="flex justify-between items-start">
-                            <h3 className="text-lg font-medium line-clamp-1 mb-1">
-                              {entry.title}
-                            </h3>
-                          </div>
+                          <h3 className="text-lg font-medium line-clamp-1 mb-1">
+                            {entry.title}
+                          </h3>
                           <p className="text-xs text-muted-foreground mb-2">
                             {format(new Date(entry.createdAt), "MMMM d, yyyy")}
                           </p>
@@ -277,45 +275,67 @@ export default function HomePage() {
       {/* Entry Viewing Dialog */}
       {viewEntryId !== null && (
         <Dialog open={viewEntryId !== null} onOpenChange={() => setViewEntryId(null)}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 overflow-hidden">
             {(() => {
               const entry = entries.find(e => e.id === viewEntryId);
               if (!entry) return null;
 
               return (
-                <div className="space-y-6">
-                  <div className="flex justify-between items-start">
+                <div className="flex flex-col h-full">
+                  {entry.imageUrl && (
+                    <div className="relative w-full">
+                      <img 
+                        src={entry.imageUrl} 
+                        alt="Entry image" 
+                        className="w-full h-auto object-cover max-h-[40vh]" 
+                      />
+                      <div className="absolute top-4 right-4">
+                        <Button 
+                          size="icon" 
+                          variant="ghost"
+                          className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm"
+                          onClick={() => {
+                            setSelectedEntry(entry);
+                            setIsEditing(true);
+                            setViewEntryId(null);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                    {!entry.imageUrl && (
+                      <div className="flex justify-between items-start mb-2">
+                        <div></div>
+                        <Button 
+                          size="icon" 
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedEntry(entry);
+                            setIsEditing(true);
+                            setViewEntryId(null);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    
                     <div>
-                      <h2 className="text-2xl font-bold">{entry.title}</h2>
+                      <h2 className="text-2xl font-bold mb-1">{entry.title}</h2>
                       <p className="text-sm text-muted-foreground">
                         {format(new Date(entry.createdAt), "PPP")}
                       </p>
                     </div>
-                    <div>
-                      <Button 
-                        size="icon" 
-                        variant="ghost"
-                        onClick={() => {
-                          setSelectedEntry(entry);
-                          setIsEditing(true);
-                          setViewEntryId(null);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+
+                    <div className="prose dark:prose-invert max-w-none">
+                      {entry.content.split('\n').map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                      ))}
                     </div>
-                  </div>
-
-                  {entry.imageUrl && (
-                    <img 
-                      src={entry.imageUrl} 
-                      alt="Entry image" 
-                      className="w-full h-auto rounded-lg object-cover mx-auto" 
-                    />
-                  )}
-
-                  <div className="prose dark:prose-invert max-w-none">
-                    {entry.content}
                   </div>
                 </div>
               );
