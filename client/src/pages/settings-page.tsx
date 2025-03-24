@@ -48,10 +48,11 @@ export default function SettingsPage() {
     }
   };
 
-  const handleFeedbackSubmit = () => {
+  const handleFeedbackSubmit = async () => {
     //Submit feedback here
     setShowFeedbackDialog(false);
-    setShowDeleteDialog(true);
+    // Show delete confirmation after feedback
+    handleDeleteAccount();
   };
 
   return (
