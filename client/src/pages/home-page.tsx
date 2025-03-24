@@ -123,18 +123,17 @@ export default function HomePage() {
               </Button>
             ) : (
               <div className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setPremiumFeature("daily_entry");
-                    setShowPremiumFeatureModal(true);
-                  }}
-                >
+                <Button variant="outline" disabled>
                   <PenSquare className="h-5 w-5 mr-2" />
                   New Entry
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  Daily limit reached
+                  Daily limit reached. <button 
+                    className="text-primary hover:underline" 
+                    onClick={() => setShowSubscriptionDialog(true)}
+                  >
+                    Upgrade
+                  </button>
                 </p>
               </div>
             )}
@@ -368,13 +367,6 @@ export default function HomePage() {
       <SubscriptionDialog
         open={showSubscriptionDialog}
         onOpenChange={setShowSubscriptionDialog}
-      />
-      
-      <PremiumFeatureModal
-        open={showPremiumFeatureModal}
-        onOpenChange={setShowPremiumFeatureModal}
-        feature={premiumFeature}
-        onSubscribe={() => setIsEditing(true)}
       />
     </div>
   );
