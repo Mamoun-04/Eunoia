@@ -63,6 +63,38 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     },
   });
 
+  const entryMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertEntrySchema>) => {
+      if (entry?.id) {
+        return await fetch(`/api/entries/${entry.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, imageUrl: imagePreview }),
+        }).then((res) => res.json());
+      }
+      return await fetch("/api/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, imageUrl: imagePreview }),
+      }).then((res) => res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      toast({
+        title: entry ? "Entry updated" : "Entry created",
+        description: "Your journal entry has been saved.",
+      });
+      onClose();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save journal entry.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Cycle through prompts every few seconds when there's no content yet
   useEffect(() => {
     if (form.getValues('content')) return;
