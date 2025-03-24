@@ -478,6 +478,29 @@ export default function EntriesPage() {
             </div>
           </div>
 
+          {/* Featured Lesson */}
+          {SAMPLE_LESSONS.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Today's Featured Lesson</h2>
+              <Card className="bg-white/5 backdrop-blur border border-white/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    {SAMPLE_LESSONS[Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length].title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    {SAMPLE_LESSONS[Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length].description}
+                  </p>
+                  <Button variant="outline" className="mt-4" asChild>
+                    <Link href="/library">Start Reflection</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Recent Entries */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Recent Entries</h2>
