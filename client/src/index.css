@@ -5,38 +5,134 @@
 @tailwind utilities;
 
 /* Premium theme styles */
-:root {
-  --theme-primary: hsl(var(--primary));
-  --theme-color: var(--primary);
-  --theme-color-hover: var(--primary-hover);
-  --theme-color-light: var(--primary-light, var(--primary));
-}
-
-/* Define CSS variables for themes */
 @layer base {
-  .theme-sunset .bg-primary { background-color: var(--theme-color); }
-  .theme-sunset .text-primary { color: var(--theme-color); }
-  .theme-sunset .border-primary { border-color: var(--theme-color); }
-  
-  .theme-ocean .bg-gradient {
-    background: linear-gradient(to right, var(--theme-color), var(--theme-color-light));
+  :root {
+    --theme-primary: hsl(var(--primary));
   }
-  
-  .theme-forest .bg-pattern {
-    background-color: var(--theme-color);
-    background-image: radial-gradient(var(--theme-color-light) 2px, transparent 2px);
-    background-size: 25px 25px;
+
+  /* Base theme overrides for the custom premium themes */
+  [class^="theme-"] {
+    /* Enhanced theme-specific styling */
+    color-scheme: light;
   }
-  
-  /* Premium theme card shadow effects */
+
+  /* Dark mode for premium themes */
+  .dark[class^="theme-"] {
+    color-scheme: dark;
+  }
+
+  /* Midnight Theme */
+  .theme-midnight {
+    --primary-foreground: #ffffff;
+    --ring: var(--primary);
+    --destructive: #e11d48;
+    --destructive-foreground: #ffffff;
+    --input: var(--border);
+    --popover: #1e1e2e;
+    --popover-foreground: var(--foreground);
+
+    /* Additional custom styles */
+    --shadow-color: rgba(14, 12, 41, 0.2);
+  }
+
+  /* Midnight theme has special styling for cards */
+  .theme-midnight .card,
+  .theme-midnight .premium-card {
+    background: rgba(49, 46, 129, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(67, 56, 202, 0.2);
+  }
+
+  /* Sunset Theme */
+  .theme-sunset {
+    --primary-foreground: #ffffff;
+    --ring: var(--primary);
+    --destructive: #9f1239;
+    --destructive-foreground: #ffffff;
+    --input: var(--border);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+
+    /* Additional custom styles */
+    --shadow-color: rgba(127, 29, 29, 0.1);
+  }
+
+  /* Forest Theme */
+  .theme-forest {
+    --primary-foreground: #ffffff;
+    --ring: var(--primary);
+    --destructive: #be123c;
+    --destructive-foreground: #ffffff;
+    --input: var(--border);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+
+    /* Additional custom styles */
+    --shadow-color: rgba(22, 101, 52, 0.1);
+  }
+
+  /* Ocean Theme */
+  .theme-ocean {
+    --primary-foreground: #ffffff;
+    --ring: var(--primary);
+    --destructive: #be123c;
+    --destructive-foreground: #ffffff;
+    --input: var(--border);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+
+    /* Additional custom styles */
+    --shadow-color: rgba(12, 74, 110, 0.1);
+  }
+
+  /* Nordic Theme */
+  .theme-nordic {
+    --primary-foreground: #ffffff;
+    --ring: var(--primary);
+    --destructive: #be123c;
+    --destructive-foreground: #ffffff;
+    --input: var(--border);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+
+    /* Additional custom styles */
+    --shadow-color: rgba(51, 65, 85, 0.1);
+  }
+
+  /* Premium theme card effects */
   [class^="theme-"] .premium-card {
-    box-shadow: 0 4px 15px rgba(var(--theme-color-rgb, 0, 0, 0), 0.1);
+    box-shadow: 0 4px 15px var(--shadow-color, rgba(0, 0, 0, 0.1));
     transition: all 0.3s ease;
   }
   
   [class^="theme-"] .premium-card:hover {
-    box-shadow: 0 8px 25px rgba(var(--theme-color-rgb, 0, 0, 0), 0.15);
+    box-shadow: 0 8px 25px var(--shadow-color, rgba(0, 0, 0, 0.15));
     transform: translateY(-2px);
+  }
+
+  /* Global theme transitions */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+  }
+
+  /* Theme specific backgrounds */
+  .theme-midnight.dark body {
+    background-image: radial-gradient(rgba(67, 56, 202, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .theme-sunset body {
+    background-image: linear-gradient(to bottom right, rgba(249, 115, 22, 0.05), transparent);
+  }
+
+  .theme-forest body {
+    background-image: linear-gradient(to bottom, rgba(22, 163, 74, 0.03), transparent);
+  }
+
+  .theme-ocean body {
+    background-image: linear-gradient(to bottom, rgba(14, 165, 233, 0.02), transparent);
   }
 }
 
