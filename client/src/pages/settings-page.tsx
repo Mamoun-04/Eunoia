@@ -97,7 +97,19 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-semibold text-destructive">Danger Zone</h2>
                   <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
                 </div>
-                <AlertDialog>
+                import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+<AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline" className="text-destructive border-destructive/50 hover:bg-destructive/10">
                       Delete Account
