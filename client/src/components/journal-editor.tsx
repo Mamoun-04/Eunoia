@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Image as ImageIcon, X, UploadCloud } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { PremiumFeatureModal } from "./premium-feature-modal";
 
 
 type Props = {
@@ -38,6 +39,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   );
   const [wordLimit, setWordLimit] = useState<number>(250); // Default to free user limit
   const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [showPremiumFeatureModal, setShowPremiumFeatureModal] = useState(false);
+  const [premiumFeature, setPremiumFeature] = useState<"image_upload" | "daily_entry" | "word_limit">("image_upload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
@@ -93,15 +96,19 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
           
           form.setValue('content', truncatedContent);
           
-          // Show toast notification about the limit
-          toast({
-            title: "Word limit reached",
-            description: isPremium 
-              ? "You've reached the maximum word count of 1000 words."
-              : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          // For free users, show the premium feature modal
+          if (!isPremium) {
+            setPremiumFeature("word_limit");
+            setShowPremiumFeatureModal(true);
+          } else {
+            // For premium users, just show a toast
+            toast({
+              title: "Word limit reached",
+              description: "You've reached the maximum word count of 1000 words.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
         }
       }
     });
@@ -113,6 +120,17 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // First check if user is premium, if not, show the premium feature modal
+    if (!isPremium) {
+      setPremiumFeature("image_upload");
+      setShowPremiumFeatureModal(true);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     // Check if the file is an image
     if (!file.type.startsWith('image/')) {
