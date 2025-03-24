@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,7 +19,8 @@ import {
   Edit,
   Image,
   Search,
-  X
+  X,
+  Trash2
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
@@ -37,6 +38,7 @@ export default function HomePage() {
   const [location] = useLocation();
   const [showPremiumFeatureModal, setShowPremiumFeatureModal] = useState(false);
   const [premiumFeature, setPremiumFeature] = useState<"image_upload" | "daily_entry" | "word_limit">("daily_entry");
+  const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
@@ -200,11 +202,11 @@ export default function HomePage() {
                             alt="Journal entry" 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-2 right-2 flex gap-2">
                             <Button 
                               size="icon" 
                               variant="ghost"
-                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity mr-2"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedEntry(entry);
@@ -212,6 +214,26 @@ export default function HomePage() {
                               }}
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (window.confirm('Are you sure you want to delete this entry?')) {
+                                  const res = await fetch(`/api/entries/${entry.id}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                  });
+                                  if (res.ok) {
+                                    queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                    setViewEntryId(null);
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -237,18 +259,40 @@ export default function HomePage() {
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
                             </p>
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedEntry(entry);
-                                setIsEditing(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="icon" 
+                                variant="ghost"
+                                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity mr-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEntry(entry);
+                                  setIsEditing(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                variant="ghost"
+                                className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Are you sure you want to delete this entry?')) {
+                                    const res = await fetch(`/api/entries/${entry.id}`, {
+                                      method: 'DELETE',
+                                      credentials: 'include'
+                                    });
+                                    if (res.ok) {
+                                      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                      setViewEntryId(null);
+                                    }
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </>
@@ -309,11 +353,11 @@ export default function HomePage() {
                         alt="Entry image" 
                         className="w-full h-auto object-cover max-h-[40vh]" 
                       />
-                      <div className="absolute top-4 right-4">
+                      <div className="absolute top-4 right-4 flex gap-2">
                         <Button 
                           size="icon" 
                           variant="ghost"
-                          className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm"
+                          className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm mr-2"
                           onClick={() => {
                             setSelectedEntry(entry);
                             setIsEditing(true);
@@ -321,29 +365,69 @@ export default function HomePage() {
                           }}
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost"
+                          className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to delete this entry?')) {
+                              const res = await fetch(`/api/entries/${entry.id}`, {
+                                method: 'DELETE',
+                                credentials: 'include'
+                              });
+                              if (res.ok) {
+                                queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                setViewEntryId(null);
+                              }
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
                     {!entry.imageUrl && (
                       <div className="flex justify-between items-start mb-2">
                         <div></div>
-                        <Button 
-                          size="icon" 
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedEntry(entry);
-                            setIsEditing(true);
-                            setViewEntryId(null);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedEntry(entry);
+                              setIsEditing(true);
+                              setViewEntryId(null);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
+                            onClick={async () => {
+                              if (window.confirm('Are you sure you want to delete this entry?')) {
+                                const res = await fetch(`/api/entries/${entry.id}`, {
+                                  method: 'DELETE',
+                                  credentials: 'include'
+                                });
+                                if (res.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                  setViewEntryId(null);
+                                }
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <h2 className="text-2xl font-bold mb-1">{entry.title}</h2>
                       <p className="text-sm text-muted-foreground">
