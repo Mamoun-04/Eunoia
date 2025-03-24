@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [reason, setReason] = useState('');
   const toast = useToast();
 
@@ -39,11 +40,18 @@ export default function SettingsPage() {
       //  Add your actual delete account logic here.  This is a placeholder.
       console.log("Deleting account with reason:", reason);
       toast({ title: 'Account deleted successfully!', description: 'Your account has been deleted.', type: 'success' });
+      setShowFeedbackDialog(false);
       setShowDeleteDialog(false);
       // Add redirect to login page here
     } catch (error) {
       toast({ title: 'Error deleting account', description: error.message, type: 'error' });
     }
+  };
+
+  const handleFeedbackSubmit = () => {
+    //Submit feedback here
+    setShowFeedbackDialog(false);
+    setShowDeleteDialog(true);
   };
 
   return (
@@ -125,15 +133,15 @@ export default function SettingsPage() {
             <CardContent>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Delete Account</h3>
+                  <div className="flex-1">
                     <p className="text-sm text-muted-foreground">
                       Permanently delete your account and all your data
                     </p>
                   </div>
                   <Button
                     variant="destructive"
-                    onClick={() => setShowDeleteDialog(true)}
+                    onClick={() => setShowFeedbackDialog(true)}
+                    className="min-w-[120px] justify-center"
                   >
                     Delete Account
                   </Button>
@@ -141,7 +149,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-
+          <FeedbackDialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog} onSubmit={handleFeedbackSubmit} />
           <DeleteAccountDialog
             open={showDeleteDialog}
             onOpenChange={setShowDeleteDialog}
@@ -199,6 +207,51 @@ function DeleteAccountDialog({ open, onOpenChange, onDelete, setReason }) {
       <DialogFooter>
         <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
         <Button variant="destructive" onClick={onDelete}>Delete Account</Button>
+      </DialogFooter>
+    </Dialog>
+  );
+}
+
+function FeedbackDialog({ open, onOpenChange, onSubmit }) {
+  const [feedback, setFeedback] = useState('');
+  const [selectedReason, setSelectedReason] = useState('');
+
+  const reasons = [
+    { value: 'betterApp', label: 'I found a better app' },
+    { value: 'privacy', label: 'Privacy concerns' },
+    { value: 'notUseful', label: 'Not useful' },
+    { value: 'expensive', label: 'Too expensive' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogHeader>
+        <DialogTitle>Why are you leaving?</DialogTitle>
+      </DialogHeader>
+      <DialogContent>
+        <Select value={selectedReason} onValueChange={setSelectedReason}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a reason" />
+          </SelectTrigger>
+          <SelectContent>
+            {reasons.map((reason) => (
+              <SelectItem key={reason.value} value={reason.value}>
+                {reason.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedReason === 'other' && (
+          <div>
+            <Label htmlFor="feedback">Other reason:</Label>
+            <Textarea id="feedback" placeholder="Please specify your reason..." onChange={(e) => setFeedback(e.target.value)}/>
+          </div>
+        )}
+      </DialogContent>
+      <DialogFooter>
+        <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button variant="destructive" onClick={() => {onSubmit(); setReason(selectedReason === 'other' ? feedback : selectedReason)}}>Delete Account</Button>
       </DialogFooter>
     </Dialog>
   );
