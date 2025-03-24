@@ -2523,22 +2523,7 @@ export default function LibraryPage() {
             <>
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
-                <p className="text-muted-foreground">
-                  {/* Featured Lesson */}
-  <div className="mb-8">
-    <h2 className="text-2xl font-semibold mb-4">Today's Featured Lesson</h2>
-    <div className="bg-white/5 backdrop-blur border border-white/20 rounded-lg p-6">
-      <div className="flex items-center gap-2 mb-2">
-        <BookOpen className="h-5 w-5 text-primary" />
-        <h3 className="text-xl font-semibold">
-          {SAMPLE_LESSONS[Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length].title}
-        </h3>
-      </div>
-      <p className="text-muted-foreground mb-4">
-        {SAMPLE_LESSONS[Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length].description}
-      </p>
-      <Button variant="outline" asChild>
-        <Link href={`/lesson/${SAMPLE_LESSONS[Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length].id}`}>
+                <p className="text-muted-foreground">Choose a lesson below to begin your reflection journey</p>ength].id}`}>
           Start Reflection
         </Link>
       </Button>
