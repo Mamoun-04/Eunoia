@@ -173,7 +173,7 @@ export default function HomePage() {
                         {entry.title}
                       </h3>
                       {entry.imageUrl && (
-                        <div className="relative aspect-[3/2] overflow-hidden rounded-lg">
+                        <div className="mt-4 relative aspect-[3/2] overflow-hidden rounded-lg">
                           <img 
                             src={entry.imageUrl} 
                             alt="Journal entry" 
