@@ -291,13 +291,19 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           : firstLine;
       }
       
+      // Add the image URL to the data
+      const finalData = {
+        ...data,
+        imageUrl: imagePreview
+      };
+      
       // If we have an existing entry, update it
       if (entry) {
-        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
+        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, finalData);
         return res.json();
       } else {
         // Otherwise create a new one
-        const res = await apiRequest("POST", "/api/entries", data);
+        const res = await apiRequest("POST", "/api/entries", finalData);
         return res.json();
       }
     },
