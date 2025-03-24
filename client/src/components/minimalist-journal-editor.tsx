@@ -51,7 +51,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
     defaultValues: {
@@ -63,96 +63,15 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     },
   });
 
-  const entryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // Generate a title if none provided
-      if (!data.title) {
-        const content = data.content;
-        const firstLine = content.split('\n')[0].trim();
-        data.title = firstLine.length > 30
-          ? firstLine.substring(0, 30) + '...'
-          : firstLine;
-      }
-
-      // Add the image URL to the data
-      const finalData = {
-        ...data,
-        imageUrl: imagePreview
-      };
-
-      // If we have an existing entry, update it
-      if (entry) {
-        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, finalData);
-        return res.json();
-      } else {
-        // Otherwise create a new one
-        const res = await apiRequest("POST", "/api/entries", finalData);
-        return res.json();
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-      toast({
-        title: entry ? "Entry updated" : "Entry saved",
-        description: entry
-          ? "Your journal entry has been updated successfully."
-          : "Your journal entry has been saved successfully.",
-      });
-      onClose();
-    },
-    onError: (error: Error) => {
-      // Check if it's a free user limit error
-      const errorMessage = error.message;
-      const isLimitError =
-        errorMessage.includes("Free users") &&
-        (
-          errorMessage.includes("entries per day") ||
-          errorMessage.includes("words per entry") ||
-          errorMessage.includes("image per day")
-        );
-
-      if (isLimitError) {
-        toast({
-          title: "Free Plan Limit Reached",
-          description: (
-            <div className="space-y-2">
-              <p>{errorMessage}</p>
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={() => {
-                  toast({
-                    title: "Upgrade to Premium",
-                    description: "Unlock unlimited entries, images, and word count!",
-                  });
-                }}
-              >
-                Upgrade to Premium
-              </Button>
-            </div>
-          ),
-          variant: "destructive",
-          duration: 5000,
-        });
-      } else {
-        toast({
-          title: entry ? "Failed to update entry" : "Failed to save entry",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    },
-  });
-
   // Cycle through prompts every few seconds when there's no content yet
   useEffect(() => {
     if (form.getValues('content')) return;
-
+    
     const interval = setInterval(() => {
       const currentIndex = WRITING_PROMPTS.indexOf(currentPrompt);
       const nextIndex = (currentIndex + 1) % WRITING_PROMPTS.length;
       setCurrentPrompt(WRITING_PROMPTS[nextIndex]);
-
+      
       // Also cycle through section titles based on the prompt
       if (nextIndex === 0) setSectionTitle("TODAY'S REFLECTIONS");
       else if (nextIndex === 1) setSectionTitle("GRATITUDE");
@@ -162,9 +81,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       else if (nextIndex === 5) setSectionTitle("CHALLENGES");
       else if (nextIndex === 6) setSectionTitle("MOMENTS OF JOY");
       else setSectionTitle("LOOKING AHEAD");
-
+      
     }, 5000);
-
+    
     return () => clearInterval(interval);
   }, [currentPrompt, form]);
 
@@ -176,11 +95,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         // Consider "complete" at 100 characters, scale accordingly
         const newProgress = Math.min(content.length / 100, 1) * 100;
         setProgress(newProgress);
-
+        
         // Update word count
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         setWordCount(words);
-
+        
         // Auto-grow textarea
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto'; // Reset height
@@ -189,10 +108,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         }
       }
     });
-
+    
     return () => subscription.unsubscribe();
   }, [form.watch]);
-
+  
   // Initialize textarea height on mount
   useEffect(() => {
     if (textareaRef.current && form.getValues('content')) {
@@ -205,30 +124,6 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      setImagePreview(data.url);
-      form.setValue('imageUrl', data.url);
-    } catch (error) {
-      toast({
-        title: 'Error uploading image',
-        description: 'Please try again later',
-        variant: 'destructive',
-      });
-    }
 
     // Check if the file is an image
     if (!file.type.startsWith('image/')) {
@@ -258,25 +153,25 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       setImagePreview(imageDataUrl);
     };
     reader.readAsDataURL(file);
-
+    
     // Upload the file to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
-
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         throw new Error('Image upload failed');
       }
-
+      
       const data = await response.json();
       form.setValue("imageUrl", data.url);
-
+      
       toast({
         title: "Image uploaded",
         description: "Your image has been successfully uploaded.",
@@ -293,12 +188,12 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   // Add a sentence starter to the current content
   const addSentenceStarter = (starter: string) => {
     const currentContent = form.getValues('content');
-    const newContent = currentContent
-      ? `${currentContent}\n\n${starter} `
+    const newContent = currentContent 
+      ? `${currentContent}\n\n${starter} ` 
       : `${starter} `;
-
+    
     form.setValue('content', newContent);
-
+    
     // Focus the textarea and place cursor at the end
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -318,25 +213,105 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       "It might be interesting to explore...",
       "This reminds me of the concept of..."
     ];
-
+    
     const randomStarter = starters[Math.floor(Math.random() * starters.length)];
     addSentenceStarter(randomStarter);
-
+    
     toast({
       title: "AI Assistance",
       description: "We've added a prompt to help continue your thoughts.",
     });
   };
 
+  // Submit entry
+  const entryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      // Generate a title if none provided
+      if (!data.title) {
+        const content = data.content;
+        const firstLine = content.split('\n')[0].trim();
+        data.title = firstLine.length > 30 
+          ? firstLine.substring(0, 30) + '...' 
+          : firstLine;
+      }
+      
+      // If we have an existing entry, update it
+      if (entry) {
+        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
+        return res.json();
+      } else {
+        // Otherwise create a new one
+        const res = await apiRequest("POST", "/api/entries", data);
+        return res.json();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      toast({
+        title: entry ? "Entry updated" : "Entry saved",
+        description: entry 
+          ? "Your journal entry has been updated successfully." 
+          : "Your journal entry has been saved successfully.",
+      });
+      onClose();
+    },
+    onError: (error: Error) => {
+      // Check if it's a free user limit error
+      const errorMessage = error.message;
+      const isLimitError = 
+        errorMessage.includes("Free users") && 
+        (
+          errorMessage.includes("entries per day") || 
+          errorMessage.includes("words per entry") ||
+          errorMessage.includes("image per day")
+        );
+      
+      if (isLimitError) {
+        toast({
+          title: "Premium Feature",
+          description: (
+            <div className="space-y-2">
+              <p>{errorMessage}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => {
+                  // Here we would open the subscription dialog
+                  // You could implement a state/context to control this
+                  // For simplicity, we'll just show another toast for now
+                  toast({
+                    title: "Upgrade to Premium",
+                    description: "Unlock unlimited entries, images, and word count!",
+                  });
+                }}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: entry ? "Failed to update entry" : "Failed to save entry",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95"
+      <DialogContent 
+        className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
-
+        
         <Button
           variant="ghost"
           size="icon"
@@ -345,13 +320,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         >
           <X className="h-4 w-4" />
         </Button>
-
+        
         <div className="journal-interface custom-scrollbar overflow-y-auto max-h-[calc(100vh-4rem)] sm:max-h-[calc(90vh-4rem)]">
           {/* Progress Bar */}
           <div className="journal-progress">
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
-
+          
           {/* Title Input */}
           <div className="mb-6">
             <input
@@ -365,34 +340,34 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           {/* Word Count */}
           <div className="flex justify-end mb-4">
             <div className="text-xs text-muted-foreground/80 font-medium bg-background/40 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-              {wordCount} / 300 words {wordCount > 300 &&
+              {wordCount} / 300 words {wordCount > 300 && 
                 <span className="text-destructive font-semibold"> (Free limit)</span>
               }
             </div>
           </div>
-
+          
           {/* Simplified Sentence Starters */}
           <div className="sentence-starters-container">
             <div className="sentence-starters">
               {['Today I felt...', 'I\'m grateful for...', 'Looking forward to...'].map((starter, index) => (
-                <motion.button
+                <motion.button 
                   key={index}
                   className="sentence-starter"
                   onClick={() => addSentenceStarter(starter)}
-                  whileHover={{
+                  whileHover={{ 
                     scale: 1.05,
                     y: -2,
                     transition: { duration: 0.2 }
                   }}
-                  whileTap={{
+                  whileTap={{ 
                     scale: 0.98,
-                    y: 0
+                    y: 0 
                   }}
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{
-                    opacity: 1,
+                  animate={{ 
+                    opacity: 1, 
                     y: 0,
-                    transition: {
+                    transition: { 
                       delay: index * 0.05,
                       duration: 0.3
                     }
@@ -403,7 +378,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               ))}
             </div>
           </div>
-
+          
           {/* Journal Entry Textarea */}
           <textarea
             ref={textareaRef}
@@ -413,19 +388,19 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             onChange={(e) => form.setValue('content', e.target.value)}
             aria-label="Journal entry content"
           />
-
+          
           {/* Image Preview */}
           {imagePreview && (
-            <motion.div
+            <motion.div 
               className="relative mb-6 rounded-xl overflow-hidden shadow-md"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               <div className="w-full">
-                <img
-                  src={imagePreview}
-                  alt="Journal entry"
+                <img 
+                  src={imagePreview} 
+                  alt="Journal entry" 
                   className="w-full rounded-lg object-contain max-h-[60vh]"
                 />
               </div>
@@ -447,9 +422,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               </motion.div>
             </motion.div>
           )}
-
+          
           {/* Action Bar */}
-          <motion.div
+          <motion.div 
             className="action-bar"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -457,19 +432,19 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           >
             <div className="flex space-x-3">
               {/* Camera Button */}
-              <motion.button
+              <motion.button 
                 className="action-button"
                 onClick={() => fileInputRef.current?.click()}
                 data-tooltip="Attach image"
-                whileHover={{
-                  scale: 1.08,
+                whileHover={{ 
+                  scale: 1.08, 
                   y: -2,
-                  transition: { duration: 0.2 }
+                  transition: { duration: 0.2 } 
                 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Camera className="h-5 w-5" />
-                <input
+                <input 
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
@@ -478,27 +453,27 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   value=""
                 />
               </motion.button>
-
+              
               {/* AI Assist Button */}
-              <motion.button
+              <motion.button 
                 className="action-button"
                 onClick={getAIAssistance}
                 data-tooltip="Need a prompt?"
-                whileHover={{
-                  scale: 1.08,
+                whileHover={{ 
+                  scale: 1.08, 
                   y: -2,
-                  transition: { duration: 0.2 }
+                  transition: { duration: 0.2 } 
                 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Sparkles className="h-5 w-5" />
               </motion.button>
             </div>
-
+            
             {/* Submit Button */}
-            <motion.button
+            <motion.button 
               className={cn(
-                "submit-button",
+                "submit-button", 
                 (!form.getValues('content') || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
               )}
               onClick={() => {
@@ -508,13 +483,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               }}
               disabled={!form.getValues('content') || entryMutation.isPending}
               data-tooltip="Save entry"
-              whileHover={form.getValues('content') && !entryMutation.isPending ? {
-                scale: 1.08,
+              whileHover={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 1.08, 
                 y: -2,
-                transition: { duration: 0.2 }
+                transition: { duration: 0.2 } 
               } : {}}
-              whileTap={form.getValues('content') && !entryMutation.isPending ? {
-                scale: 0.95
+              whileTap={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 0.95 
               } : {}}
             >
               <ArrowRight className="h-5 w-5" />

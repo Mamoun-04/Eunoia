@@ -165,23 +165,76 @@ export default function HomePage() {
                     className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl"
                     onClick={() => setViewEntryId(entry.id)}
                   >
-                    <div className="p-6 space-y-4">
-                      <div className="text-sm text-muted-foreground">
-                        {format(new Date(entry.createdAt), 'MMMM d, yyyy')} at {format(new Date(entry.createdAt), 'h:mm a')}
-                      </div>
-                      <h3 className="text-xl font-[Playfair Display]">
-                        {entry.title}
-                      </h3>
-                      {entry.imageUrl && (
-                        <div className="mt-4 relative aspect-[3/2] overflow-hidden rounded-lg">
+                    {entry.imageUrl ? (
+                      <>
+                        {/* Card with image (postcard style) */}
+                        <div className="relative aspect-[3/2] overflow-hidden">
                           <img 
                             src={entry.imageUrl} 
                             alt="Journal entry" 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
+                          <div className="absolute top-2 right-2">
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      )}
-                    </div>
+                        <div className="p-4">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-medium line-clamp-1 mb-1">
+                              {entry.title}
+                            </h3>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
+                          </p>
+                          <p className="text-sm text-muted-foreground/90 line-clamp-2 mt-2">
+                            {entry.content}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Card without image */}
+                        <div className="p-5">
+                          <div className="flex flex-col gap-1">
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
+                            </div>
+                            <h3 className="text-lg font-medium">
+                              {entry.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground line-clamp-3">
+                              {entry.content}
+                            </p>
+                          </div>
+                          <div className="flex justify-end mt-4">
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -230,13 +283,15 @@ export default function HomePage() {
               if (!entry) return null;
 
               return (
-                <div className="space-y-8">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {format(new Date(entry.createdAt), 'MMMM d, yyyy')} at {format(new Date(entry.createdAt), 'h:mm a')}
-                    </p>
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-3xl font-[Playfair Display]">{entry.title}</h2>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-2xl font-bold">{entry.title}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(entry.createdAt), "PPP")}
+                      </p>
+                    </div>
+                    <div>
                       <Button 
                         size="icon" 
                         variant="ghost"
@@ -252,16 +307,14 @@ export default function HomePage() {
                   </div>
 
                   {entry.imageUrl && (
-                    <div className="relative aspect-[3/2] overflow-hidden rounded-lg">
-                      <img 
-                        src={entry.imageUrl} 
-                        alt="Entry image" 
-                        className="w-full h-auto object-cover" 
-                      />
-                    </div>
+                    <img 
+                      src={entry.imageUrl} 
+                      alt="Entry image" 
+                      className="w-full h-auto rounded-lg object-cover mx-auto" 
+                    />
                   )}
 
-                  <div className="prose dark:prose-invert max-w-none text-lg leading-relaxed">
+                  <div className="prose dark:prose-invert max-w-none">
                     {entry.content}
                   </div>
                 </div>
