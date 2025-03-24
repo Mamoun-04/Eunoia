@@ -318,17 +318,14 @@ export default function LibraryPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [lengthFilter, setLengthFilter] = useState("all");
+  //Removed lengthFilter state
 
   const filteredLessons = SAMPLE_LESSONS.filter((lesson) => {
     const searchTerm = searchQuery.toLowerCase();
     const titleMatch = lesson.title.toLowerCase().includes(searchTerm);
     const topicMatch = lesson.topic.toLowerCase().includes(searchTerm);
-    const lengthMatch = lengthFilter === "all" ||
-      (lengthFilter === "short" && lesson.questions.length <= 5) ||
-      (lengthFilter === "medium" && lesson.questions.length > 5 && lesson.questions.length <= 10) ||
-      (lengthFilter === "long" && lesson.questions.length > 10);
-    return (titleMatch || topicMatch) && lengthMatch;
+    //Removed lengthMatch condition
+    return titleMatch || topicMatch;
   });
 
   const navigation = [
@@ -415,22 +412,7 @@ export default function LibraryPage() {
                       className="pl-9"
                     />
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="gap-2">
-                        <Filter className="h-4 w-4" />
-                        {lengthFilter === "all" ? "All Lengths" :
-                          lengthFilter === "short" ? "Short (5 prompts)" :
-                            lengthFilter === "medium" ? "Medium (10 prompts)" : "Long (15 prompts)"}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => setLengthFilter("all")}>All Lengths</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("short")}>Short (5 prompts)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("medium")}>Medium (10 prompts)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setLengthFilter("long")}>Long (15 prompts)</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {/*Removed DropdownMenu*/}
                 </div>
               </div>
 
