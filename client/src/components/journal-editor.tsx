@@ -279,16 +279,17 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   });
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
-        <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
-          {entry ? "Edit Journal Entry" : "New Journal Entry"}
-        </h2>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((data) => entryMutation.mutate(data))}
-            className="space-y-5 overflow-y-auto max-h-[calc(90vh-10rem)] pr-1.5 custom-scrollbar"
-          >
+    <div>
+      <Dialog open onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
+          <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
+            {entry ? "Edit Journal Entry" : "New Journal Entry"}
+          </h2>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit((data) => entryMutation.mutate(data))}
+              className="space-y-5 overflow-y-auto max-h-[calc(90vh-10rem)] pr-1.5 custom-scrollbar"
+            >
             <FormField
               control={form.control}
               name="title"
@@ -434,5 +435,19 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
         </Form>
       </DialogContent>
     </Dialog>
+    
+    <PremiumFeatureModal
+      open={showPremiumFeatureModal}
+      onOpenChange={setShowPremiumFeatureModal}
+      feature={premiumFeature}
+      onSubscribe={() => {
+        // This would be called after successful subscription
+        setIsPremium(true);
+        setWordLimit(1000);
+        // Close the modal
+        setShowPremiumFeatureModal(false);
+      }}
+    />
+    </div>
   );
 }
