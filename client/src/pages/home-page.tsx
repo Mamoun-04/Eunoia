@@ -46,11 +46,11 @@ export default function HomePage() {
 
   // Detect image aspect ratios when entries change
   useEffect(() => {
-    const detectAspectRatios = async () => {
+    const detectAspectRatios = () => {
       for (const entry of entries) {
         if (entry.imageUrl) {
           // Create new image element to calculate aspect ratio
-          const img = document.createElement('img');
+          const img = document.createElement('img') as HTMLImageElement;
           img.src = entry.imageUrl;
           
           img.onload = () => {
@@ -223,14 +223,25 @@ export default function HomePage() {
                   const columnSpan = isLandscape && aspectRatio > 1.5 ? 
                     "sm:col-span-2" : "";
                   
-                  // Determine if this is a minimal card (no image, no content)
-                  const isMinimalCard = !entry.imageUrl && (!entry.content || entry.content.trim().length === 0);
+                  // Determine if this is a minimal card (no image, no content or very short content)
+                  const isMinimalCard = !entry.imageUrl && (!entry.content || entry.content.trim().length < 10);
+                  
+                  // Calculate content length factor for sizing
+                  const contentLength = entry.content ? entry.content.trim().length : 0;
+                  const contentFactor = !entry.imageUrl ? Math.min(Math.floor(contentLength / 50), 3) : 0;
                   
                   return (
                     <Card 
                       key={entry.id} 
                       className={`overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col ${columnSpan} ${isMinimalCard ? 'minimal-card' : ''}`}
                       onClick={() => setViewEntryId(entry.id)}
+                      style={{ 
+                        gridRowEnd: `span ${
+                          entry.imageUrl 
+                            ? (isLandscape ? 45 : 60) // Taller for portrait images
+                            : (isMinimalCard ? 20 : 35 + (contentFactor * 10)) // Dynamic sizing based on content length
+                        }`
+                      }}
                     >
                       {entry.imageUrl ? (
                         <>
@@ -281,6 +292,14 @@ export default function HomePage() {
                               <h3 className={`${isMinimalCard ? 'text-base' : 'text-lg'} font-medium line-clamp-2 ${isMinimalCard ? 'mb-0' : 'mb-2'}`}>
                                 {entry.title}
                               </h3>
+                              
+                              {/* Show content preview for non-minimal cards */}
+                              {!isMinimalCard && contentLength > 30 && (
+                                <p className="text-sm text-muted-foreground line-clamp-3 mt-2 mb-3">
+                                  {entry.content.trim().substring(0, 120)}
+                                  {entry.content.trim().length > 120 && '...'}
+                                </p>
+                              )}
                             </div>
                             <div className="flex justify-between items-end mt-2">
                               <p className="text-xs text-muted-foreground">
