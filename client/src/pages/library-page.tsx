@@ -321,12 +321,13 @@ export default function LibraryPage() {
   const [lengthFilter, setLengthFilter] = useState("all");
 
   const filteredLessons = SAMPLE_LESSONS.filter((lesson) => {
-    const titleMatch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const topicMatch = lesson.topic.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchTerm = searchQuery.toLowerCase();
+    const titleMatch = lesson.title.toLowerCase().includes(searchTerm);
+    const topicMatch = lesson.topic.toLowerCase().includes(searchTerm);
     const lengthMatch = lengthFilter === "all" ||
-      (lengthFilter === "short" && lesson.questions.length === 5) ||
-      (lengthFilter === "medium" && lesson.questions.length === 10) ||
-      (lengthFilter === "long" && lesson.questions.length === 15);
+      (lengthFilter === "short" && lesson.questions.length <= 5) ||
+      (lengthFilter === "medium" && lesson.questions.length > 5 && lesson.questions.length <= 10) ||
+      (lengthFilter === "long" && lesson.questions.length > 10);
     return (titleMatch || topicMatch) && lengthMatch;
   });
 
