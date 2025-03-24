@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { JournalEditor } from "@/components/journal-editor";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
+import { EntryMasonryGrid } from "@/components/entry-masonry-grid";
 import { useState } from "react";
 import {
   LayoutGrid,
@@ -184,78 +185,15 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredEntries.map((entry) => (
-                  <Card 
-                    key={entry.id} 
-                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col"
-                    onClick={() => setViewEntryId(entry.id)}
-                  >
-                    {entry.imageUrl ? (
-                      <>
-                        {/* Card with image */}
-                        <div className="relative overflow-hidden rounded-t-xl aspect-square">
-                          <img 
-                            src={entry.imageUrl} 
-                            alt="Journal entry" 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <div className="absolute top-2 right-2">
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedEntry(entry);
-                                setIsEditing(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="p-4 flex-grow flex flex-col justify-between">
-                          <h3 className="text-lg font-medium line-clamp-1">
-                            {entry.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        {/* Card without image */}
-                        <div className="p-5 flex-grow flex flex-col h-full">
-                          <div className="flex-grow">
-                            <h3 className="text-lg font-medium line-clamp-2 mb-2">
-                              {entry.title}
-                            </h3>
-                          </div>
-                          <div className="flex justify-between items-end mt-4">
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
-                            </p>
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedEntry(entry);
-                                setIsEditing(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </Card>
-                ))}
-              </div>
+              <EntryMasonryGrid 
+                entries={filteredEntries}
+                onEntryClick={(entryId) => setViewEntryId(entryId)}
+                onEditClick={(entry) => {
+                  setSelectedEntry(entry);
+                  setIsEditing(true);
+                }}
+                className="mt-4"
+              />
             )}
           </div>
         </div>

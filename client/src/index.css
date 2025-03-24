@@ -367,3 +367,19 @@
   font-weight: bold;
   border: 1px solid hsl(var(--primary));
 }
+
+/* Masonry Grid Layout Styles */
+.masonry-grid {
+  display: flex;
+  width: auto;
+  margin-left: -16px; /* gutter size offset */
+}
+
+.masonry-grid-column {
+  padding-left: 16px; /* gutter size */
+  background-clip: padding-box;
+}
+
+.masonry-grid-column > div {
+  margin-bottom: 16px; /* space between items */
+}
