@@ -7,9 +7,38 @@
 /* Premium theme styles */
 :root {
   --theme-primary: hsl(var(--primary));
+  --theme-color: var(--primary);
+  --theme-color-hover: var(--primary-hover);
+  --theme-color-light: var(--primary-light, var(--primary));
 }
 
-/* We'll use dynamic styles through JavaScript instead of CSS classes */
+/* Define CSS variables for themes */
+@layer base {
+  .theme-sunset .bg-primary { background-color: var(--theme-color); }
+  .theme-sunset .text-primary { color: var(--theme-color); }
+  .theme-sunset .border-primary { border-color: var(--theme-color); }
+  
+  .theme-ocean .bg-gradient {
+    background: linear-gradient(to right, var(--theme-color), var(--theme-color-light));
+  }
+  
+  .theme-forest .bg-pattern {
+    background-color: var(--theme-color);
+    background-image: radial-gradient(var(--theme-color-light) 2px, transparent 2px);
+    background-size: 25px 25px;
+  }
+  
+  /* Premium theme card shadow effects */
+  [class^="theme-"] .premium-card {
+    box-shadow: 0 4px 15px rgba(var(--theme-color-rgb, 0, 0, 0), 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  [class^="theme-"] .premium-card:hover {
+    box-shadow: 0 8px 25px rgba(var(--theme-color-rgb, 0, 0, 0), 0.15);
+    transform: translateY(-2px);
+  }
+}
 
 /* Custom scrollbar for a more modern look */
 .custom-scrollbar::-webkit-scrollbar {

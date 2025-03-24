@@ -77,25 +77,40 @@ export function ThemeToggle() {
         value={theme}
         onValueChange={(value) => setTheme(value as ThemeType)}
       >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select theme" />
+        <SelectTrigger className="w-[180px] flex items-center gap-2">
+          <SelectValue placeholder="Select theme">
+            {theme !== "light" && theme !== "dark" && (
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: premiumThemes[theme as keyof typeof premiumThemes].color }}
+                ></div>
+                <span>{premiumThemes[theme as keyof typeof premiumThemes].name}</span>
+              </div>
+            )}
+          </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="max-h-[400px]">
           <SelectGroup>
             <SelectLabel>Standard</SelectLabel>
             <SelectItem value="light">Light</SelectItem>
             <SelectItem value="dark">Dark</SelectItem>
           </SelectGroup>
           <SelectGroup>
-            <SelectLabel>Premium Themes</SelectLabel>
-            {Object.entries(premiumThemes).map(([key, { name }]) => (
+            <SelectLabel className="font-medium text-primary">Premium Themes</SelectLabel>
+            {Object.entries(premiumThemes).map(([key, theme]) => (
               <SelectItem key={key} value={key}>
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: premiumThemes[key as keyof typeof premiumThemes].color }}
-                  ></div>
-                  {name}
+                  <div className="theme-preview-container">
+                    <div 
+                      className="w-4 h-4 rounded-full ring-1 ring-inset ring-gray-200 shadow-sm" 
+                      style={{ backgroundColor: theme.color }}
+                    ></div>
+                  </div>
+                  <div>
+                    <span className="font-medium">{theme.name}</span>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{theme.description}</p>
+                  </div>
                 </div>
               </SelectItem>
             ))}
