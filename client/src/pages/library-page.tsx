@@ -27,54 +27,290 @@ import {
 
 const SAMPLE_LESSONS = [
   {
-    id: "lesson-47",
+    id: "lesson-1",
     title: "Inner Wisdom Reflection Practice",
     topic: "Wisdom",
     description: "Reflect on the wisdom that comes from introspection and life experiences.",
     questions: [
       {
-        id: "innerwisdom-text-47",
+        id: "lesson-1-q1",
         type: "text",
         prompt: "Share a moment today when you felt guided by your inner wisdom."
       },
       {
-        id: "innerwisdom-slider-47",
-        type: "slider",
-        prompt: "On a scale of 1-10, how much did you trust your inner wisdom today?"
+        id: "lesson-1-q2",
+        type: "text",
+        prompt: "What lessons have you learned from past mistakes that shape your decisions today?"
       },
       {
-        id: "innerwisdom-mc-47",
-        type: "multipleChoice",
-        prompt: "Which option best captures your connection to inner wisdom today?",
-        options: [
-          "I felt deeply guided",
-          "I relied on past experiences",
-          "I was uncertain but listened inwardly",
-          "I am still seeking clarity"
-        ]
+        id: "lesson-1-q3",
+        type: "text",
+        prompt: "Describe a piece of advice you received that turned out to be deeply meaningful."
+      },
+      {
+        id: "lesson-1-q4",
+        type: "text",
+        prompt: "How do you distinguish between your inner voice and external influences?"
+      },
+      {
+        id: "lesson-1-q5",
+        type: "text",
+        prompt: "Write about a time when trusting your instincts led to personal growth."
       }
     ]
   },
-  // Generate 66 lessons with 5 prompts each
-  ...Array(66).fill(null).map((_, index) => ({
-    id: `lesson-${index + 1}`,
-    title: `Reflection Practice ${index + 1}`,
-    topic: "General",
-    description: `A daily reflection practice focusing on personal growth and mindfulness.`,
-    questions: Array(5).fill(null).map((_, qIndex) => ({
-      id: `q-${index}-${qIndex}`,
-      type: qIndex === 0 ? "text" : qIndex === 1 ? "slider" : "multipleChoice",
-      prompt: `Question ${qIndex + 1} for reflection ${index + 1}`,
-      ...(qIndex >= 2 && {
-        options: [
-          "Option A",
-          "Option B",
-          "Option C",
-          "Option D"
-        ]
-      })
-    }))
-  }))
+  {
+    id: "lesson-2",
+    title: "Cultivating Gratitude",
+    topic: "Gratitude",
+    description: "Deepen your awareness of blessings in your life.",
+    questions: [
+      {
+        id: "lesson-2-q1",
+        type: "text",
+        prompt: "List three small things you’re grateful for today."
+      },
+      {
+        id: "lesson-2-q2",
+        type: "text",
+        prompt: "Who is someone you appreciate deeply, and why?"
+      },
+      {
+        id: "lesson-2-q3",
+        type: "text",
+        prompt: "How does practicing gratitude change your perspective?"
+      },
+      {
+        id: "lesson-2-q4",
+        type: "text",
+        prompt: "What challenge has helped you grow that you’re now thankful for?"
+      },
+      {
+        id: "lesson-2-q5",
+        type: "text",
+        prompt: "What’s something beautiful you noticed today?"
+      }
+    ]
+  },
+  {
+    id: "lesson-3",
+    title: "The Power of Forgiveness",
+    topic: "Forgiveness",
+    description: "Explore your capacity to forgive and release emotional burdens.",
+    questions: [
+      {
+        id: "lesson-3-q1",
+        type: "text",
+        prompt: "Is there someone you’re holding resentment toward?"
+      },
+      {
+        id: "lesson-3-q2",
+        type: "text",
+        prompt: "What would it feel like to truly let go?"
+      },
+      {
+        id: "lesson-3-q3",
+        type: "text",
+        prompt: "Have you forgiven yourself for past mistakes? Why or why not?"
+      }
+    ]
+  },
+  {
+    id: "lesson-4",
+    title: "Mindful Presence Practice",
+    topic: "Mindfulness",
+    description: "Practice being fully present in your thoughts, feelings, and surroundings.",
+    questions: [
+      {
+        id: "lesson-4-q1",
+        type: "text",
+        prompt: "Describe how your body feels at this very moment."
+      },
+      {
+        id: "lesson-4-q2",
+        type: "text",
+        prompt: "What are three sounds you can hear right now?"
+      },
+      {
+        id: "lesson-4-q3",
+        type: "text",
+        prompt: "Recall a moment today when you felt truly present."
+      },
+      {
+        id: "lesson-4-q4",
+        type: "text",
+        prompt: "How do distractions affect your peace of mind?"
+      },
+      {
+        id: "lesson-4-q5",
+        type: "text",
+        prompt: "What helps you return to the present moment?"
+      }
+    ]
+  },
+  {
+    id: "lesson-5",
+    title: "Exploring Identity",
+    topic: "Self-Awareness",
+    description: "Delve into who you are and how your experiences shape you.",
+    questions: [
+      {
+        id: "lesson-5-q1",
+        type: "text",
+        prompt: "How would you describe yourself to a stranger?"
+      },
+      {
+        id: "lesson-5-q2",
+        type: "text",
+        prompt: "Which labels do you identify with most and why?"
+      },
+      {
+        id: "lesson-5-q3",
+        type: "text",
+        prompt: "What parts of your identity have changed over time?"
+      }
+    ]
+  },
+  {
+    id: "lesson-6",
+    title: "Navigating Uncertainty",
+    topic: "Trust",
+    description: "Reflect on how you approach uncertainty and faith in the unseen.",
+    questions: [
+      {
+        id: "lesson-6-q1",
+        type: "text",
+        prompt: "How do you typically react to uncertainty?"
+      },
+      {
+        id: "lesson-6-q2",
+        type: "text",
+        prompt: "Recall a time when trusting the process led to a good outcome."
+      },
+      {
+        id: "lesson-6-q3",
+        type: "text",
+        prompt: "What would it look like to fully surrender control?"
+      },
+      {
+        id: "lesson-6-q4",
+        type: "text",
+        prompt: "What helps you build trust in yourself or something greater?"
+      }
+    ]
+  },
+  {
+    id: "lesson-7",
+    title: "Healing Through Writing",
+    topic: "Emotional Healing",
+    description: "Use your words to process pain and move toward healing.",
+    questions: [
+      {
+        id: "lesson-7-q1",
+        type: "text",
+        prompt: "Write a letter to someone who hurt you—but don’t send it."
+      },
+      {
+        id: "lesson-7-q2",
+        type: "text",
+        prompt: "What emotion have you been avoiding lately?"
+      },
+      {
+        id: "lesson-7-q3",
+        type: "text",
+        prompt: "Describe a moment that broke you—and what you learned from it."
+      },
+      {
+        id: "lesson-7-q4",
+        type: "text",
+        prompt: "What does healing feel like to you?"
+      },
+      {
+        id: "lesson-7-q5",
+        type: "text",
+        prompt: "Who or what gives you the strength to keep going?"
+      }
+    ]
+  },
+  {
+    id: "lesson-8",
+    title: "Acts of Compassion",
+    topic: "Compassion",
+    description: "Develop your ability to see and serve others with empathy.",
+    questions: [
+      {
+        id: "lesson-8-q1",
+        type: "text",
+        prompt: "Describe a time when someone showed you unexpected kindness."
+      },
+      {
+        id: "lesson-8-q2",
+        type: "text",
+        prompt: "What’s one compassionate act you can do this week?"
+      },
+      {
+        id: "lesson-8-q3",
+        type: "text",
+        prompt: "How do you treat yourself when you’re struggling?"
+      }
+    ]
+  },
+  {
+    id: "lesson-9",
+    title: "Purpose and Direction",
+    topic: "Purpose",
+    description: "Reflect on the deeper meaning behind your actions and dreams.",
+    questions: [
+      {
+        id: "lesson-9-q1",
+        type: "text",
+        prompt: "What drives you to get out of bed in the morning?"
+      },
+      {
+        id: "lesson-9-q2",
+        type: "text",
+        prompt: "What legacy would you like to leave behind?"
+      },
+      {
+        id: "lesson-9-q3",
+        type: "text",
+        prompt: "How do your daily actions align with your long-term goals?"
+      },
+      {
+        id: "lesson-9-q4",
+        type: "text",
+        prompt: "Describe your dream life in five years."
+      },
+      {
+        id: "lesson-9-q5",
+        type: "text",
+        prompt: "What’s one thing you could start doing today to live more purposefully?"
+      }
+    ]
+  },
+  {
+    id: "lesson-10",
+    title: "Surrender and Serenity",
+    topic: "Letting Go",
+    description: "Let go of what you can’t control and embrace inner peace.",
+    questions: [
+      {
+        id: "lesson-10-q1",
+        type: "text",
+        prompt: "What’s something you’ve been trying to control, but can’t?"
+      },
+      {
+        id: "lesson-10-q2",
+        type: "text",
+        prompt: "How would it feel to truly let it go?"
+      },
+      {
+        id: "lesson-10-q3",
+        type: "text",
+        prompt: "What’s a sign that you're holding on too tightly to something?"
+      }
+    ]
+  }
 ];
 
 export default function LibraryPage() {
