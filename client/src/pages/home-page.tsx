@@ -188,13 +188,13 @@ export default function HomePage() {
                 {filteredEntries.map((entry) => (
                   <Card 
                     key={entry.id} 
-                    className={`overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl ${entry.imageUrl || entry.content ? 'h-full' : 'h-24'}`}
+                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col"
                     onClick={() => setViewEntryId(entry.id)}
                   >
                     {entry.imageUrl ? (
                       <>
                         {/* Card with image */}
-                        <div className="relative overflow-hidden rounded-t-xl">
+                        <div className="relative overflow-hidden rounded-t-xl aspect-square">
                           <img 
                             src={entry.imageUrl} 
                             alt="Journal entry" 
@@ -219,11 +219,8 @@ export default function HomePage() {
                           <h3 className="text-lg font-medium line-clamp-1">
                             {entry.title}
                           </h3>
-                          {entry.content && (
-                            <p className="text-sm mt-2 line-clamp-3">{entry.content}</p>
-                          )}
                           <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(entry.createdAt), "MMM d, yyyy")}
+                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
                           </p>
                         </div>
                       </>
@@ -231,12 +228,28 @@ export default function HomePage() {
                       <>
                         {/* Card without image */}
                         <div className="p-5 flex-grow flex flex-col h-full">
-                          <h3 className="text-lg font-medium line-clamp-2 mb-2">
-                            {entry.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(entry.createdAt), 'MMM d, yyyy')}
-                          </p>
+                          <div className="flex-grow">
+                            <h3 className="text-lg font-medium line-clamp-2 mb-2">
+                              {entry.title}
+                            </h3>
+                          </div>
+                          <div className="flex justify-between items-end mt-4">
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
+                            </p>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </>
                     )}
@@ -312,7 +325,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   )}
-
+                  
                   <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
                     {!entry.imageUrl && (
                       <div className="flex justify-between items-start mb-2">
@@ -330,7 +343,7 @@ export default function HomePage() {
                         </Button>
                       </div>
                     )}
-
+                    
                     <div>
                       <h2 className="text-2xl font-bold mb-1">{entry.title}</h2>
                       <p className="text-sm text-muted-foreground">
