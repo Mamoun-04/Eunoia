@@ -2561,26 +2561,45 @@ export default function LibraryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredLessons.map((lesson) => (
-                  <Card
-                    key={lesson.id}
-                    className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={() => setSelectedLesson(lesson)}
-                  >
-                    <Sparkles className="h-8 w-8 mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold mb-2">
-                      {lesson.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {lesson.description}
-                    </p>
-                    <div className="text-sm text-primary">
-                      {lesson.questions.length} prompts •{" "}
-                      {lesson.questions.length * 2} min
+              <div className="space-y-8">
+                {/* Featured First Lesson */}
+                <Card className="p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setSelectedLesson(filteredLessons[0])}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="bg-primary/20 p-2 rounded-lg">
+                      <Sparkles className="h-6 w-6 text-primary" />
                     </div>
-                  </Card>
-                ))}
+                    <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30">Featured</Badge>
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-3">{filteredLessons[0]?.title}</h3>
+                  <p className="text-muted-foreground mb-4">{filteredLessons[0]?.description}</p>
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <BookOpen className="h-4 w-4" />
+                    {filteredLessons[0]?.questions.length} prompts • {filteredLessons[0]?.questions.length * 2} min
+                  </div>
+                </Card>
+
+                {/* Remaining Lessons Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredLessons.slice(1).map((lesson) => (
+                    <Card
+                      key={lesson.id}
+                      className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setSelectedLesson(lesson)}
+                    >
+                      <Sparkles className="h-8 w-8 mb-4 text-primary" />
+                      <h3 className="text-xl font-semibold mb-2">
+                        {lesson.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        {lesson.description}
+                      </p>
+                      <div className="text-sm text-primary">
+                        {lesson.questions.length} prompts •{" "}
+                        {lesson.questions.length * 2} min
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </>
           ) : (
