@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { GuidedLesson } from "@/components/guided-lesson";
 import { useState } from "react";
