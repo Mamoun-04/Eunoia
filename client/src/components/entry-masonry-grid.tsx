@@ -9,42 +9,32 @@ interface EntryCardProps {
   onEdit: (entry: Entry) => void;
 }
 
-const EntryCard = ({ entry, onEdit }: EntryCardProps) => {
-  const [dimensions, setDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
+function EntryCard({ entry, onEdit }: EntryCardProps) {
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
 
-  const handleImageLoad = (
-    event: React.SyntheticEvent<HTMLImageElement, Event>,
-  ) => {
-    const img = event.currentTarget;
-    setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    setDimensions({
+      width: img.naturalWidth,
+      height: img.naturalHeight,
+    });
   };
-
-  // Optionally calculate dynamic styling based on image dimensions
-  const isWide = dimensions && dimensions.width > dimensions.height;
-  const isVeryWide = dimensions && dimensions.width > dimensions.height * 1.5;
 
   const cardClasses = clsx(
     "overflow-hidden group cursor-pointer hover:shadow-lg transition-all",
-    {
-      // You can adjust these classes based on your design
-      "min-h-[200px]": !entry.imageUrl,
-    },
+    "mb-4" // margin bottom so cards don't overlap in the same column
   );
 
   return (
     <Card className={cardClasses} onClick={() => onEdit(entry)}>
-      {entry.imageUrl ? (
-        // Render image without fixed aspect ratio to reflect natural dimensions
+      {entry.imageUrl && (
         <img
           src={entry.imageUrl}
           alt={entry.title}
           onLoad={handleImageLoad}
-          className="object-cover w-full"
+          className="w-full h-auto" // Preserves natural aspect ratio
         />
-      ) : null}
+      )}
       <div className="p-4">
         <h3 className="font-semibold mb-1">{entry.title}</h3>
         <p className="text-sm text-muted-foreground">
@@ -53,16 +43,15 @@ const EntryCard = ({ entry, onEdit }: EntryCardProps) => {
       </div>
     </Card>
   );
-};
+}
 
-export const EntryMasonryGrid = ({
-  entries,
-  onEditEntry,
-}: {
+interface EntryMasonryGridProps {
   entries: Entry[];
   onEditEntry: (entry: Entry) => void;
-}) => {
-  // Define breakpoints for the masonry grid
+}
+
+export function EntryMasonryGrid({ entries, onEditEntry }: EntryMasonryGridProps) {
+  // Define responsive breakpoints for columns
   const breakpointColumnsObj = {
     default: 3,
     1024: 2,
@@ -72,12 +61,12 @@ export const EntryMasonryGrid = ({
   return (
     <Masonry
       breakpointCols={breakpointColumnsObj}
-      className="flex w-auto -ml-4" // adjust margins as needed
-      columnClassName="pl-4 bg-clip-padding"
+      className="my-masonry-grid flex -ml-4 w-auto"
+      columnClassName="my-masonry-grid_column pl-4 bg-clip-padding"
     >
       {entries.map((entry) => (
         <EntryCard key={entry.id} entry={entry} onEdit={onEditEntry} />
       ))}
     </Masonry>
   );
-};
+}
