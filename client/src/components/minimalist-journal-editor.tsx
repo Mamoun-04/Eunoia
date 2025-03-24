@@ -89,6 +89,26 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     return () => clearInterval(interval);
   }, [currentPrompt, form]);
 
+  // Check user subscription status
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const user = await response.json();
+          setIsPremium(user.subscriptionStatus === 'active');
+          setWordLimit(user.subscriptionStatus === 'active' ? 1000 : 250);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user status:', error);
+      }
+    };
+    
+    checkUserStatus();
+  }, []);
+
   // Update progress bar, word count, and adjust textarea height
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -102,6 +122,30 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         setWordCount(words);
         
+        // If content exceeds word limit, truncate it to the limit
+        if (words > wordLimit) {
+          // Find the position of the word at the limit
+          const allWords = content.trim().split(/\s+/);
+          const limitedWords = allWords.slice(0, wordLimit);
+          const limitedContent = limitedWords.join(' ');
+          
+          // Find where this content ends in the original string to preserve whitespace/formatting
+          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
+          
+          form.setValue('content', truncatedContent);
+          
+          // Show toast notification about the limit
+          toast({
+            title: "Word limit reached",
+            description: isPremium 
+              ? "You've reached the maximum word count of 1000 words."
+              : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+        
         // Auto-grow textarea
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto'; // Reset height
@@ -112,7 +156,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form.watch, wordLimit, isPremium, toast]);
   
   // Initialize textarea height on mount
   useEffect(() => {
@@ -124,6 +168,39 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Check if user is on free plan and show an upgrade prompt
+    if (!isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: (
+          <div className="space-y-2">
+            <p>Image uploads are available to Premium users only.</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 w-full"
+              onClick={() => {
+                toast({
+                  title: "Upgrade to Premium",
+                  description: "Unlock unlimited entries, images, and word count!",
+                });
+              }}
+            >
+              Upgrade to Premium
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+        duration: 5000,
+      });
+      
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+    
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -342,7 +419,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           {/* Word Count */}
           <div className="flex justify-end mb-4">
             <div className="text-xs text-muted-foreground/80 font-medium bg-background/40 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-              {wordCount} / 300 words {wordCount > 300 && 
+              {wordCount} / {wordLimit} words {!isPremium && wordCount >= wordLimit * 0.9 && 
                 <span className="text-destructive font-semibold"> (Free limit)</span>
               }
             </div>
