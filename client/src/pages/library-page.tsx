@@ -2562,26 +2562,35 @@ export default function LibraryPage() {
                 </div>
               </div>
 
-              <div className="space-y-8">
-                {/* Featured First Lesson */}
-                <Card className="p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setSelectedLesson(filteredLessons[0])}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-primary/20 p-2 rounded-lg">
-                      <Sparkles className="h-6 w-6 text-primary" />
-                    </div>
-                    <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30">Featured</Badge>
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-3">{filteredLessons[0]?.title}</h3>
-                  <p className="text-muted-foreground mb-4">{filteredLessons[0]?.description}</p>
-                  <div className="flex items-center gap-2 text-sm text-primary">
-                    <BookOpen className="h-4 w-4" />
-                    {filteredLessons[0]?.questions.length} prompts • {filteredLessons[0]?.questions.length * 2} min
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Featured Lesson */}
+                {(() => {
+                  const dayIndex = Math.floor(new Date().setHours(0,0,0,0) / 86400000) % filteredLessons.length;
+                  const featuredLesson = filteredLessons[dayIndex];
+                  return (
+                    <Card 
+                      className="p-6 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setSelectedLesson(featuredLesson)}
+                    >
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="bg-primary/20 p-2 rounded-lg">
+                          <Sparkles className="h-6 w-6 text-primary" />
+                        </div>
+                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30">Featured</Badge>
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{featuredLesson?.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{featuredLesson?.description}</p>
+                      <div className="text-sm text-primary">
+                        <BookOpen className="h-4 w-4 inline-block mr-2" />
+                        {featuredLesson?.questions.length} prompts • {filteredLessons[0]?.questions.length * 2} min
                   </div>
                 </Card>
 
-                {/* Remaining Lessons Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredLessons.slice(1).map((lesson) => (
+                {/* Remaining Lessons */}
+                {filteredLessons
+                  .filter((_, index) => index !== Math.floor(new Date().setHours(0,0,0,0) / 86400000) % filteredLessons.length)
+                  .sort(() => Math.random() - 0.5)
+                  .map((lesson) => (
                     <Card
                       key={lesson.id}
                       className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
