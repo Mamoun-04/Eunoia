@@ -237,30 +237,7 @@ export default function EntriesPage() {
               </div>
             </div>
 
-            {/* Middle Section - Mood Distribution */}
-            <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-              <div className="flex items-center gap-3 mb-6 text-muted-foreground">
-                <AwardIcon className="h-6 w-6" />
-                <span className="font-medium text-lg">Mood Distribution</span>
-              </div>
-              <div className="grid grid-cols-5 gap-3 sm:gap-6">
-                {Object.entries(entries.reduce((acc, entry) => ({
-                  ...acc,
-                  [entry.mood]: (acc[entry.mood] || 0) + 1
-                }), {} as Record<string, number>)).map(([mood, count]) => (
-                  <div key={mood} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 shadow-lg">
-                    <div className="text-2xl sm:text-4xl mb-2">{
-                      mood === 'very_happy' ? '😄' :
-                      mood === 'happy' ? '😊' :
-                      mood === 'neutral' ? '😐' :
-                      mood === 'sad' ? '😕' : '😢'
-                    }</div>
-                    <div className="text-2xl font-bold text-primary">{count}</div>
-                    <div className="text-sm text-muted-foreground capitalize">{mood.replace('_', ' ')}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            
 
             {/* Bottom Section - Achievements */}
             <div className="bg-white dark:bg-[#111111] rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
