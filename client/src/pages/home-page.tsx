@@ -193,7 +193,7 @@ export default function HomePage() {
                 }}
                 onView={(id) => setViewEntryId(id)}
               />
-                        {/* Card with image */})
+                        {/* Card with image */}
                         <div className="relative overflow-hidden rounded-t-xl aspect-square">
                           <img 
                             src={entry.imageUrl} 
