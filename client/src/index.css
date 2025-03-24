@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium theme styles */
+:root {
+  --theme-primary: hsl(var(--primary));
+}
+
+/* We'll use dynamic styles through JavaScript instead of CSS classes */
+
 /* Custom scrollbar for a more modern look */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
