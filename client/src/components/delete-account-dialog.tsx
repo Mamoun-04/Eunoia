@@ -46,10 +46,7 @@ export function DeleteAccountDialog({
       setIsDeleting(true);
       
       // Send the delete request with feedback
-      await apiRequest("/api/delete-account", {
-        method: "POST",
-        body: JSON.stringify({ reason, feedback }),
-      });
+      await apiRequest("POST", "/api/delete-account", { reason, feedback });
 
       toast({
         title: "Account deleted",

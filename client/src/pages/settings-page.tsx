@@ -1,21 +1,26 @@
 
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Separator } from "@/components/ui/separator";
+import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import {
   LogOut,
   Settings,
   CalendarDays,
   PenSquare,
   BookOpen,
-  Home
+  Home,
+  Trash2
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function SettingsPage() {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -80,14 +85,33 @@ export default function SettingsPage() {
               </div>
               <ThemeToggle />
             </div>
+            
+            <Separator className="my-6" />
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-semibold">Account</h2>
                 <p className="text-sm text-muted-foreground">Sign out of your account</p>
               </div>
-              <Button variant="destructive" onClick={() => logoutMutation.mutate()}>
+              <Button variant="outline" onClick={() => logoutMutation.mutate()}>
+                <LogOut className="h-4 w-4 mr-2" />
                 Logout
+              </Button>
+            </div>
+            
+            <Separator className="my-6" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">Delete Account</h2>
+                <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+              </div>
+              <Button 
+                variant="destructive" 
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
               </Button>
             </div>
           </Card>
@@ -118,6 +142,12 @@ export default function SettingsPage() {
           })}
         </nav>
       </div>
+
+      {/* Delete Account Dialog */}
+      <DeleteAccountDialog 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      />
     </div>
   );
 }
