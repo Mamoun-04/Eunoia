@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { GuidedLesson } from "@/components/guided-lesson";
 import { useState } from "react";
@@ -1056,8 +1055,7 @@ const SAMPLE_LESSONS = [
       {
         id: "lesson-42-q1",
         type: "text",
-        prompt: "How do you feel about silence?",
-      },
+        prompt: "How do you feel about silence?",      },
       {
         id: "lesson-42-q2",
         type: "text",
@@ -1468,7 +1466,7 @@ const SAMPLE_LESSONS = [
   },
   {
     id: "lesson-60",
-    title: "The Strength of Gentleness",
+    title: "The Strength in Gentleness",
     topic: "Gentleness",
     description: "Understand the quiet strength in being gentle.",
     questions: [
@@ -2432,23 +2430,54 @@ export default function LibraryPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  //Removed lengthFilter state
+  // Use local storage to maintain same featured lesson for the day
+  const [featuredLesson] = useState(() => {
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem('featuredLessonDate');
+    const storedLesson = localStorage.getItem('featuredLesson');
 
-  // Get today's featured lesson
-  const featuredLessonIndex = Math.floor(new Date().setHours(0,0,0,0) / 86400000) % SAMPLE_LESSONS.length;
-  const featuredLesson = SAMPLE_LESSONS[featuredLessonIndex];
-  
-  // Get remaining lessons and shuffle them
-  const remainingLessons = SAMPLE_LESSONS.filter((_, i) => i !== featuredLessonIndex)
-    .sort(() => Math.random() - 0.5);
-    
-  const filteredLessons = [...remainingLessons].filter((lesson) => {
+    if (storedDate === today && storedLesson) {
+      return JSON.parse(storedLesson);
+    }
+
+    const randomLesson = SAMPLE_LESSONS[Math.floor(Math.random() * SAMPLE_LESSONS.length)];
+    localStorage.setItem('featuredLessonDate', today);
+    localStorage.setItem('featuredLesson', JSON.stringify(randomLesson));
+    return randomLesson;
+  });
+
+  // Randomize lessons each time component mounts
+  const [randomizedLessons] = useState(() => 
+    [...SAMPLE_LESSONS].sort(() => Math.random() - 0.5)
+  );
+
+  const filteredLessons = randomizedLessons.filter((lesson) => {
     const searchTerm = searchQuery.toLowerCase();
     const titleMatch = lesson.title.toLowerCase().includes(searchTerm);
     const topicMatch = lesson.topic.toLowerCase().includes(searchTerm);
-    //Removed lengthMatch condition
     return titleMatch || topicMatch;
   });
+
+  // Featured lesson card component
+  const FeaturedLessonCard = () => (
+    <div className="mb-8 relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 transition-all hover:scale-[1.01]">
+      <div className="relative flex flex-col gap-3 rounded-[10px] bg-background p-6">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex animate-pulse items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+            Featured Today
+          </span>
+          <span className="text-sm text-muted-foreground">{featuredLesson.topic}</span>
+        </div>
+        <h3 className="text-2xl font-semibold tracking-tight">{featuredLesson.title}</h3>
+        <p className="text-muted-foreground">{featuredLesson.description}</p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {featuredLesson.questions.length} prompts
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -2523,69 +2552,45 @@ export default function LibraryPage() {
             <>
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
-                <p className="text-muted-foreground">Choose a lesson below to begin your reflection journey</p>ength].id}`}>
-          Start Reflection
-        </Link>
-      </Button>
-    </div>
-  </div>
-
-  <h2 className="text-2xl font-semibold mb-4">All Lessons</h2>
-  Choose a lesson below to begin your reflection journey
+                <p className="text-muted-foreground">
+                  Choose a lesson below to begin your reflection journey
                 </p>
-                <div className="flex gap-4 mt-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by topic or title..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  {/*Removed DropdownMenu*/}
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                {/* Featured First Lesson */}
-                <Card className="p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setSelectedLesson(filteredLessons[0])}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-primary/20 p-2 rounded-lg">
-                      <Sparkles className="h-6 w-6 text-primary" />
+                <div className="space-y-4">
+                  <FeaturedLessonCard />
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by topic or title..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
                     </div>
-                    <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30">Featured</Badge>
+                    {/*Removed DropdownMenu*/}
                   </div>
-                  <h3 className="text-2xl font-semibold mb-3">{filteredLessons[0]?.title}</h3>
-                  <p className="text-muted-foreground mb-4">{filteredLessons[0]?.description}</p>
-                  <div className="flex items-center gap-2 text-sm text-primary">
-                    <BookOpen className="h-4 w-4" />
-                    {filteredLessons[0]?.questions.length} prompts • {filteredLessons[0]?.questions.length * 2} min
-                  </div>
-                </Card>
-
-                {/* Remaining Lessons Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredLessons.slice(1).map((lesson) => (
-                    <Card
-                      key={lesson.id}
-                      className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
-                      onClick={() => setSelectedLesson(lesson)}
-                    >
-                      <Sparkles className="h-8 w-8 mb-4 text-primary" />
-                      <h3 className="text-xl font-semibold mb-2">
-                        {lesson.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm mb-4">
-                        {lesson.description}
-                      </p>
-                      <div className="text-sm text-primary">
-                        {lesson.questions.length} prompts •{" "}
-                        {lesson.questions.length * 2} min
-                      </div>
-                    </Card>
-                  ))}
                 </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredLessons.map((lesson) => (
+                  <Card
+                    key={lesson.id}
+                    className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => setSelectedLesson(lesson)}
+                  >
+                    <Sparkles className="h-8 w-8 mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {lesson.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      {lesson.description}
+                    </p>
+                    <div className="text-sm text-primary">
+                      {lesson.questions.length} prompts •{" "}
+                      {lesson.questions.length * 2} min
+                    </div>
+                  </Card>
+                ))}
               </div>
             </>
           ) : (
