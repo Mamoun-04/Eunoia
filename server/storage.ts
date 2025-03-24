@@ -129,12 +129,12 @@ export class MemStorage implements IStorage {
       return { allowed: true };
     }
 
-    // Free users are limited to 2 entries per day
+    // Free users are limited to 1 entry per day
     const dailyEntryCount = await this.getUserDailyEntryCount(userId);
-    if (dailyEntryCount >= 2) {
+    if (dailyEntryCount >= 1) {
       return { 
         allowed: false, 
-        reason: "Free users can only create 2 entries per day. Upgrade to Premium for unlimited entries."
+        reason: "You've reached your daily entry limit. Upgrade to Premium for unlimited journaling."
       };
     }
 
@@ -170,13 +170,13 @@ export class MemStorage implements IStorage {
       return 0;
     }
 
-    // Premium users have no content limit
+    // Premium users are limited to 1000 words
     if (user.subscriptionStatus === "active") {
-      return Infinity;
+      return 1000;
     }
 
-    // Free users are limited to 300 words
-    return 300;
+    // Free users are limited to 250 words
+    return 250;
   }
 
   async getUserDailyEntryCount(userId: number): Promise<number> {
