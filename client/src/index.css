@@ -4,6 +4,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Pinterest-style Masonry Grid */
+@layer utilities {
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-auto-rows: 10px;
+    grid-gap: 1.25rem;
+  }
+  
+  .minimal-card {
+    max-height: 150px;
+  }
+}
+
 /* Custom scrollbar for a more modern look */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
