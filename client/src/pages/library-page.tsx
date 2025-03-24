@@ -443,7 +443,9 @@ export default function LibraryPage() {
                     <Sparkles className="h-8 w-8 mb-4 text-primary" />
                     <h3 className="text-xl font-semibold mb-2">{lesson.title}</h3>
                     <p className="text-muted-foreground text-sm mb-4">{lesson.description}</p>
-                    <div className="text-sm text-primary">{lesson.questions.length} prompts • 5 min</div>
+                    <div className="text-sm text-primary">
+                      {lesson.questions.length} prompts • {lesson.questions.length * 2} min
+                    </div>
                   </Card>
                 ))}
               </div>
