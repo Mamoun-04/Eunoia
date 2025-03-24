@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import { useState } from "react";
+import { EntryMasonryGrid } from "@/components/entry-masonry-grid";
 import { BadgesDialog } from "@/components/badges-dialog";
 import {
   Card,
@@ -481,19 +482,13 @@ export default function EntriesPage() {
           {/* Recent Entries */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Recent Entries</h2>
-            {entries.slice(0, 5).map((entry) => (
-              <Card key={entry.id} className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-lg font-semibold">{entry.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(entry.createdAt), "MMM d, yyyy")}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm line-clamp-2">{entry.content}</p>
-              </Card>
-            ))}
+            <EntryMasonryGrid 
+              entries={entries} 
+              onEditEntry={(entry) => {
+                setSelectedEntry(entry);
+                setIsEditing(true);
+              }} 
+            />
           </div>
         </div>
       </div>
