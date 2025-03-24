@@ -4,30 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Pinterest-style Masonry Grid */
-@layer utilities {
-  .masonry-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    grid-auto-rows: 5px;
-    grid-gap: 1.25rem;
-  }
-  
-  .masonry-grid > * {
-    grid-row-end: span auto;
-  }
-  
-  .minimal-card {
-    max-height: 125px;
-  }
-  
-  /* Improve animation and hover effects for cards */
-  .minimal-card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.3s ease;
-  }
-}
-
 /* Custom scrollbar for a more modern look */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

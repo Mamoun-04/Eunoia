@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { JournalEditor } from "@/components/journal-editor";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   LayoutGrid,
   LogOut,
@@ -37,39 +37,10 @@ export default function HomePage() {
   const [location] = useLocation();
   const [showPremiumFeatureModal, setShowPremiumFeatureModal] = useState(false);
   const [premiumFeature, setPremiumFeature] = useState<"image_upload" | "daily_entry" | "word_limit">("daily_entry");
-  // Track image aspect ratios for each entry
-  const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, { ratio: number, isLandscape: boolean }>>({});
 
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
   });
-
-  // Detect image aspect ratios when entries change
-  useEffect(() => {
-    const detectAspectRatios = () => {
-      for (const entry of entries) {
-        if (entry.imageUrl) {
-          // Create new image element to calculate aspect ratio
-          const img = document.createElement('img') as HTMLImageElement;
-          img.src = entry.imageUrl;
-          
-          img.onload = () => {
-            const aspectRatio = img.width / img.height;
-            const isLandscape = aspectRatio >= 1;
-            
-            setImageAspectRatios(prev => ({
-              ...prev,
-              [entry.id]: { ratio: aspectRatio, isLandscape }
-            }));
-          };
-        }
-      }
-    };
-    
-    if (entries.length > 0) {
-      detectAspectRatios();
-    }
-  }, [entries]);
 
   // Filter entries based on search query
   const filteredEntries = entries.filter(entry => 
@@ -213,117 +184,77 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 masonry-grid">
-                {filteredEntries.map((entry) => {
-                  const imageData = entry.imageUrl ? imageAspectRatios[entry.id] : null;
-                  const isLandscape = imageData?.isLandscape;
-                  const aspectRatio = imageData?.ratio || 1;
-                  
-                  // Determine grid column span based on image aspect ratio
-                  const columnSpan = isLandscape && aspectRatio > 1.5 ? 
-                    "sm:col-span-2" : "";
-                  
-                  // Determine if this is a minimal card (no image, no content or very short content)
-                  const isMinimalCard = !entry.imageUrl && (!entry.content || entry.content.trim().length < 10);
-                  
-                  // Calculate content length factor for sizing
-                  const contentLength = entry.content ? entry.content.trim().length : 0;
-                  const contentFactor = !entry.imageUrl ? Math.min(Math.floor(contentLength / 50), 3) : 0;
-                  
-                  return (
-                    <Card 
-                      key={entry.id} 
-                      className={`overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col ${columnSpan} ${isMinimalCard ? 'minimal-card' : ''}`}
-                      onClick={() => setViewEntryId(entry.id)}
-                      style={{ 
-                        gridRowEnd: `span ${
-                          entry.imageUrl 
-                            ? (isLandscape ? 45 : 60) // Taller for portrait images
-                            : (isMinimalCard ? 20 : 35 + (contentFactor * 10)) // Dynamic sizing based on content length
-                        }`
-                      }}
-                    >
-                      {entry.imageUrl ? (
-                        <>
-                          {/* Card with image */}
-                          <div 
-                            className={`relative overflow-hidden rounded-t-xl ${
-                              isLandscape 
-                                ? aspectRatio > 2 
-                                  ? 'aspect-[2/1]' // Very wide landscape
-                                  : 'aspect-[4/3]' // Normal landscape
-                                : 'aspect-[3/4]' // Portrait
-                            }`}
-                          >
-                            <img 
-                              src={entry.imageUrl} 
-                              alt="Journal entry" 
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute top-2 right-2">
-                              <Button 
-                                size="icon" 
-                                variant="ghost"
-                                className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedEntry(entry);
-                                  setIsEditing(true);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredEntries.map((entry) => (
+                  <Card 
+                    key={entry.id} 
+                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col"
+                    onClick={() => setViewEntryId(entry.id)}
+                  >
+                    {entry.imageUrl ? (
+                      <>
+                        {/* Card with image */}
+                        <div className="relative overflow-hidden rounded-t-xl aspect-square">
+                          <img 
+                            src={entry.imageUrl} 
+                            alt="Journal entry" 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute top-2 right-2">
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <div className="p-4 flex-grow flex flex-col justify-between">
-                            <h3 className="text-lg font-medium line-clamp-1">
+                        </div>
+                        <div className="p-4 flex-grow flex flex-col justify-between">
+                          <h3 className="text-lg font-medium line-clamp-1">
+                            {entry.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Card without image */}
+                        <div className="p-5 flex-grow flex flex-col h-full">
+                          <div className="flex-grow">
+                            <h3 className="text-lg font-medium line-clamp-2 mb-2">
                               {entry.title}
                             </h3>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {format(new Date(entry.createdAt), "MMMM d, yyyy")}
+                          </div>
+                          <div className="flex justify-between items-end mt-4">
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
                             </p>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
                           </div>
-                        </>
-                      ) : (
-                        <>
-                          {/* Card without image */}
-                          <div className={`${isMinimalCard ? 'p-3' : 'p-5'} flex-grow flex flex-col h-full`}>
-                            <div className="flex-grow">
-                              <h3 className={`${isMinimalCard ? 'text-base' : 'text-lg'} font-medium line-clamp-2 ${isMinimalCard ? 'mb-0' : 'mb-2'}`}>
-                                {entry.title}
-                              </h3>
-                              
-                              {/* Show content preview for non-minimal cards */}
-                              {!isMinimalCard && contentLength > 30 && (
-                                <p className="text-sm text-muted-foreground line-clamp-3 mt-2 mb-3">
-                                  {entry.content.trim().substring(0, 120)}
-                                  {entry.content.trim().length > 120 && '...'}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex justify-between items-end mt-2">
-                              <p className="text-xs text-muted-foreground">
-                                {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
-                              </p>
-                              <Button 
-                                size="icon" 
-                                variant="ghost"
-                                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedEntry(entry);
-                                  setIsEditing(true);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </Card>
-                  );
-                })}
+                        </div>
+                      </>
+                    )}
+                  </Card>
+                ))}
               </div>
             )}
           </div>
