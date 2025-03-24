@@ -2113,7 +2113,7 @@ const SAMPLE_LESSONS = [
       {
         id: "lesson-87-q2",
         type: "text",
-        prompt: "What forgiveness or closure might help you move forward?
+        prompt: "What forgiveness or closure might help you move forward?",
       },
       {
         id: "lesson-87-q3",
