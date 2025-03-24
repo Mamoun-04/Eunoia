@@ -1,7 +1,6 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   LogOut,
@@ -12,10 +11,21 @@ import {
   Home
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+
 
 export default function SettingsPage() {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reason, setReason] = useState('');
+  const toast = useToast();
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -23,6 +33,18 @@ export default function SettingsPage() {
     { name: "Library", href: "/library", icon: BookOpen },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
+
+  const handleDeleteAccount = async () => {
+    try {
+      //  Add your actual delete account logic here.  This is a placeholder.
+      console.log("Deleting account with reason:", reason);
+      toast({ title: 'Account deleted successfully!', description: 'Your account has been deleted.', type: 'success' });
+      setShowDeleteDialog(false);
+      // Add redirect to login page here
+    } catch (error) {
+      toast({ title: 'Error deleting account', description: error.message, type: 'error' });
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
@@ -91,6 +113,41 @@ export default function SettingsPage() {
               </Button>
             </div>
           </Card>
+
+          {/* Delete Account Section */}
+          <Card className="border-destructive/20">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+              <CardDescription>
+                Permanent actions that can't be undone
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Delete Account</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Permanently delete your account and all your data
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <DeleteAccountDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onDelete={handleDeleteAccount}
+            setReason={setReason}
+          />
         </div>
       </div>
 
@@ -119,5 +176,30 @@ export default function SettingsPage() {
         </nav>
       </div>
     </div>
+  );
+}
+
+function DeleteAccountDialog({ open, onOpenChange, onDelete, setReason }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogHeader>
+        <DialogTitle>Delete Account</DialogTitle>
+      </DialogHeader>
+      <DialogContent>
+        <DialogDescription>
+          Are you sure you want to delete your account? This action is irreversible.
+        </DialogDescription>
+        <Label htmlFor="reason">Reason for leaving:</Label>
+        <Textarea
+          id="reason"
+          placeholder="Please tell us why you're leaving..."
+          onChange={(e) => setReason(e.target.value)}
+        />
+      </DialogContent>
+      <DialogFooter>
+        <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button variant="destructive" onClick={onDelete}>Delete Account</Button>
+      </DialogFooter>
+    </Dialog>
   );
 }
