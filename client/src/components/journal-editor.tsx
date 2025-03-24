@@ -36,6 +36,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   const [wordCount, setWordCount] = useState<number>(
     entry?.content ? entry.content.trim().split(/\s+/).length : 0
   );
+  const [wordLimit, setWordLimit] = useState<number>(250); // Default to free user limit
+  const [isPremium, setIsPremium] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
@@ -49,18 +51,63 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
     },
   });
   
-  // Update word count when content changes
+  // Check user subscription status
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const user = await response.json();
+          setIsPremium(user.subscriptionStatus === 'active');
+          setWordLimit(user.subscriptionStatus === 'active' ? 1000 : 250);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user status:', error);
+      }
+    };
+    
+    checkUserStatus();
+  }, []);
+  
+  // Update word count when content changes and enforce word limit
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'content' || name === undefined) {
         const content = value.content as string || '';
+        // Split by whitespace to count words
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         setWordCount(words);
+        
+        // If content exceeds word limit, truncate it to the limit
+        if (words > wordLimit) {
+          // Find the position of the word at the limit
+          const allWords = content.trim().split(/\s+/);
+          const limitedWords = allWords.slice(0, wordLimit);
+          const limitedContent = limitedWords.join(' ');
+          
+          // Find where this content ends in the original string to preserve whitespace/formatting
+          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
+          
+          form.setValue('content', truncatedContent);
+          
+          // Show toast notification about the limit
+          toast({
+            title: "Word limit reached",
+            description: isPremium 
+              ? "You've reached the maximum word count of 1000 words."
+              : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
       }
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form.watch, wordLimit, isPremium, toast]);
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,7 +381,7 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                   <div className="flex justify-between items-center">
                     <FormLabel>Your thoughts</FormLabel>
                     <div className="text-xs text-muted-foreground px-2 py-1 bg-muted/30 rounded-full">
-                      {wordCount} / 300 words {wordCount > 300 && 
+                      {wordCount} / {wordLimit} words {!isPremium && wordCount >= wordLimit * 0.9 && 
                         <span className="text-destructive font-semibold"> (Free limit)</span>
                       }
                     </div>

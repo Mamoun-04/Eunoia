@@ -49,6 +49,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [wordCount, setWordCount] = useState<number>(
     entry?.content ? entry.content.trim().split(/\s+/).length : 0
   );
+  const [wordLimit, setWordLimit] = useState<number>(250); // Default to free user limit
+  const [isPremium, setIsPremium] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   

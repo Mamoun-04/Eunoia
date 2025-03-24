@@ -107,10 +107,33 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 className="text-3xl font-bold">My Journal</h2>
-            <Button onClick={() => setIsEditing(true)}>
-              <PenSquare className="h-5 w-5 mr-2" />
-              New Entry
-            </Button>
+            {user?.subscriptionStatus === "active" || (entries && entries.filter(entry => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const entryDate = new Date(entry.createdAt);
+              entryDate.setHours(0, 0, 0, 0);
+              return entryDate.getTime() === today.getTime();
+            }).length === 0) ? (
+              <Button onClick={() => setIsEditing(true)}>
+                <PenSquare className="h-5 w-5 mr-2" />
+                New Entry
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <Button variant="outline" disabled>
+                  <PenSquare className="h-5 w-5 mr-2" />
+                  New Entry
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Daily limit reached. <button 
+                    className="text-primary hover:underline" 
+                    onClick={() => setShowSubscriptionDialog(true)}
+                  >
+                    Upgrade
+                  </button>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -158,21 +181,21 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
                 {filteredEntries.map((entry) => (
                   <Card 
                     key={entry.id} 
-                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl"
+                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl mb-6 break-inside-avoid inline-block w-full"
                     onClick={() => setViewEntryId(entry.id)}
                   >
                     {entry.imageUrl ? (
                       <>
-                        {/* Card with image (postcard style) */}
-                        <div className="relative aspect-[3/2] overflow-hidden rounded-t-xl">
+                        {/* Card with image (Pinterest style) */}
+                        <div className="relative overflow-hidden rounded-t-xl">
                           <img 
                             src={entry.imageUrl} 
                             alt="Journal entry" 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute top-2 right-2">
                             <Button 
@@ -193,11 +216,8 @@ export default function HomePage() {
                           <h3 className="text-lg font-medium line-clamp-1 mb-1">
                             {entry.title}
                           </h3>
-                          <p className="text-xs text-muted-foreground mb-2">
+                          <p className="text-xs text-muted-foreground">
                             {format(new Date(entry.createdAt), "MMMM d, yyyy")}
-                          </p>
-                          <p className="text-sm text-muted-foreground/90 line-clamp-2 mt-2">
-                            {entry.content}
                           </p>
                         </div>
                       </>
@@ -206,14 +226,11 @@ export default function HomePage() {
                         {/* Card without image */}
                         <div className="p-5">
                           <div className="flex flex-col gap-1">
-                            <div className="text-sm text-muted-foreground">
-                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
-                            </div>
-                            <h3 className="text-lg font-medium">
+                            <h3 className="text-lg font-medium line-clamp-2 mb-1">
                               {entry.title}
                             </h3>
-                            <p className="text-sm text-muted-foreground line-clamp-3">
-                              {entry.content}
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
                             </p>
                           </div>
                           <div className="flex justify-end mt-4">
