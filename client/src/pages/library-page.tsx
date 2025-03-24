@@ -1055,7 +1055,8 @@ const SAMPLE_LESSONS = [
       {
         id: "lesson-42-q1",
         type: "text",
-        prompt: "How do you feel about silence?",      },
+        prompt: "How do you feel about silence?",
+      },
       {
         id: "lesson-42-q2",
         type: "text",
@@ -1466,7 +1467,7 @@ const SAMPLE_LESSONS = [
   },
   {
     id: "lesson-60",
-    title: "The Strength in Gentleness",
+    title: "The Strength of Gentleness",
     topic: "Gentleness",
     description: "Understand the quiet strength in being gentle.",
     questions: [
@@ -2430,54 +2431,15 @@ export default function LibraryPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  // Use local storage to maintain same featured lesson for the day
-  const [featuredLesson] = useState(() => {
-    const today = new Date().toDateString();
-    const storedDate = localStorage.getItem('featuredLessonDate');
-    const storedLesson = localStorage.getItem('featuredLesson');
+  //Removed lengthFilter state
 
-    if (storedDate === today && storedLesson) {
-      return JSON.parse(storedLesson);
-    }
-
-    const randomLesson = SAMPLE_LESSONS[Math.floor(Math.random() * SAMPLE_LESSONS.length)];
-    localStorage.setItem('featuredLessonDate', today);
-    localStorage.setItem('featuredLesson', JSON.stringify(randomLesson));
-    return randomLesson;
-  });
-
-  // Randomize lessons each time component mounts
-  const [randomizedLessons] = useState(() => 
-    [...SAMPLE_LESSONS].sort(() => Math.random() - 0.5)
-  );
-
-  const filteredLessons = randomizedLessons.filter((lesson) => {
+  const filteredLessons = SAMPLE_LESSONS.filter((lesson) => {
     const searchTerm = searchQuery.toLowerCase();
     const titleMatch = lesson.title.toLowerCase().includes(searchTerm);
     const topicMatch = lesson.topic.toLowerCase().includes(searchTerm);
+    //Removed lengthMatch condition
     return titleMatch || topicMatch;
   });
-
-  // Featured lesson card component
-  const FeaturedLessonCard = () => (
-    <div className="mb-8 relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 transition-all hover:scale-[1.01]">
-      <div className="relative flex flex-col gap-3 rounded-[10px] bg-background p-6">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex animate-pulse items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-            Featured Today
-          </span>
-          <span className="text-sm text-muted-foreground">{featuredLesson.topic}</span>
-        </div>
-        <h3 className="text-2xl font-semibold tracking-tight">{featuredLesson.title}</h3>
-        <p className="text-muted-foreground">{featuredLesson.description}</p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {featuredLesson.questions.length} prompts
-          </span>
-        </div>
-      </div>
-    </div>
-  );
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -2555,21 +2517,19 @@ export default function LibraryPage() {
                 <p className="text-muted-foreground">
                   Choose a lesson below to begin your reflection journey
                 </p>
-                <div className="space-y-4">
-                  <FeaturedLessonCard />
-                  <div className="flex items-center gap-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search by topic or title..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                    {/*Removed DropdownMenu*/}
+                <div className="flex gap-4 mt-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by topic or title..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
                   </div>
+                  {/*Removed DropdownMenu*/}
                 </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredLessons.map((lesson) => (
