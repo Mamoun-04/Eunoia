@@ -192,11 +192,11 @@ export default function HomePage() {
                   setIsEditing(true);
                 }}
                 onView={(id) => setViewEntryId(id)}
-              />
-                        {/* Card with image */}
-                        <div className="relative overflow-hidden rounded-t-xl aspect-square">
-                          <img 
-                            src={entry.imageUrl} 
+                imageUrl={entry.imageUrl}
+              >
+                <div className="relative overflow-hidden rounded-t-xl aspect-square">
+                  <img 
+                    src={entry.imageUrl} 
                             alt="Journal entry" 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
