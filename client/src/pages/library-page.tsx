@@ -2585,7 +2585,6 @@ export default function LibraryPage() {
                         {featuredLesson?.questions.length} prompts • {filteredLessons[0]?.questions.length * 2} min
                   </div>
                 </Card>
-
                 {/* Remaining Lessons */}
                 {filteredLessons
                   .filter((_, index) => index !== Math.floor(new Date().setHours(0,0,0,0) / 86400000) % filteredLessons.length)
