@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!req.file) {
           return res.status(400).json({ message: "No image provided" });
         }
-        
+
         const imageUrl = `/uploads/${req.file.filename}`;
         res.json({ url: imageUrl });
       });
@@ -73,17 +73,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get content limit
       const contentLimit = await storage.getEntryContentLimit(req.user!.id);
-      
+
       // Check content length (word count)
       const data = insertEntrySchema.parse(req.body);
       const wordCount = data.content.trim().split(/\s+/).length;
-      
+
       if (wordCount > contentLimit) {
         return res.status(403).json({ 
           message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
         });
       }
-      
+
       const entry = await storage.createEntry(req.user!.id, data);
       res.status(201).json(entry);
     } catch (error) {
@@ -110,15 +110,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!entry || entry.userId !== req.user!.id) {
         return res.status(404).json({ message: "Entry not found" });
       }
-      
+
       // If the updated entry contains content, check content limits for free users
       if (req.body.content) {
         // Get word limit
         const contentLimit = await storage.getEntryContentLimit(req.user!.id);
-        
+
         // Count words in the new content
         const wordCount = req.body.content.trim().split(/\s+/).length;
-        
+
         // Enforce the limit for free users
         if (wordCount > contentLimit) {
           return res.status(403).json({ 
@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
-      
+
       await storage.updateUser(req.user!.id, {
         subscriptionStatus: "active",
         subscriptionEndDate: endDate
@@ -219,6 +219,31 @@ User message: ${message}`;
     } catch (error) {
       console.error('OpenAI API error:', error);
       res.status(500).json({ error: 'Failed to process chat message' });
+    }
+  });
+
+  app.post("/api/logout", (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.sendStatus(200);
+    });
+  });
+
+  app.delete("/api/user", requireAuth, async (req, res) => {
+    try {
+      // Delete user's entries
+      await storage.deleteEntriesByUserId(req.user!.id);
+      // Delete user's account
+      await storage.deleteUser(req.user!.id);
+      // Logout user
+      req.logout((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to logout after account deletion" });
+        }
+        res.sendStatus(204);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete account" });
     }
   });
 

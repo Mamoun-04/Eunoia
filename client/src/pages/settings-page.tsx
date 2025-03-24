@@ -81,14 +81,44 @@ export default function SettingsPage() {
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Account</h2>
-                <p className="text-sm text-muted-foreground">Sign out of your account</p>
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Account</h2>
+                  <p className="text-sm text-muted-foreground">Sign out of your account</p>
+                </div>
+                <Button variant="destructive" onClick={() => logoutMutation.mutate()}>
+                  Logout
+                </Button>
               </div>
-              <Button variant="destructive" onClick={() => logoutMutation.mutate()}>
-                Logout
-              </Button>
+              
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div>
+                  <h2 className="text-xl font-semibold text-destructive">Danger Zone</h2>
+                  <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="text-destructive border-destructive/50 hover:bg-destructive/10">
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteAccountMutation.mutate()} className="bg-destructive">
+                        Delete Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </Card>
         </div>
