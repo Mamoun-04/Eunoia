@@ -239,11 +239,14 @@ User message: ${message}`;
       // Delete the user and all associated data
       await storage.deleteUser(req.user!.id, formattedFeedback);
       
-      // Logout the user
-      req.logout((err) => {
+      // Destroy the session first
+      req.session.destroy((err) => {
         if (err) {
-          return res.status(500).json({ message: "Error during logout" });
+          return res.status(500).json({ message: "Error during session destruction" });
         }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
         res.status(200).json({ message: "Account deleted successfully" });
       });
     } catch (error) {

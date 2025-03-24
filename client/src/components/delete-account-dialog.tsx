@@ -46,15 +46,21 @@ export function DeleteAccountDialog({
       setIsDeleting(true);
       
       // Send the delete request with feedback
-      await apiRequest("POST", "/api/delete-account", { reason, feedback });
-
-      toast({
-        title: "Account deleted",
-        description: "Your account has been successfully deleted.",
-      });
+      const response = await apiRequest("POST", "/api/delete-account", { reason, feedback });
       
-      // Redirect to homepage after successful deletion
-      setLocation("/");
+      if (response.ok) {
+        // Clear any client-side state
+        localStorage.removeItem('theme');
+        sessionStorage.clear();
+        
+        toast({
+          title: "Account deleted",
+          description: "Your account has been successfully deleted.",
+        });
+        
+        // Force refresh to ensure complete state reset and redirect to auth page
+        window.location.href = '/auth';
+      }
     } catch (error) {
       toast({
         title: "Error",
