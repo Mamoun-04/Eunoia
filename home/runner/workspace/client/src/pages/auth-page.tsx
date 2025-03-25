@@ -11,6 +11,9 @@ function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   });
 
   const form = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(z.object({
+      username: insertUserSchema.shape.username,
+      password: insertUserSchema.shape.password
+    })),
   });
 }
