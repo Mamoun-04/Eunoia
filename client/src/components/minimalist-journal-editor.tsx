@@ -174,11 +174,29 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   }, [form.watch, wordLimit, isPremium, toast]);
 
   // Initialize textarea height on mount
+  // Add component cleanup and properly handle unmounting
   useEffect(() => {
+    let isComponentMounted = true;
+    
+    // Initial textarea height adjustment
     if (textareaRef.current && form.getValues('content')) {
       const scrollHeight = textareaRef.current.scrollHeight;
       textareaRef.current.style.height = `${scrollHeight}px`;
     }
+    
+    // This is crucial: prevent any state updates after component unmounts
+    return () => {
+      isComponentMounted = false;
+      
+      // Cancel any pending form submissions to prevent state updates after unmount
+      if (entryMutation.isPending) {
+        try {
+          entryMutation.reset();
+        } catch (err) {
+          console.error("Failed to reset mutation during cleanup:", err);
+        }
+      }
+    };
   }, []);
 
   // Handle image upload
@@ -344,10 +362,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     form.setValue('content', newContent);
 
     // Focus the textarea and place cursor at the end
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-      textareaRef.current.selectionStart = newContent.length;
-      textareaRef.current.selectionEnd = newContent.length;
+    try {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.selectionStart = newContent.length;
+        textareaRef.current.selectionEnd = newContent.length;
+      }
+    } catch (error) {
+      console.error("Error focusing textarea:", error);
     }
   };
 
@@ -476,11 +498,23 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   };
 
   return (
-    <Dialog open onOpenChange={handleDialogChange}>
+    <Dialog 
+      open 
+      onOpenChange={handleDialogChange} 
+      onPointerDownOutside={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onInteractOutside={(e) => {
+        e.preventDefault(); 
+        e.stopPropagation();
+      }}
+    >
       <DialogContent 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
