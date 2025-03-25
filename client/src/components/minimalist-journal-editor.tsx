@@ -46,13 +46,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
   const [progress, setProgress] = useState<number>(0);
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
-  const [wordCount, setWordCount] = useState<number>(
-    entry?.content ? entry.content.trim().split(/\s+/).length : 0
-  );
-  const [wordLimit, setWordLimit] = useState<number>(250); // Default to free user limit
+  const [wordLimit, setWordLimit] = useState<number>(250);
   const [isPremium, setIsPremium] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<string>(entry?.content || "");
   
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
@@ -64,6 +62,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       imageUrl: entry?.imageUrl || "",
     },
   });
+
+  const wordCount = useMemo(() => {
+    const content = form.getValues('content');
+    return content ? content.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
+  }, [form.getValues('content')]);
 
   // Cycle through prompts every few seconds when there's no content yet
   useEffect(() => {
@@ -462,8 +465,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             ref={textareaRef}
             className="journal-textarea"
             placeholder="Begin writing here..."
-            value={form.getValues('content')}
-            onChange={(e) => form.setValue('content', e.target.value)}
+            {...form.register('content', {
+              onChange: (e) => {
+                if (wordCount < wordLimit || isPremium) {
+                  form.setValue('content', e.target.value);
+                } else if (e.target.value.length < contentRef.current.length) {
+                  form.setValue('content', e.target.value);
+                }
+                contentRef.current = e.target.value;
+              }
+            })}
             aria-label="Journal entry content"
           />
           
