@@ -4,7 +4,7 @@ import { SubscriptionDialog } from "@/components/subscription-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { Sparkles } from "lucide-react";
 
-interface UpgradeButtonProps extends ButtonProps {
+interface UpgradeButtonProps extends Omit<ButtonProps, 'variant'> {
   showIcon?: boolean;
   buttonText?: string;
   variant?: "default" | "outline" | "ghost" | "link" | "gradient";
@@ -28,17 +28,23 @@ export function UpgradeButton({
     return null;
   }
   
-  // Determine the button styling based on variant
-  const buttonStyle = variant === "gradient" 
-    ? "bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/90 text-white" 
-    : "";
+  // For gradient variant, use the default variant with custom gradient class
+  let buttonVariant: ButtonProps['variant'] = 'default';
+  let buttonStyle = '';
+  
+  if (variant === "gradient") {
+    buttonVariant = "default";
+    buttonStyle = "bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/90 text-white";
+  } else {
+    buttonVariant = variant as ButtonProps['variant'];
+  }
   
   return (
     <>
       <Button
-        variant={variant === "gradient" ? "default" : variant}
+        variant={buttonVariant}
         onClick={() => setShowSubscriptionDialog(true)}
-        className={`${buttonStyle} ${className}`}
+        className={`${buttonStyle} ${className || ''}`}
         {...props}
       >
         {showIcon && <Sparkles className="h-4 w-4 mr-2" />}
