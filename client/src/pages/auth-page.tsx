@@ -122,7 +122,7 @@ export default function AuthPage() {
 
 function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const form = useForm({
-    resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
+    resolver: zodResolver(insertUserSchema.shape({ username: true, password: true })),
   });
 
   return (
