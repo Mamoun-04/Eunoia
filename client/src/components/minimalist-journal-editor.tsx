@@ -50,6 +50,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
   const [wordLimit, setWordLimit] = useState<number>(250);
   const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [wordCount, setWordCount] = useState(0); // Added word count state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<string>(entry?.content || "");
@@ -65,7 +66,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     },
   });
 
-  const wordCount = useMemo(() => {
+  const wordCountMemo = useMemo(() => {
     const content = form.getValues('content');
     return content ? content.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   }, [form.getValues('content')]);
@@ -120,7 +121,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       if (name === 'content' || name === undefined) {
         const content = value.content as string || '';
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-        setWordCount(words);
+        setWordCount(words); // Update word count state
 
         // Set progress based on word count relative to limit
         const newProgress = Math.min((words / wordLimit) * 100, 100);
