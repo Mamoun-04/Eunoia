@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertEntrySchema, categoryOptions, Entry, moodOptions } from '@shared/schema';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { format } from "date-fns";
 
 // Example writing prompts and sentence starters
 const WRITING_PROMPTS = [
@@ -48,9 +49,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [wordLimit, setWordLimit] = useState<number>(250);
   const [isPremium, setIsPremium] = useState<boolean>(false);
   const [wordCount, setWordCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<string>(entry?.content || "");
+  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
@@ -62,6 +65,39 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       imageUrl: entry?.imageUrl || "",
     },
   });
+
+  const createEntryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      setIsSubmitting(true);
+      const res = await apiRequest("POST", "/api/entries", data);
+      setIsSubmitting(false);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+    },
+    onError: (err) => {
+      setIsSubmitting(false);
+      toast({ title: "Error creating entry", description: err.message, variant: "destructive" });
+    }
+  });
+
+  const updateEntryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      setIsSubmitting(true);
+      const res = await apiRequest("PATCH", `/api/entries/${entry?.id}`, data);
+      setIsSubmitting(false);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+    },
+    onError: (err) => {
+      setIsSubmitting(false);
+      toast({ title: "Error updating entry", description: err.message, variant: "destructive" });
+    }
+  });
+
 
   // Calculate word count from content
   const wordCountMemo = useMemo(() => {
@@ -206,8 +242,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     toast({ title: "AI Assistance", description: "A prompt has been added." });
   };
 
-  // Submit entry (mutation code omitted for brevity)
-  // ...
+  const entryMutation = entry ? updateEntryMutation : createEntryMutation;
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -360,17 +395,17 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             <motion.button 
               className={cn(
                 "submit-button", 
-                (!form.getValues('content') || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
+                (!form.getValues('content') || isSubmitting) && "opacity-50 cursor-not-allowed"
               )}
               onClick={() => {
-                if (form.getValues('content') && !entryMutation.isPending) {
+                if (form.getValues('content') && !isSubmitting) {
                   entryMutation.mutate(form.getValues());
                 }
               }}
-              disabled={!form.getValues('content') || entryMutation.isPending}
+              disabled={!form.getValues('content') || isSubmitting}
               data-tooltip="Save entry"
-              whileHover={form.getValues('content') && !entryMutation.isPending ? { scale: 1.08, y: -2, transition: { duration: 0.2 } } : {}}
-              whileTap={form.getValues('content') && !entryMutation.isPending ? { scale: 0.95 } : {}}
+              whileHover={form.getValues('content') && !isSubmitting ? { scale: 1.08, y: -2, transition: { duration: 0.2 } } : {}}
+              whileTap={form.getValues('content') && !isSubmitting ? { scale: 0.95 } : {}}
             >
               <ArrowRight className="h-5 w-5" />
             </motion.button>
