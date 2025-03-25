@@ -59,84 +59,20 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      const existingEmail = await storage.getUserByEmail(req.body.email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already registered" });
-      }
-
-      // Generate verification token
-      const verificationToken = randomBytes(32).toString('hex');
-      
-      const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
-        verificationToken,
-        emailVerified: false
-      });
-
-      // Send verification email
-      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${verificationToken}`;
-      await sendVerificationEmail(req.body.email, verificationUrl);
-
-      res.status(201).json({ 
-        message: "Registration successful. Please check your email to verify your account.",
-        requiresVerification: true 
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.get("/api/verify-email", async (req, res) => {
-    const { token } = req.query;
-    
-    if (!token) {
-      return res.status(400).json({ message: "Verification token is required" });
+    const existingUser = await storage.getUserByUsername(req.body.username);
+    if (existingUser) {
+      return res.status(400).send("Username already exists");
     }
 
-    try {
-      const user = await storage.getUserByVerificationToken(token as string);
-      
-      if (!user) {
-        return res.status(400).json({ message: "Invalid verification token" });
-      }
+    const user = await storage.createUser({
+      ...req.body,
+      password: await hashPassword(req.body.password),
+    });
 
-      await storage.verifyEmail(user.id);
-      res.json({ message: "Email verified successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to verify email" });
-    }
-  });
-
-  // Update login to check email verification
-  app.post("/api/login", async (req, res, next) => {
-    try {
-      const user = await storage.getUserByUsername(req.body.username);
-      
-      if (!user || !(await comparePasswords(req.body.password, user.password))) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      if (!user.emailVerified) {
-        return res.status(403).json({ 
-          message: "Please verify your email before logging in",
-          requiresVerification: true 
-        });
-      }
-
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.json(user);
-      });
-    } catch (error) {
-      next(error);
-    }
+    req.login(user, (err) => {
+      if (err) return next(err);
+      res.status(201).json(user);
+    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {

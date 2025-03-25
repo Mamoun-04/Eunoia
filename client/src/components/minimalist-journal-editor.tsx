@@ -71,6 +71,29 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     return content ? content.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   }, [form.getValues('content')]);
 
+  // Cycle through prompts every few seconds when there's no content yet
+  useEffect(() => {
+    if (form.getValues('content')) return;
+
+    const interval = setInterval(() => {
+      const currentIndex = WRITING_PROMPTS.indexOf(currentPrompt);
+      const nextIndex = (currentIndex + 1) % WRITING_PROMPTS.length;
+      setCurrentPrompt(WRITING_PROMPTS[nextIndex]);
+
+      // Also cycle through section titles based on the prompt
+      if (nextIndex === 0) setSectionTitle("TODAY'S REFLECTIONS");
+      else if (nextIndex === 1) setSectionTitle("GRATITUDE");
+      else if (nextIndex === 2) setSectionTitle("LEARNING & GROWTH");
+      else if (nextIndex === 3) setSectionTitle("THOUGHTS & FEELINGS");
+      else if (nextIndex === 4) setSectionTitle("SELF-CARE");
+      else if (nextIndex === 5) setSectionTitle("CHALLENGES");
+      else if (nextIndex === 6) setSectionTitle("MOMENTS OF JOY");
+      else setSectionTitle("LOOKING AHEAD");
+
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentPrompt, form]);
 
   // Check user subscription status
   useEffect(() => {
@@ -115,9 +138,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             }
           }, 100);
 
-          // Corrected the logic to compute content trimming and ensure whitespace/formatting preservation.
-          const wordsArray = content.split(/\s+/);
-          const truncatedContent = wordsArray.slice(0, wordLimit).join(' ');
+          // Find where this content ends in the original string to preserve whitespace/formatting
+          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
+
           form.setValue('content', truncatedContent);
 
           // Show toast notification about the limit
@@ -447,7 +471,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           {/* Journal Entry Textarea */}
           <textarea
             ref={textareaRef}
-            className="journal-textarea updated"
+            className="journal-textarea"
             placeholder="Begin writing here..."
             {...form.register('content', {
               onChange: (e) => {
