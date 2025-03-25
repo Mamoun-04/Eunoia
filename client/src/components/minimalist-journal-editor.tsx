@@ -114,13 +114,12 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     const subscription = form.watch((value, { name }) => {
       if (name === 'content' || name === undefined) {
         const content = value.content as string || '';
-        // Consider "complete" at 100 characters, scale accordingly
-        const newProgress = Math.min(content.length / 100, 1) * 100;
-        setProgress(newProgress);
-        
-        // Update word count
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         setWordCount(words);
+        
+        // Set progress based on word count relative to limit
+        const newProgress = Math.min((words / wordLimit) * 100, 100);
+        setProgress(newProgress);
         
         // If content exceeds word limit, truncate it to the limit
         if (words > wordLimit) {
