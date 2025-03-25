@@ -115,59 +115,62 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     checkUserStatus();
   }, []);
 
-  // Update progress bar, word count, and adjust textarea height
+  // Update progress bar and word count - separated this from the textarea auto-grow for stability
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'content' || name === undefined) {
-        const content = value.content as string || '';
-        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-        setWordCount(words); // Update word count state
-
-        // Set progress based on word count relative to limit
-        const newProgress = Math.min((words / wordLimit) * 100, 100);
-        setProgress(newProgress);
-
-        // If content exceeds word limit, prevent additional input
-        if (words >= wordLimit && textareaRef.current) {
-          textareaRef.current.readOnly = true;
-
-          // Revert to last valid content after a short delay
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.readOnly = false;
+    try {
+      const subscription = form.watch((value, { name }) => {
+        if (name === 'content' || name === undefined) {
+          try {
+            const content = value.content as string || '';
+            const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+            setWordCount(words); // Update word count state
+  
+            // Set progress based on word count relative to limit
+            const newProgress = Math.min((words / wordLimit) * 100, 100);
+            setProgress(newProgress);
+  
+            // If content exceeds word limit, prevent additional input
+            if (words >= wordLimit) {
+              // Split content into words and properly limit it
+              const allWords = content.trim().split(/\s+/);
+              const limitedContent = allWords.slice(0, wordLimit).join(' ');
+              
+              // Calculate position in the original text where the word limit is reached
+              let truncatedContent = limitedContent;
+              try {
+                if (allWords.length > wordLimit) {
+                  const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+                  if (endPos > 0) {
+                    truncatedContent = content.substring(0, endPos);
+                  }
+                }
+              } catch (error) {
+                console.error("Error truncating content:", error);
+              }
+  
+              form.setValue('content', truncatedContent);
+  
+              // Show toast notification about the limit
+              toast({
+                title: "Word limit reached",
+                description: isPremium 
+                  ? "You've reached the maximum word count of 1000 words."
+                  : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
+                variant: "destructive",
+                duration: 5000,
+              });
             }
-          }, 100);
-
-          // Split content into words and properly limit it
-          const allWords = content.trim().split(/\s+/);
-          const limitedContent = allWords.slice(0, wordLimit).join(' ');
-          // Calculate position in the original text where the word limit is reached
-          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
-          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
-
-          form.setValue('content', truncatedContent);
-
-          // Show toast notification about the limit
-          toast({
-            title: "Word limit reached",
-            description: isPremium 
-              ? "You've reached the maximum word count of 1000 words."
-              : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          } catch (error) {
+            console.error("Error in form watch handler:", error);
+          }
         }
-
-        // Auto-grow textarea
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto'; // Reset height
-          const scrollHeight = textareaRef.current.scrollHeight;
-          textareaRef.current.style.height = `${scrollHeight}px`;
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
+      });
+  
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      console.error("Error setting up form watch:", error);
+      return () => {}; // Return empty cleanup function in case of error
+    }
   }, [form.watch, wordLimit, isPremium, toast]);
 
   // Initialize textarea height on mount
@@ -180,97 +183,128 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Check if user is on free plan and show an upgrade prompt
-    if (!isPremium) {
-      toast({
-        title: "Premium Feature",
-        description: (
-          <div className="space-y-2">
-            <p>Image uploads are available to Premium users only.</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 w-full"
-              onClick={() => {
-                toast({
-                  title: "Upgrade to Premium",
-                  description: "Unlock unlimited entries, images, and word count!",
-                });
-              }}
-            >
-              Upgrade to Premium
-            </Button>
-          </div>
-        ),
-        variant: "destructive",
-        duration: 5000,
-      });
-
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check if the file is an image
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file (JPG, PNG, GIF, etc.)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check file size (limit to 5MB)
-    const fileSizeMB = file.size / 1024 / 1024;
-    if (fileSizeMB > 5) {
-      toast({
-        title: "Image too large",
-        description: `Your image is ${fileSizeMB.toFixed(1)}MB. Please select an image smaller than 5MB.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Set local preview first for immediate feedback
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageDataUrl = event.target?.result as string;
-      setImagePreview(imageDataUrl);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload the file to the server
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Image upload failed');
+      // Prevent the default behavior to avoid any unexpected closings
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Check if user is on free plan and show an upgrade prompt
+      if (!isPremium) {
+        toast({
+          title: "Premium Feature",
+          description: (
+            <div className="space-y-2">
+              <p>Image uploads are available to Premium users only.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={(e) => {
+                  // Prevent event propagation
+                  e.stopPropagation();
+                  toast({
+                    title: "Upgrade to Premium",
+                    description: "Unlock unlimited entries, images, and word count!",
+                  });
+                }}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 5000,
+        });
+  
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
       }
-
-      const data = await response.json();
-      form.setValue("imageUrl", data.url);
-
-      toast({
-        title: "Image uploaded",
-        description: "Your image has been successfully uploaded.",
-      });
+  
+      const file = e.target.files?.[0];
+      if (!file) return;
+  
+      // Check if the file is an image
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file (JPG, PNG, GIF, etc.)",
+          variant: "destructive",
+        });
+        return;
+      }
+  
+      // Check file size (limit to 5MB)
+      const fileSizeMB = file.size / 1024 / 1024;
+      if (fileSizeMB > 5) {
+        toast({
+          title: "Image too large",
+          description: `Your image is ${fileSizeMB.toFixed(1)}MB. Please select an image smaller than 5MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+  
+      // Set local preview first for immediate feedback
+      try {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const imageDataUrl = event.target?.result as string;
+            setImagePreview(imageDataUrl);
+          } catch (error) {
+            console.error("Error setting image preview:", error);
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (readerError) {
+        console.error("Error reading file:", readerError);
+        toast({
+          title: "Preview failed",
+          description: "Could not generate a preview for this image.",
+          variant: "destructive",
+        });
+      }
+  
+      // Upload the file to the server
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+  
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+  
+        if (!response.ok) {
+          throw new Error('Image upload failed');
+        }
+  
+        const data = await response.json();
+        form.setValue("imageUrl", data.url);
+  
+        toast({
+          title: "Image uploaded",
+          description: "Your image has been successfully uploaded.",
+        });
+      } catch (uploadError) {
+        console.error("Upload error:", uploadError);
+        // Keep showing the local preview even if server upload fails
+        toast({
+          title: "Upload failed",
+          description: uploadError instanceof Error ? uploadError.message : "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error("General error handling image upload:", error);
+      // This catch block ensures the entire component doesn't crash if any error occurs
       toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
+        title: "Something went wrong",
+        description: "There was an error processing your image. Please try again.",
         variant: "destructive",
       });
     }
@@ -394,8 +428,31 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     },
   });
 
+  // Handle dialog state more carefully
+  const handleDialogChange = (open: boolean) => {
+    try {
+      // Only close if user explicitly requests it
+      if (!open) {
+        // If there's unsaved content, ask for confirmation
+        if (form.getValues('content') && form.getValues('content') !== (entry?.content || "")) {
+          const isConfirmed = window.confirm("You have unsaved changes. Are you sure you want to close the editor?");
+          if (isConfirmed) {
+            onClose();
+          }
+          // If not confirmed, we return without calling onClose(), so dialog stays open
+          return;
+        }
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error in dialog open change:", error);
+      // If something goes wrong, default to closing the dialog
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
+    <Dialog open onOpenChange={handleDialogChange}>
       <DialogContent 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
@@ -408,7 +465,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           variant="ghost"
           size="icon"
           className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm rounded-full"
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDialogChange(false);
+          }}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -473,17 +533,28 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
           {/* Journal Entry Textarea */}
           <textarea
-            ref={textareaRef}
             className="journal-textarea"
             placeholder="Begin writing here..."
             {...form.register('content', {
               onChange: (e) => {
-                if (wordCount < wordLimit || isPremium) {
-                  form.setValue('content', e.target.value);
-                } else if (e.target.value.length < contentRef.current.length) {
-                  form.setValue('content', e.target.value);
+                try {
+                  if (wordCount < wordLimit || isPremium) {
+                    form.setValue('content', e.target.value);
+                  } else if (e.target.value.length < contentRef.current.length) {
+                    form.setValue('content', e.target.value);
+                  }
+                  contentRef.current = e.target.value;
+                  
+                  // Auto-adjust height directly in onChange handler
+                  if (e.target) {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${target.scrollHeight}px`;
+                    // We don't need to manually update the ref as React handles this
+                  }
+                } catch (error) {
+                  console.error("Error in textarea onChange:", error);
                 }
-                contentRef.current = e.target.value;
               }
             })}
             aria-label="Journal entry content"
