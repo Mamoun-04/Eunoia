@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import type { CreateTypes } from "canvas-confetti";
 
 // ===== Helper Functions ===== //
 
