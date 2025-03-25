@@ -8,7 +8,6 @@ import { JournalEditor } from "@/components/journal-editor";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { MoodSelector } from "@/components/mood-selector";
 import { useState } from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   LayoutGrid,
   LogOut,
@@ -191,36 +190,17 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <DragDropContext onDragEnd={(result) => {
-                if (!result.destination) return;
-                
-                const items = Array.from(filteredEntries);
-                const [reorderedItem] = items.splice(result.source.index, 1);
-                items.splice(result.destination.index, 0, reorderedItem);
-                
-                // Update entries order in the UI
-                queryClient.setQueryData(["/api/entries"], items);
-              }}>
-                <Droppable droppableId="entries" direction="vertical">
-                  {(provided) => (
-                    <div 
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                    >
-                      {filteredEntries.map((entry, index) => (
+              // ***********************************************
+              // Replace Grid layout with CSS columns for Masonry
+              // ***********************************************
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
+                {filteredEntries.map((entry) => (
                   // Each Card uses "break-inside-avoid" to prevent breaking between columns
-                  <Draggable key={entry.id} draggableId={entry.id.toString()} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <Card
-                          className="mb-5 overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl"
-                          onClick={() => setViewEntryId(entry.id)}
-                        >
+                  <Card
+                    key={entry.id}
+                    className="mb-5 break-inside-avoid overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl"
+                    onClick={() => setViewEntryId(entry.id)}
+                  >
                     {entry.imageUrl ? (
                       <>
                         {/* -------------------------------
@@ -343,15 +323,8 @@ export default function HomePage() {
                       </>
                     )}
                   </Card>
-                      </div>
-                    )}
-                  </Draggable>
                 ))}
-                {provided.placeholder}
               </div>
-            )}
-          </Droppable>
-        </DragDropContext>
             )}
           </div>
         </div>
