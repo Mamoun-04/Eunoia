@@ -1,12 +1,10 @@
-// /hooks/use-theme.ts
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Theme = "light" | "dark" | "sunset" | "beach" | "forest" | "ocean" | "midnight";
-
 type ThemeStore = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: "light" | "dark";
+  setTheme: (theme: "light" | "dark") => void;
 };
 
 export const useTheme = create<ThemeStore>()(
@@ -14,11 +12,7 @@ export const useTheme = create<ThemeStore>()(
     (set) => ({
       theme: "light",
       setTheme: (theme) => {
-        const themes: Theme[] = ["light", "dark", "sunset", "beach", "forest", "ocean", "midnight"];
-        // Remove all theme classes from the root element.
-        themes.forEach((t) => document.documentElement.classList.remove(t));
-        // Add the new theme class.
-        document.documentElement.classList.add(theme);
+        document.documentElement.classList.toggle("dark", theme === "dark");
         set({ theme });
       },
     }),

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -5,45 +6,21 @@ import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
-import { SubscriptionDialog } from "@/components/subscription-dialog";
-import { LogOut, Settings, PenSquare, BookOpen, Home, Trash2 } from "lucide-react";
+import {
+  LogOut,
+  Settings,
+  CalendarDays,
+  PenSquare,
+  BookOpen,
+  Home,
+  Trash2
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
-  const { user, logoutMutation, refetchUser } = useAuth();
-  const { toast } = useToast();
+  const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
-
-  // Treat any subscriptionStatus not equal to "free" as premium.
-  const isPremium = user && user.subscriptionStatus !== "free";
-
-  // Cancel subscription function (assumes your API endpoint exists)
-  const cancelSubscription = async () => {
-    try {
-      const response = await fetch("/api/cancel-subscription", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (response.ok) {
-        toast({
-          title: "Subscription Cancelled",
-          description: "Your premium subscription has been cancelled.",
-        });
-        await refetchUser();
-      } else {
-        throw new Error("Failed to cancel subscription");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Cancellation failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -60,6 +37,7 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold px-4">Eunoia</h1>
           <p className="text-sm text-muted-foreground px-4">Your Insights</p>
         </div>
+
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => {
             const isActive = location === item.href;
@@ -80,6 +58,7 @@ export default function SettingsPage() {
             );
           })}
         </nav>
+
         <Button
           variant="ghost"
           className="mt-auto w-full justify-start gap-2"
@@ -99,83 +78,36 @@ export default function SettingsPage() {
           </div>
 
           <Card className="p-6">
-            {/* Subscription Status Section */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold">Subscription Status</h2>
-                {isPremium ? (
-                  <p className="text-sm text-muted-foreground">
-                    You are on a <strong>Premium</strong> plan.
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    You are on the <strong>Free</strong> plan.
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {isPremium ? (
-                  <Button
-                    variant="destructive"
-                    onClick={cancelSubscription}
-                  >
-                    Cancel Subscription
-                  </Button>
-                ) : (
-                  <Button
-                    variant="gradient"
-                    className="animate-pulse shadow-lg"
-                    onClick={() => setSubscriptionDialogOpen(true)}
-                  >
-                    Upgrade to Premium
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <Separator className="my-6" />
-
-            {/* Theme Section */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-semibold">Theme</h2>
-                <p className="text-sm text-muted-foreground">
-                  {isPremium
-                    ? "Select a theme from the dropdown"
-                    : "Upgrade to Premium for more themes"}
-                </p>
+                <p className="text-sm text-muted-foreground">Toggle light and dark mode</p>
               </div>
-              <ThemeToggle premium={!!isPremium} />
+              <ThemeToggle />
             </div>
-
+            
             <Separator className="my-6" />
 
-            {/* Account Section */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-semibold">Account</h2>
-                <p className="text-sm text-muted-foreground">
-                  Sign out of your account
-                </p>
+                <p className="text-sm text-muted-foreground">Sign out of your account</p>
               </div>
               <Button variant="outline" onClick={() => logoutMutation.mutate()}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             </div>
-
+            
             <Separator className="my-6" />
 
-            {/* Delete Account Section */}
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold">Delete Account</h2>
-                <p className="text-sm text-muted-foreground">
-                  Permanently delete your account and all data
-                </p>
+                <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
               </div>
-              <Button
-                variant="destructive"
+              <Button 
+                variant="destructive" 
                 onClick={() => setDeleteDialogOpen(true)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -212,15 +144,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Delete Account Dialog */}
-      <DeleteAccountDialog
+      <DeleteAccountDialog 
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-      />
-
-      {/* Subscription Dialog (for upgrading) */}
-      <SubscriptionDialog
-        open={subscriptionDialogOpen}
-        onOpenChange={setSubscriptionDialogOpen}
       />
     </div>
   );
