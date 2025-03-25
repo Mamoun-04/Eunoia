@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Camera, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
@@ -51,7 +51,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<string>(entry?.content || "");
-  
+
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
     defaultValues: {
@@ -71,12 +71,12 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   // Cycle through prompts every few seconds when there's no content yet
   useEffect(() => {
     if (form.getValues('content')) return;
-    
+
     const interval = setInterval(() => {
       const currentIndex = WRITING_PROMPTS.indexOf(currentPrompt);
       const nextIndex = (currentIndex + 1) % WRITING_PROMPTS.length;
       setCurrentPrompt(WRITING_PROMPTS[nextIndex]);
-      
+
       // Also cycle through section titles based on the prompt
       if (nextIndex === 0) setSectionTitle("TODAY'S REFLECTIONS");
       else if (nextIndex === 1) setSectionTitle("GRATITUDE");
@@ -86,9 +86,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       else if (nextIndex === 5) setSectionTitle("CHALLENGES");
       else if (nextIndex === 6) setSectionTitle("MOMENTS OF JOY");
       else setSectionTitle("LOOKING AHEAD");
-      
+
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, [currentPrompt, form]);
 
@@ -108,7 +108,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         console.error('Failed to fetch user status:', error);
       }
     };
-    
+
     checkUserStatus();
   }, []);
 
@@ -119,24 +119,24 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         const content = value.content as string || '';
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
         setWordCount(words);
-        
+
         // Set progress based on word count relative to limit
         const newProgress = Math.min((words / wordLimit) * 100, 100);
         setProgress(newProgress);
-        
+
         // If content exceeds word limit, truncate it to the limit
         if (words > wordLimit) {
           // Find the position of the word at the limit
           const allWords = content.trim().split(/\s+/);
           const limitedWords = allWords.slice(0, wordLimit);
           const limitedContent = limitedWords.join(' ');
-          
+
           // Find where this content ends in the original string to preserve whitespace/formatting
           const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
           const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
-          
+
           form.setValue('content', truncatedContent);
-          
+
           // Show toast notification about the limit
           toast({
             title: "Word limit reached",
@@ -147,7 +147,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             duration: 5000,
           });
         }
-        
+
         // Auto-grow textarea
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto'; // Reset height
@@ -156,10 +156,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         }
       }
     });
-    
+
     return () => subscription.unsubscribe();
   }, [form.watch, wordLimit, isPremium, toast]);
-  
+
   // Initialize textarea height on mount
   useEffect(() => {
     if (textareaRef.current && form.getValues('content')) {
@@ -195,14 +195,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         variant: "destructive",
         duration: 5000,
       });
-      
+
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
       return;
     }
-    
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -234,25 +234,25 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       setImagePreview(imageDataUrl);
     };
     reader.readAsDataURL(file);
-    
+
     // Upload the file to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
-      
+
       if (!response.ok) {
         throw new Error('Image upload failed');
       }
-      
+
       const data = await response.json();
       form.setValue("imageUrl", data.url);
-      
+
       toast({
         title: "Image uploaded",
         description: "Your image has been successfully uploaded.",
@@ -272,9 +272,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     const newContent = currentContent 
       ? `${currentContent}\n\n${starter} ` 
       : `${starter} `;
-    
+
     form.setValue('content', newContent);
-    
+
     // Focus the textarea and place cursor at the end
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -294,10 +294,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       "It might be interesting to explore...",
       "This reminds me of the concept of..."
     ];
-    
+
     const randomStarter = starters[Math.floor(Math.random() * starters.length)];
     addSentenceStarter(randomStarter);
-    
+
     toast({
       title: "AI Assistance",
       description: "We've added a prompt to help continue your thoughts.",
@@ -315,7 +315,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           ? firstLine.substring(0, 30) + '...' 
           : firstLine;
       }
-      
+
       // If we have an existing entry, update it
       if (entry) {
         const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
@@ -346,7 +346,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           errorMessage.includes("words per entry") ||
           errorMessage.includes("image per day")
         );
-      
+
       if (isLimitError) {
         toast({
           title: "Premium Feature",
@@ -392,7 +392,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
-        
+
         <Button
           variant="ghost"
           size="icon"
@@ -401,13 +401,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         >
           <X className="h-4 w-4" />
         </Button>
-        
+
         <div className="journal-interface custom-scrollbar overflow-y-auto max-h-[calc(100vh-4rem)] sm:max-h-[calc(90vh-4rem)]">
           {/* Progress Bar */}
           <div className="journal-progress">
             <div className="journal-progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
-          
+
           {/* Title Input */}
           <div className="mb-6">
             <input
@@ -426,7 +426,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               }
             </div>
           </div>
-          
+
           {/* Simplified Sentence Starters */}
           <div className="sentence-starters-container">
             <div className="sentence-starters">
@@ -459,7 +459,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               ))}
             </div>
           </div>
-          
+
           {/* Journal Entry Textarea */}
           <textarea
             ref={textareaRef}
@@ -477,7 +477,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             })}
             aria-label="Journal entry content"
           />
-          
+
           {/* Image Preview */}
           {imagePreview && (
             <motion.div 
@@ -511,7 +511,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               </motion.div>
             </motion.div>
           )}
-          
+
           {/* Action Bar */}
           <motion.div 
             className="action-bar"
@@ -542,7 +542,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   value=""
                 />
               </motion.button>
-              
+
               {/* AI Assist Button */}
               <motion.button 
                 className="action-button"
@@ -558,7 +558,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                 <Sparkles className="h-5 w-5" />
               </motion.button>
             </div>
-            
+
             {/* Submit Button */}
             <motion.button 
               className={cn(
