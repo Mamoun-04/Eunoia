@@ -42,7 +42,8 @@ type Props = {
 
 export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Props) {
   const { toast } = useToast();
-  const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
+  import { useRef } from 'react';
+const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
   const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
   const [progress, setProgress] = useState<number>(0);
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
