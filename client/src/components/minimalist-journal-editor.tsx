@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Camera, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertEntrySchema, categoryOptions, Entry, moodOptions } from '@shared/schema';
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
-import { format } from "date-fns";
+import { useRef } from 'react';
 
-// Example writing prompts and sentence starters
+
+// Array of writing prompts to cycle through
 const WRITING_PROMPTS = [
   "What were the highlights of your day?",
   "What are you feeling grateful for today?",
@@ -24,6 +25,7 @@ const WRITING_PROMPTS = [
   "What are you looking forward to tomorrow?"
 ];
 
+// Sentence starters to help get the writing flowing
 const SENTENCE_STARTERS = [
   "Today, I felt...",
   "I noticed that...",
@@ -48,12 +50,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
   const [wordLimit, setWordLimit] = useState<number>(250);
   const [isPremium, setIsPremium] = useState<boolean>(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wordCount, setWordCount] = useState(0); // Added word count state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<string>(entry?.content || "");
-  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(insertEntrySchema),
@@ -66,52 +66,21 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     },
   });
 
-  const createEntryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      setIsSubmitting(true);
-      const res = await apiRequest("POST", "/api/entries", data);
-      setIsSubmitting(false);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-    },
-    onError: (err) => {
-      setIsSubmitting(false);
-      toast({ title: "Error creating entry", description: err.message, variant: "destructive" });
-    }
-  });
-
-  const updateEntryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      setIsSubmitting(true);
-      const res = await apiRequest("PATCH", `/api/entries/${entry?.id}`, data);
-      setIsSubmitting(false);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-    },
-    onError: (err) => {
-      setIsSubmitting(false);
-      toast({ title: "Error updating entry", description: err.message, variant: "destructive" });
-    }
-  });
-
-
-  // Calculate word count from content
   const wordCountMemo = useMemo(() => {
     const content = form.getValues('content');
     return content ? content.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   }, [form.getValues('content')]);
 
-  // Cycle through prompts if no content exists
+  // Cycle through prompts every few seconds when there's no content yet
   useEffect(() => {
     if (form.getValues('content')) return;
+
     const interval = setInterval(() => {
       const currentIndex = WRITING_PROMPTS.indexOf(currentPrompt);
       const nextIndex = (currentIndex + 1) % WRITING_PROMPTS.length;
       setCurrentPrompt(WRITING_PROMPTS[nextIndex]);
+
+      // Also cycle through section titles based on the prompt
       if (nextIndex === 0) setSectionTitle("TODAY'S REFLECTIONS");
       else if (nextIndex === 1) setSectionTitle("GRATITUDE");
       else if (nextIndex === 2) setSectionTitle("LEARNING & GROWTH");
@@ -120,7 +89,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       else if (nextIndex === 5) setSectionTitle("CHALLENGES");
       else if (nextIndex === 6) setSectionTitle("MOMENTS OF JOY");
       else setSectionTitle("LOOKING AHEAD");
+
     }, 5000);
+
     return () => clearInterval(interval);
   }, [currentPrompt, form]);
 
@@ -128,7 +99,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
-        const response = await fetch('/api/user', { credentials: 'include' });
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
         if (response.ok) {
           const user = await response.json();
           setIsPremium(user.subscriptionStatus === 'active');
@@ -138,26 +111,40 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         console.error('Failed to fetch user status:', error);
       }
     };
+
     checkUserStatus();
   }, []);
 
-  // Update progress, word count, and adjust textarea height
+  // Update progress bar, word count, and adjust textarea height
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'content' || name === undefined) {
         const content = value.content as string || '';
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-        setWordCount(words);
+        setWordCount(words); // Update word count state
+
+        // Set progress based on word count relative to limit
         const newProgress = Math.min((words / wordLimit) * 100, 100);
         setProgress(newProgress);
+
+        // If content exceeds word limit, prevent additional input
         if (words >= wordLimit && textareaRef.current) {
           textareaRef.current.readOnly = true;
+          
+          // Revert to last valid content after a short delay
           setTimeout(() => {
             if (textareaRef.current) {
               textareaRef.current.readOnly = false;
             }
           }, 100);
-          form.setValue('content', content);
+
+          // Find where this content ends in the original string to preserve whitespace/formatting
+          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
+
+          form.setValue('content', truncatedContent);
+
+          // Show toast notification about the limit
           toast({
             title: "Word limit reached",
             description: isPremium 
@@ -167,60 +154,135 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             duration: 5000,
           });
         }
+
+        // Auto-grow textarea
         if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+          textareaRef.current.style.height = 'auto'; // Reset height
+          const scrollHeight = textareaRef.current.scrollHeight;
+          textareaRef.current.style.height = `${scrollHeight}px`;
         }
       }
     });
+
     return () => subscription.unsubscribe();
   }, [form.watch, wordLimit, isPremium, toast]);
 
-  // Initialize textarea height
+  // Initialize textarea height on mount
   useEffect(() => {
     if (textareaRef.current && form.getValues('content')) {
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${scrollHeight}px`;
     }
   }, []);
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Premium check and validations...
+    // Check if user is on free plan and show an upgrade prompt
+    if (!isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: (
+          <div className="space-y-2">
+            <p>Image uploads are available to Premium users only.</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 w-full"
+              onClick={() => {
+                toast({
+                  title: "Upgrade to Premium",
+                  description: "Unlock unlimited entries, images, and word count!",
+                });
+              }}
+            >
+              Upgrade to Premium
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+        duration: 5000,
+      });
+
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Check if the file is an image
     if (!file.type.startsWith('image/')) {
-      toast({ title: "Invalid file type", description: "Please select an image file.", variant: "destructive" });
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, GIF, etc.)",
+        variant: "destructive",
+      });
       return;
     }
+
+    // Check file size (limit to 5MB)
     const fileSizeMB = file.size / 1024 / 1024;
     if (fileSizeMB > 5) {
-      toast({ title: "Image too large", description: `Select an image smaller than 5MB.`, variant: "destructive" });
+      toast({
+        title: "Image too large",
+        description: `Your image is ${fileSizeMB.toFixed(1)}MB. Please select an image smaller than 5MB.`,
+        variant: "destructive",
+      });
       return;
     }
+
+    // Set local preview first for immediate feedback
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageDataUrl = event.target?.result as string;
       setImagePreview(imageDataUrl);
     };
     reader.readAsDataURL(file);
+
+    // Upload the file to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
-      if (!response.ok) throw new Error('Image upload failed');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+
       const data = await response.json();
       form.setValue("imageUrl", data.url);
-      toast({ title: "Image uploaded", description: "Your image has been uploaded." });
+
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been successfully uploaded.",
+      });
     } catch (error) {
-      toast({ title: "Upload failed", description: error instanceof Error ? error.message : "Try again.", variant: "destructive" });
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  // Add a sentence starter to the content
+  // Add a sentence starter to the current content
   const addSentenceStarter = (starter: string) => {
     const currentContent = form.getValues('content');
-    const newContent = currentContent ? `${currentContent}\n\n${starter} ` : `${starter} `;
+    const newContent = currentContent 
+      ? `${currentContent}\n\n${starter} ` 
+      : `${starter} `;
+
     form.setValue('content', newContent);
+
+    // Focus the textarea and place cursor at the end
     if (textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.selectionStart = newContent.length;
@@ -230,25 +292,108 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   // AI assistance function
   const getAIAssistance = () => {
+    // This would eventually connect to an AI service
+    // For now, just add a placeholder prompt
     const starters = [
       "Perhaps you could expand on...",
       "Have you considered...",
       "Another perspective might be...",
       "It might be interesting to explore...",
-      "This reminds me of..."
+      "This reminds me of the concept of..."
     ];
+
     const randomStarter = starters[Math.floor(Math.random() * starters.length)];
     addSentenceStarter(randomStarter);
-    toast({ title: "AI Assistance", description: "A prompt has been added." });
+
+    toast({
+      title: "AI Assistance",
+      description: "We've added a prompt to help continue your thoughts.",
+    });
   };
 
-  const entryMutation = entry ? updateEntryMutation : createEntryMutation;
+  // Submit entry
+  const entryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      // Generate a title if none provided
+      if (!data.title) {
+        const content = data.content;
+        const firstLine = content.split('\n')[0].trim();
+        data.title = firstLine.length > 30 
+          ? firstLine.substring(0, 30) + '...' 
+          : firstLine;
+      }
+
+      // If we have an existing entry, update it
+      if (entry) {
+        const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
+        return res.json();
+      } else {
+        // Otherwise create a new one
+        const res = await apiRequest("POST", "/api/entries", data);
+        return res.json();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      toast({
+        title: entry ? "Entry updated" : "Entry saved",
+        description: entry 
+          ? "Your journal entry has been updated successfully." 
+          : "Your journal entry has been saved successfully.",
+      });
+      onClose();
+    },
+    onError: (error: Error) => {
+      // Check if it's a free user limit error
+      const errorMessage = error.message;
+      const isLimitError = 
+        errorMessage.includes("Free users") && 
+        (
+          errorMessage.includes("entries per day") || 
+          errorMessage.includes("words per entry") ||
+          errorMessage.includes("image per day")
+        );
+
+      if (isLimitError) {
+        toast({
+          title: "Premium Feature",
+          description: (
+            <div className="space-y-2">
+              <p>{errorMessage}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => {
+                  // Here we would open the subscription dialog
+                  // You could implement a state/context to control this
+                  // For simplicity, we'll just show another toast for now
+                  toast({
+                    title: "Upgrade to Premium",
+                    description: "Unlock unlimited entries, images, and word count!",
+                  });
+                }}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: entry ? "Failed to update entry" : "Failed to save entry",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    },
+  });
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      {/* Add onClick stopPropagation on DialogContent to prevent accidental close */}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        onClick={(e) => e.stopPropagation()}
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
       >
@@ -289,18 +434,32 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             </div>
           </div>
 
-          {/* Sentence Starters */}
+          {/* Simplified Sentence Starters */}
           <div className="sentence-starters-container">
             <div className="sentence-starters">
-              {['Today I felt...', "I'm grateful for...", 'Looking forward to...'].map((starter, index) => (
+              {['Today I felt...', 'I\'m grateful for...', 'Looking forward to...'].map((starter, index) => (
                 <motion.button 
                   key={index}
                   className="sentence-starter"
                   onClick={() => addSentenceStarter(starter)}
-                  whileHover={{ scale: 1.05, y: -2, transition: { duration: 0.2 } }}
-                  whileTap={{ scale: 0.98, y: 0 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    y: -2,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ 
+                    scale: 0.98,
+                    y: 0 
+                  }}
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0, transition: { delay: index * 0.05, duration: 0.3 } }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    transition: { 
+                      delay: index * 0.05,
+                      duration: 0.3
+                    }
+                  }}
                 >
                   {starter}
                 </motion.button>
@@ -341,7 +500,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   className="w-full rounded-lg object-contain max-h-[60vh]"
                 />
               </div>
-              <motion.div whileHover={{ scale: 1.1 }} className="absolute top-3 right-3">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="absolute top-3 right-3"
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -365,11 +527,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             transition={{ delay: 0.2, duration: 0.3 }}
           >
             <div className="flex space-x-3">
+              {/* Camera Button */}
               <motion.button 
                 className="action-button"
                 onClick={() => fileInputRef.current?.click()}
                 data-tooltip="Attach image"
-                whileHover={{ scale: 1.08, y: -2, transition: { duration: 0.2 } }}
+                whileHover={{ 
+                  scale: 1.08, 
+                  y: -2,
+                  transition: { duration: 0.2 } 
+                }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Camera className="h-5 w-5" />
@@ -382,30 +549,44 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   value=""
                 />
               </motion.button>
+
+              {/* AI Assist Button */}
               <motion.button 
                 className="action-button"
                 onClick={getAIAssistance}
                 data-tooltip="Need a prompt?"
-                whileHover={{ scale: 1.08, y: -2, transition: { duration: 0.2 } }}
+                whileHover={{ 
+                  scale: 1.08, 
+                  y: -2,
+                  transition: { duration: 0.2 } 
+                }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Sparkles className="h-5 w-5" />
               </motion.button>
             </div>
+
+            {/* Submit Button */}
             <motion.button 
               className={cn(
                 "submit-button", 
-                (!form.getValues('content') || isSubmitting) && "opacity-50 cursor-not-allowed"
+                (!form.getValues('content') || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
               )}
               onClick={() => {
-                if (form.getValues('content') && !isSubmitting) {
+                if (form.getValues('content') && !entryMutation.isPending) {
                   entryMutation.mutate(form.getValues());
                 }
               }}
-              disabled={!form.getValues('content') || isSubmitting}
+              disabled={!form.getValues('content') || entryMutation.isPending}
               data-tooltip="Save entry"
-              whileHover={form.getValues('content') && !isSubmitting ? { scale: 1.08, y: -2, transition: { duration: 0.2 } } : {}}
-              whileTap={form.getValues('content') && !isSubmitting ? { scale: 0.95 } : {}}
+              whileHover={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 1.08, 
+                y: -2,
+                transition: { duration: 0.2 } 
+              } : {}}
+              whileTap={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 0.95 
+              } : {}}
             >
               <ArrowRight className="h-5 w-5" />
             </motion.button>
