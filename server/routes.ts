@@ -5,25 +5,25 @@ import { storage } from "./storage";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
+import { insertEntrySchema } from "@shared/schema";
+import { z } from "zod";
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: 'uploads/',
+    destination: "uploads/",
     filename: (req, file, cb) => {
       const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
       cb(null, uniqueName);
-    }
+    },
   }),
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     cb(null, allowedTypes.includes(file.mimetype));
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
 });
-import { insertEntrySchema } from "@shared/schema";
-import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -36,25 +36,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Journal entries routes
+  // Image upload endpoint
   app.post("/api/upload", requireAuth, async (req, res) => {
     try {
-      // Check if user can add an image (free user limit)
       const canAddImage = await storage.canAddImage(req.user!.id);
       if (!canAddImage.allowed) {
         return res.status(403).json({ message: canAddImage.reason });
       }
 
-      // Process the upload
-      upload.single('image')(req, res, async (err) => {
+      upload.single("image")(req, res, async (err) => {
         if (err) {
           return res.status(400).json({ message: err.message });
         }
-
         if (!req.file) {
           return res.status(400).json({ message: "No image provided" });
         }
-        
         const imageUrl = `/uploads/${req.file.filename}`;
         res.json({ url: imageUrl });
       });
@@ -63,27 +59,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create a new journal entry
   app.post("/api/entries", requireAuth, async (req, res) => {
     try {
-      // Check if user can create an entry (free user limit)
       const canCreateEntry = await storage.canCreateEntry(req.user!.id);
       if (!canCreateEntry.allowed) {
         return res.status(403).json({ message: canCreateEntry.reason });
       }
 
-      // Get content limit
       const contentLimit = await storage.getEntryContentLimit(req.user!.id);
-      
-      // Check content length (word count)
       const data = insertEntrySchema.parse(req.body);
       const wordCount = data.content.trim().split(/\s+/).length;
-      
       if (wordCount > contentLimit) {
-        return res.status(403).json({ 
-          message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+        return res.status(403).json({
+          message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`,
         });
       }
-      
+
       const entry = await storage.createEntry(req.user!.id, data);
       res.status(201).json(entry);
     } catch (error) {
@@ -95,6 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Retrieve entries for the logged-in user
   app.get("/api/entries", requireAuth, async (req, res) => {
     try {
       const entries = await storage.getEntries(req.user!.id);
@@ -104,29 +97,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update an existing journal entry
   app.patch("/api/entries/:id", requireAuth, async (req, res) => {
     try {
       const entry = await storage.getEntry(parseInt(req.params.id));
       if (!entry || entry.userId !== req.user!.id) {
         return res.status(404).json({ message: "Entry not found" });
       }
-      
-      // If the updated entry contains content, check content limits for free users
       if (req.body.content) {
-        // Get word limit
         const contentLimit = await storage.getEntryContentLimit(req.user!.id);
-        
-        // Count words in the new content
         const wordCount = req.body.content.trim().split(/\s+/).length;
-        
-        // Enforce the limit for free users
         if (wordCount > contentLimit) {
-          return res.status(403).json({ 
-            message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+          return res.status(403).json({
+            message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`,
           });
         }
       }
-
       const updatedEntry = await storage.updateEntry(entry.id, req.body);
       res.json(updatedEntry);
     } catch (error) {
@@ -134,13 +120,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a journal entry
   app.delete("/api/entries/:id", requireAuth, async (req, res) => {
     try {
       const entry = await storage.getEntry(parseInt(req.params.id));
       if (!entry || entry.userId !== req.user!.id) {
         return res.status(404).json({ message: "Entry not found" });
       }
-
       await storage.deleteEntry(entry.id);
       res.sendStatus(204);
     } catch (error) {
@@ -148,109 +134,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock subscription endpoint
+  // Subscription endpoint (no changes here)
   app.post("/api/subscribe", requireAuth, async (req, res) => {
     const { plan } = req.body;
     if (!plan || !["monthly", "yearly"].includes(plan)) {
       return res.status(400).json({ message: "Invalid subscription plan" });
     }
-
     try {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
-      
       await storage.updateUser(req.user!.id, {
         subscriptionStatus: "active",
-        subscriptionEndDate: endDate
+        subscriptionEndDate: endDate,
       });
-
       res.json({ message: "Subscription activated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to process subscription" });
     }
   });
 
-  // AI Chat endpoint
-  app.post("/api/chat", requireAuth, async (req, res) => {
+  // Cancel subscription endpoint
+  app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
     try {
-      const { message } = req.body;
-
-      if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-      }
-
-      const prompt = `You are a thoughtful journaling assistant. Help users reflect deeply on their thoughts and emotions.
-
-Your response should ALWAYS have two parts, separated by a blank line and the word "Prompt:":
-
-1. First part: A warm, empathetic response (under 150 words) that:
-   - Acknowledges their feelings
-   - Offers gentle guidance or insight
-   - Maintains a supportive tone
-
-2. Second part (after "Prompt:"): A specific journaling prompt that:
-   - Encourages deeper reflection
-   - Relates to the current conversation
-   - Is clear and focused
-
-Example format:
-I understand how you're feeling about... [empathetic response]
-
-Prompt: [specific journaling prompt]
-
-User message: ${message}`;
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-          max_tokens: 300
-        })
+      // You should update this logic to properly cancel a subscription in your system
+      await storage.updateUser(req.user!.id, {
+        subscriptionStatus: "free",
+        subscriptionEndDate: null,
       });
-
-      const data = await response.json();
-      res.json({ message: data.choices[0].message.content });
+      res.json({ message: "Subscription cancelled" });
     } catch (error) {
-      console.error('OpenAI API error:', error);
-      res.status(500).json({ error: 'Failed to process chat message' });
-    }
-  });
-  
-  // Delete account endpoint
-  app.post("/api/delete-account", requireAuth, async (req, res) => {
-    try {
-      const { feedback, reason } = req.body;
-      
-      // Format the feedback
-      let formattedFeedback = "";
-      if (reason) {
-        formattedFeedback = `Reason: ${reason}`;
-        if (reason === "Other" && feedback) {
-          formattedFeedback += `, Details: ${feedback}`;
-        }
-      }
-      
-      // Delete the user and all associated data
-      await storage.deleteUser(req.user!.id, formattedFeedback);
-      
-      // Destroy the session first
-      req.session.destroy((err) => {
-        if (err) {
-          return res.status(500).json({ message: "Error during session destruction" });
-        }
-        
-        // Clear the session cookie
-        res.clearCookie('connect.sid');
-        res.status(200).json({ message: "Account deleted successfully" });
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete account" });
+      res.status(500).json({ message: "Failed to cancel subscription" });
     }
   });
 
