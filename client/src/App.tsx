@@ -14,6 +14,7 @@ import OnboardingPage from "@/pages/onboarding-page";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
+import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "./lib/protected-route";
 import { Loader2 } from "lucide-react";
 
