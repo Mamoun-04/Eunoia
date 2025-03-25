@@ -23,11 +23,6 @@ import { SubscriptionDialog } from "@/components/subscription-dialog";
 import { PremiumFeatureModal } from "@/components/premium-feature-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-/**
- * ConfirmDeleteDialog:
- * A reusable dialog that asks the user to confirm deletion of a given entry.
- * If the user confirms, we call onConfirm().
- */
 function ConfirmDeleteDialog({
   entry,
   open,
@@ -47,8 +42,7 @@ function ConfirmDeleteDialog({
         <div className="space-y-4">
           <h2 className="text-xl font-bold">Delete Entry</h2>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete <strong>{entry.title}</strong>? This
-            action cannot be undone.
+            Are you sure you want to delete <strong>{entry.title}</strong>? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={onClose}>
@@ -64,12 +58,6 @@ function ConfirmDeleteDialog({
   );
 }
 
-/**
- * FadeOutImageDialog:
- * Shows a scrollable entry with an image that fades on scroll.
- * We'll remove the old `window.confirm` check and instead
- * use a function prop `onDeleteRequest(entry)` to open our custom dialog.
- */
 function FadeOutImageDialog({
   entryId,
   entries,
@@ -81,52 +69,30 @@ function FadeOutImageDialog({
   entries: Entry[];
   onClose: () => void;
   onEdit: (entry: Entry) => void;
-  onDeleteRequest: (entry: Entry) => void; // <-- new prop
+  onDeleteRequest: (entry: Entry) => void;
 }) {
   const entry = entries.find((e) => e.id === entryId);
   const [scrollPos, setScrollPos] = useState(0);
 
   if (!entry) return null;
 
-  // Fade logic
   const fadeDistance = 150;
   const imageOpacity = Math.max(0, 1 - scrollPos / fadeDistance);
 
-  // Scroll handler
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollPos(e.currentTarget.scrollTop);
   };
 
   return (
     <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0">
-      <div
-        className="group overflow-y-auto custom-scrollbar max-h-[90vh]"
-        onScroll={handleScroll}
-      >
-        {/* Image Section */}
+      <div className="group overflow-y-auto custom-scrollbar max-h-[90vh]" onScroll={handleScroll}>
         {entry.imageUrl && (
-          <div
-            className="relative w-full p-4 border border-gray-200 rounded-lg shadow mb-4"
-            style={{
-              opacity: imageOpacity,
-              transition: "opacity 0.1s ease-out",
-            }}
-          >
-            <img
-              src={entry.imageUrl}
-              alt="Entry image"
-              className="w-full h-auto object-cover rounded-lg max-h-[40vh]"
-            />
+          <div className="relative w-full p-4 border border-gray-200 rounded-lg shadow mb-4" style={{ opacity: imageOpacity, transition: "opacity 0.1s ease-out" }}>
+            <img src={entry.imageUrl} alt="Entry image" className="w-full h-auto object-cover rounded-lg max-h-[40vh]" />
             <div className="absolute top-4 right-4 flex gap-2">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm mr-2"
-                onClick={() => onEdit(entry)}
-              >
+              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm mr-2" onClick={() => onEdit(entry)}>
                 <Edit className="h-4 w-4" />
               </Button>
-              {/* Instead of calling window.confirm, we call onDeleteRequest */}
               <Button
                 size="icon"
                 variant="ghost"
@@ -139,20 +105,14 @@ function FadeOutImageDialog({
           </div>
         )}
 
-        {/* Content */}
         <div className="p-6 space-y-6">
           {!entry.imageUrl && (
             <div className="flex justify-between items-start mb-2">
               <div></div>
               <div className="flex gap-2">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => onEdit(entry)}
-                >
+                <Button size="icon" variant="ghost" onClick={() => onEdit(entry)}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                {/* For text-only entries, same approach */}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -167,9 +127,19 @@ function FadeOutImageDialog({
 
           <div>
             <h2 className="text-2xl font-bold mb-1">{entry.title}</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {format(new Date(entry.createdAt), "PPP")}
             </p>
+            {/* Tags display */}
+            {entry.tags && entry.tags.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {entry.tags.map((tag, idx) => (
+                  <span key={idx} className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="prose dark:prose-invert max-w-none">
@@ -190,7 +160,6 @@ export default function HomePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
-
   const [viewEntryId, setViewEntryId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [location] = useLocation();
@@ -202,7 +171,7 @@ export default function HomePage() {
     queryKey: ["/api/entries"],
   });
 
-  // Filter entries
+  // Filter entries by title search
   const filteredEntries = entries.filter((entry) =>
     searchQuery ? entry.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
   );
@@ -214,35 +183,25 @@ export default function HomePage() {
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
-  /**
-   * Actually delete the entry from the server.
-   * Called after user confirms in ConfirmDeleteDialog.
-   */
   const handleConfirmDelete = async () => {
     if (!entryToDelete) return;
     const entry = entryToDelete;
-
-    // Perform the DELETE request
     const res = await fetch(`/api/entries/${entry.id}`, {
       method: "DELETE",
       credentials: "include",
     });
-
     if (res.ok) {
-      // Refresh the entries
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-      // If the user was viewing this entry, close the dialog
       if (viewEntryId === entry.id) {
         setViewEntryId(null);
       }
     }
-    // Close the confirm dialog
     setEntryToDelete(null);
   };
 
   return (
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
-      {/* ---------------- Desktop Sidebar ---------------- */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 w-64 p-4 border-r">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold px-4">Eunoia</h1>
@@ -250,7 +209,6 @@ export default function HomePage() {
             Welcome back, {user?.username}
           </p>
         </div>
-
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => {
             const isActive = location === item.href;
@@ -271,27 +229,18 @@ export default function HomePage() {
             );
           })}
         </nav>
-
         <div className="mt-auto flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setShowSubscriptionDialog(true)}
-          >
+          <Button variant="outline" className="w-full" onClick={() => setShowSubscriptionDialog(true)}>
             Upgrade to Pro
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => logoutMutation.mutate()}
-          >
+          <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => logoutMutation.mutate()}>
             <LogOut className="h-5 w-5" />
             Logout
           </Button>
         </div>
       </div>
 
-      {/* ---------------- Main Content ---------------- */}
+      {/* Main Content */}
       <div className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -318,10 +267,7 @@ export default function HomePage() {
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
                   Daily limit reached.{" "}
-                  <button
-                    className="text-primary hover:underline"
-                    onClick={() => setShowSubscriptionDialog(true)}
-                  >
+                  <button className="text-primary hover:underline" onClick={() => setShowSubscriptionDialog(true)}>
                     Upgrade
                   </button>
                 </p>
@@ -341,12 +287,7 @@ export default function HomePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={() => setSearchQuery("")}
-                >
+                <Button variant="ghost" size="icon" className="h-8 w-8 absolute right-2 top-1/2 -translate-y-1/2" onClick={() => setSearchQuery("")}>
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -361,7 +302,7 @@ export default function HomePage() {
               <Card className="p-8 text-center">
                 <h3 className="text-lg font-semibold mb-2">Start Your Journey</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first journal entry to begin tracking your thoughts and moods.
+                  Create your first journal entry to begin tracking your thoughts.
                 </p>
                 <Button onClick={() => setIsEditing(true)}>Create Entry</Button>
               </Card>
@@ -371,19 +312,15 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              // Masonry Layout with columns
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
                 {filteredEntries.map((entry) => (
                   <Card
                     key={entry.id}
-                    className="group mb-5 break-inside-avoid overflow-hidden border border-border/40
-                               hover:border-primary/20 hover:shadow-md transition-all duration-300
-                               cursor-pointer rounded-xl"
+                    className="group mb-5 break-inside-avoid overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer rounded-xl"
                     onClick={() => setViewEntryId(entry.id)}
                   >
                     {entry.imageUrl ? (
                       <>
-                        {/* Card With Image */}
                         <div className="relative overflow-hidden rounded-t-xl">
                           <img
                             src={entry.imageUrl}
@@ -403,7 +340,6 @@ export default function HomePage() {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            {/* Instead of window.confirm, open the custom dialog */}
                             <Button
                               size="icon"
                               variant="ghost"
@@ -418,24 +354,37 @@ export default function HomePage() {
                           </div>
                         </div>
                         <div className="p-4">
-                          <h3 className="text-lg font-medium line-clamp-1">
-                            {entry.title}
-                          </h3>
+                          <h3 className="text-lg font-medium line-clamp-1">{entry.title}</h3>
                           <p className="text-xs text-muted-foreground mt-2">
                             {format(new Date(entry.createdAt), "MMMM d, yyyy")}
                           </p>
+                          {entry.tags && entry.tags.length > 0 && (
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                              {entry.tags.map((tag, idx) => (
+                                <span key={idx} className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </>
                     ) : (
                       <>
-                        {/* Card Without Image */}
                         <div className="p-5">
-                          <h3 className="text-lg font-medium line-clamp-2 mb-2">
-                            {entry.title}
-                          </h3>
+                          <h3 className="text-lg font-medium line-clamp-2 mb-2">{entry.title}</h3>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(entry.createdAt), "MMMM d, yyyy")}
                           </p>
+                          {entry.tags && entry.tags.length > 0 && (
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                              {entry.tags.map((tag, idx) => (
+                                <span key={idx} className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <div className="flex justify-end items-center mt-4 gap-2">
                             <Button
                               size="icon"
@@ -479,11 +428,7 @@ export default function HomePage() {
             const isActive = location === item.href;
             return (
               <Link key={item.name} href={item.href}>
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="icon"
-                  className="flex flex-col items-center gap-1 h-auto py-2"
-                >
+                <Button variant={isActive ? "default" : "ghost"} size="icon" className="flex flex-col items-center gap-1 h-auto py-2">
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs">{item.name}</span>
                 </Button>
@@ -515,27 +460,15 @@ export default function HomePage() {
               setIsEditing(true);
               setViewEntryId(null);
             }}
-            // Instead of calling fetch directly, we set the "entryToDelete" here
             onDeleteRequest={(entry) => setEntryToDelete(entry)}
             onClose={() => setViewEntryId(null)}
           />
         </Dialog>
       )}
 
-      <SubscriptionDialog
-        open={showSubscriptionDialog}
-        onOpenChange={setShowSubscriptionDialog}
-      />
+      <SubscriptionDialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog} />
 
-      {/* =====================
-          Custom Confirm Dialog
-         ===================== */}
-      <ConfirmDeleteDialog
-        entry={entryToDelete}
-        open={!!entryToDelete}
-        onClose={() => setEntryToDelete(null)}
-        onConfirm={handleConfirmDelete}
-      />
+      <ConfirmDeleteDialog entry={entryToDelete} open={!!entryToDelete} onClose={() => setEntryToDelete(null)} onConfirm={handleConfirmDelete} />
     </div>
   );
 }
