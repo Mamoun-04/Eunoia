@@ -34,6 +34,17 @@ export const insertEntrySchema = createInsertSchema(entries).pick({
   imageUrl: true,
 });
 
+export const subscriptionPlans = {
+  monthly: {
+    name: "Monthly Premium",
+    price: 3.99,
+  },
+  yearly: {
+    name: "Yearly Premium",
+    price: 34.99,
+  }
+};
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
