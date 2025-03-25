@@ -5,7 +5,10 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  verificationToken: text("verification_token"),
   subscriptionStatus: text("subscription_status").default("free").notNull(),  
   subscriptionEndDate: timestamp("subscription_end_date"),
   preferences: text("preferences"), // Stored as JSON string
@@ -40,11 +43,16 @@ export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export const insertUserSchema = createInsertSchema(users)
   .pick({
     username: true,
+    email: true,
     password: true
   })
   .extend({
     preferences: userPreferencesSchema.optional()
-  });
+  })
+  .refine(
+    (data) => data.password.length >= 8,
+    { message: "Password must be at least 8 characters long", path: ["password"] }
+  );
 
 export const insertEntrySchema = createInsertSchema(entries).pick({
   title: true,
