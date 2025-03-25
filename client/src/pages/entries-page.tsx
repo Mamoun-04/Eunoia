@@ -24,21 +24,22 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
-import type { CreateTypes } from "canvas-confetti";
 
-// ===== Helper Functions ===== //
+// =============== Helper Functions =============== //
 
-// Calculate the current streak (most recent consecutive days)
+// Calculates the *current* streak (most recent consecutive days).
 function calculateCurrentStreak(entries: Entry[]): number {
   if (entries.length === 0) return 0;
+  // Sort descending by date
   const sortedDates = entries
     .map(e => new Date(e.createdAt).setHours(0, 0, 0, 0))
     .sort((a, b) => b - a);
+
   let streak = 1;
   for (let i = 1; i < sortedDates.length; i++) {
     const prev = sortedDates[i - 1];
     const curr = sortedDates[i];
+    // If previous day minus current day = exactly 1 day, increment streak
     if (prev - curr === 86400000) {
       streak++;
     } else {
@@ -48,15 +49,18 @@ function calculateCurrentStreak(entries: Entry[]): number {
   return streak;
 }
 
-// Calculate the longest streak in history
+// Calculates the *longest* streak in the user’s entire history.
 function calculateLongestStreak(entries: Entry[]): number {
   if (entries.length === 0) return 0;
+  // Sort ascending by date to scan from oldest to newest
   const sortedDates = entries
     .map(e => new Date(e.createdAt).setHours(0, 0, 0, 0))
     .sort((a, b) => a - b);
+
   let longest = 1;
   let current = 1;
   for (let i = 1; i < sortedDates.length; i++) {
+    // If consecutive day, increment; otherwise reset
     if (sortedDates[i] - sortedDates[i - 1] === 86400000) {
       current++;
       longest = Math.max(longest, current);
@@ -67,18 +71,17 @@ function calculateLongestStreak(entries: Entry[]): number {
   return longest;
 }
 
-// Helper to check and mark a milestone as achieved in localStorage
-function checkAndMarkMilestone(key: string, message: string): string | null {
-  const achieved = JSON.parse(localStorage.getItem("achievedMilestones") || "{}");
-  if (!achieved[key]) {
-    achieved[key] = true;
-    localStorage.setItem("achievedMilestones", JSON.stringify(achieved));
-    return message;
+// Returns the next milestone after 'value' from a sorted array
+// If value = 3 and milestones = [1, 5, 10], next milestone is 5.
+function getNextMilestone(value: number, milestones: number[]): number {
+  for (const m of milestones) {
+    if (m > value) return m;
   }
-  return null;
+  // If we exceed all milestones, just return the largest
+  return milestones[milestones.length - 1];
 }
 
-// ===== Milestone Popup Dialog ===== //
+// =============== Milestone Popup Dialog =============== //
 
 function MilestoneDialog({
   message,
@@ -90,12 +93,12 @@ function MilestoneDialog({
   onClose: () => void;
 }) {
   if (!message) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm text-center">
         <div className="space-y-4">
-          {/* Bouncing trophy icon for extra flair */}
-          <Trophy className="mx-auto h-10 w-10 text-amber-500 animate-bounce" />
+          <Trophy className="mx-auto h-10 w-10 text-amber-500" />
           <h2 className="text-xl font-bold">Milestone Unlocked!</h2>
           <p className="text-sm text-muted-foreground">{message}</p>
           <Button onClick={onClose} className="mt-2">
@@ -107,108 +110,98 @@ function MilestoneDialog({
   );
 }
 
-// ===== Main Component ===== //
+// =============== Main Component =============== //
 
 export default function EntriesPage() {
   const { logoutMutation } = useAuth();
   const [location] = useLocation();
+
+  // Load entries
   const { data: entries = [], isLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
   });
 
   // Basic stats
   const totalEntries = entries.length;
-  const totalWords = entries.reduce(
-    (acc, e) => acc + e.content.split(/\s+/).filter(Boolean).length,
-    0
-  );
+  const totalWords = entries.reduce((acc, e) => {
+    return acc + e.content.split(/\s+/).filter(Boolean).length;
+  }, 0);
   const currentStreak = calculateCurrentStreak(entries);
   const longestStreak = calculateLongestStreak(entries);
 
-  // Milestone arrays (adjust as needed)
+  // Milestone arrays (adjust as desired)
   const entryMilestones = [1, 5, 10, 25, 50, 100, 200];
   const wordMilestones = [100, 500, 1000, 5000, 10000, 20000, 50000];
   const streakMilestones = [1, 5, 10, 30, 60, 90, 180];
 
-  // Refs to store previous stats for milestone detection
+  // We'll store the user's "previous" stats in refs so we can detect crossing a milestone
   const prevEntriesRef = useRef<number>(0);
   const prevWordsRef = useRef<number>(0);
   const prevStreakRef = useRef<number>(0);
 
-  // State for the milestone popup message
+  // State for the popup message
   const [milestoneMessage, setMilestoneMessage] = useState<string | null>(null);
 
-  // Milestone detection effect (runs when entries update)
+  // Whenever entries update, check if we crossed a new milestone
   useEffect(() => {
     if (isLoading) return;
+
     let newMessage: string | null = null;
 
-    // 1. Starter Achievement (first entry)
+    // 1) Starter Achievement for first entry
     if (prevEntriesRef.current === 0 && totalEntries === 1) {
-      newMessage = checkAndMarkMilestone(
-        "entry-1",
-        "Congrats on writing your very first entry!"
-      );
+      newMessage = "Congrats on writing your very first entry!";
     }
 
-    // 2. Check total entry milestones
+    // 2) Check entry milestones
     if (!newMessage && totalEntries > prevEntriesRef.current) {
+      // Find the next milestone we just reached or exceeded
       const next = entryMilestones.find(
         (m) => m <= totalEntries && m > prevEntriesRef.current
       );
       if (next) {
-        newMessage = checkAndMarkMilestone(
-          `entry-${next}`,
-          `You’ve reached ${next} total entries! Keep going!`
-        );
+        newMessage = next === 1
+          ? "Congrats on your very first entry!"
+          : `You’ve reached ${next} total entries! Keep going!`;
       }
     }
 
-    // 3. Check word count milestones
+    // 3) Check word milestones
     if (!newMessage && totalWords > prevWordsRef.current) {
       const next = wordMilestones.find(
         (m) => m <= totalWords && m > prevWordsRef.current
       );
       if (next) {
-        newMessage = checkAndMarkMilestone(
-          `words-${next}`,
-          `Wow, you’ve written ${next.toLocaleString()} words! Fantastic work!`
-        );
+        newMessage = `Wow, you’ve written ${next.toLocaleString()} words! Fantastic work!`;
       }
     }
 
-    // 4. Check streak milestones
+    // 4) Check streak milestones (we also handle day=1 above, but let's keep it here for clarity)
     if (!newMessage && currentStreak > prevStreakRef.current) {
       const next = streakMilestones.find(
         (m) => m <= currentStreak && m > prevStreakRef.current
       );
       if (next) {
-        newMessage = checkAndMarkMilestone(
-          `streak-${next}`,
-          next === 1
-            ? "You started a new streak—keep it up!"
-            : `You’ve hit a ${next}-day streak! Awesome dedication!`
-        );
+        if (next === 1) {
+          newMessage = "You started a new streak—keep it up!";
+        } else {
+          newMessage = `You’ve hit a ${next}-day streak! Awesome dedication!`;
+        }
       }
     }
 
+    // If we found a new milestone, show the popup
     if (newMessage) {
       setMilestoneMessage(newMessage);
-      // Trigger confetti celebration
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
     }
 
-    // Update previous stats
+    // Update "previous" stats
     prevEntriesRef.current = totalEntries;
     prevWordsRef.current = totalWords;
     prevStreakRef.current = currentStreak;
   }, [entries, isLoading, totalEntries, totalWords, currentStreak]);
 
-  // Navigation remains unchanged
+  // --------------- Layout --------------- //
   const navigation = [
     { name: "Home", href: "/", icon: Home },
     { name: "Entries", href: "/entries", icon: PenSquare },
@@ -224,6 +217,7 @@ export default function EntriesPage() {
           <h1 className="text-2xl font-bold px-4">Eunoia</h1>
           <p className="text-sm text-muted-foreground px-4">Your Insights</p>
         </div>
+
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => {
             const isActive = location === item.href;
@@ -244,6 +238,7 @@ export default function EntriesPage() {
             );
           })}
         </nav>
+
         <Button
           variant="ghost"
           className="mt-auto w-full justify-start gap-2"
@@ -260,12 +255,14 @@ export default function EntriesPage() {
           {/* Page Title */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold">Today</h1>
-            <p className="text-lg text-muted-foreground">{format(new Date(), "MMMM d")}</p>
+            <p className="text-lg text-muted-foreground">
+              {format(new Date(), "MMMM d")}
+            </p>
           </div>
 
-          {/* 3 Major Achievement Boxes */}
+          {/* 3 Major Achievements */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-            {/* Total Entries */}
+            {/* 1) Total Entries */}
             <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
@@ -274,14 +271,16 @@ export default function EntriesPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold text-primary">{totalEntries}</div>
+                <div className="text-4xl font-bold text-primary">
+                  {totalEntries}
+                </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {totalEntries === 1 ? "1 entry" : `${totalEntries} entries`}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Total Words */}
+            {/* 2) Total Words */}
             <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
@@ -297,7 +296,7 @@ export default function EntriesPage() {
               </CardContent>
             </Card>
 
-            {/* Streak (Current & Longest) */}
+            {/* 3) Streak (current & longest) */}
             <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
@@ -308,7 +307,9 @@ export default function EntriesPage() {
               <CardContent>
                 <div className="text-4xl font-bold text-primary">
                   {currentStreak}
-                  <span className="ml-2 text-base text-muted-foreground">days</span>
+                  <span className="ml-2 text-base text-muted-foreground">
+                    days
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Longest: {longestStreak} {longestStreak === 1 ? "day" : "days"}
@@ -322,9 +323,11 @@ export default function EntriesPage() {
             <h2 className="text-xl font-semibold">Recent Entries</h2>
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading entries...</p>
-            ) : totalEntries === 0 ? (
+            ) : entries.length === 0 ? (
               <Card className="p-4">
-                <p className="text-sm text-muted-foreground">No entries yet. Start writing!</p>
+                <p className="text-sm text-muted-foreground">
+                  No entries yet. Start writing!
+                </p>
               </Card>
             ) : (
               entries.slice(0, 5).map((entry) => (
@@ -366,7 +369,7 @@ export default function EntriesPage() {
         </nav>
       </div>
 
-      {/* ===== Milestone Popup (Global) ===== */}
+      {/* ===== Milestone Popup ===== */}
       <MilestoneDialog
         message={milestoneMessage}
         open={!!milestoneMessage}
