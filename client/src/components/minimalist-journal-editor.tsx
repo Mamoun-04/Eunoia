@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
+
 
 // Array of writing prompts to cycle through
 const WRITING_PROMPTS = [
@@ -42,8 +44,7 @@ type Props = {
 
 export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Props) {
   const { toast } = useToast();
-  import { useRef } from 'react';
-const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
   const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
   const [progress, setProgress] = useState<number>(0);
   const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
