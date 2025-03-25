@@ -44,8 +44,8 @@ export default function HomePage() {
     queryKey: ["/api/entries"],
   });
 
-  // Filter entries based on search query
-  const filteredEntries = entries.filter(entry => 
+  // Filter entries based on the search query (if any)
+  const filteredEntries = entries.filter(entry =>
     searchQuery ? entry.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
   );
 
@@ -107,18 +107,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="flex-1 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto">
+          {/* Header with Journal Title and New Entry Button */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 className="text-3xl font-bold">My Journal</h2>
-            {user?.subscriptionStatus === "active" || (entries && entries.filter(entry => {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const entryDate = new Date(entry.createdAt);
-              entryDate.setHours(0, 0, 0, 0);
-              return entryDate.getTime() === today.getTime();
-            }).length === 0) ? (
+            {user?.subscriptionStatus === "active" ||
+            (entries &&
+              entries.filter((entry) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const entryDate = new Date(entry.createdAt);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate.getTime() === today.getTime();
+              }).length === 0) ? (
               <Button onClick={() => setIsEditing(true)}>
                 <PenSquare className="h-5 w-5 mr-2" />
                 New Entry
@@ -130,8 +133,9 @@ export default function HomePage() {
                   New Entry
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  Daily limit reached. <button 
-                    className="text-primary hover:underline" 
+                  Daily limit reached.{" "}
+                  <button
+                    className="text-primary hover:underline"
                     onClick={() => setShowSubscriptionDialog(true)}
                   >
                     Upgrade
@@ -153,9 +157,9 @@ export default function HomePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 absolute right-2 top-1/2 -translate-y-1/2"
                   onClick={() => setSearchQuery("")}
                 >
@@ -186,25 +190,34 @@ export default function HomePage() {
                 <p className="text-muted-foreground">Try a different search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              // ***********************************************
+              // Replace Grid layout with CSS columns for Masonry
+              // ***********************************************
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
                 {filteredEntries.map((entry) => (
-                  <Card 
-                    key={entry.id} 
-                    className="overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl h-full flex flex-col"
+                  // Each Card uses "break-inside-avoid" to prevent breaking between columns
+                  <Card
+                    key={entry.id}
+                    className="mb-5 break-inside-avoid overflow-hidden border border-border/40 hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group rounded-xl"
                     onClick={() => setViewEntryId(entry.id)}
                   >
                     {entry.imageUrl ? (
                       <>
-                        {/* Card with image */}
-                        <div className="relative overflow-hidden rounded-t-xl aspect-square">
-                          <img 
-                            src={entry.imageUrl} 
-                            alt="Journal entry" 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        {/* -------------------------------
+                            Card with Image
+                             - Removed forced aspect ratio classes so the image 
+                             - retains its natural height for a staggered layout
+                        ----------------------------------- */}
+                        <div className="relative overflow-hidden rounded-t-xl">
+                          <img
+                            src={entry.imageUrl}
+                            alt="Journal entry"
+                            className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                           />
+                          {/* Overlay: Edit and Delete Buttons */}
                           <div className="absolute top-2 right-2 flex gap-2">
-                            <Button 
-                              size="icon" 
+                            <Button
+                              size="icon"
                               variant="ghost"
                               className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity mr-2"
                               onClick={(e) => {
@@ -215,19 +228,25 @@ export default function HomePage() {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              size="icon" 
+                            <Button
+                              size="icon"
                               variant="ghost"
                               className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
                               onClick={async (e) => {
                                 e.stopPropagation();
-                                if (window.confirm('Are you sure you want to delete this entry?')) {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this entry?"
+                                  )
+                                ) {
                                   const res = await fetch(`/api/entries/${entry.id}`, {
-                                    method: 'DELETE',
-                                    credentials: 'include'
+                                    method: "DELETE",
+                                    credentials: "include",
                                   });
                                   if (res.ok) {
-                                    queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["/api/entries"],
+                                    });
                                     setViewEntryId(null);
                                   }
                                 }
@@ -237,7 +256,7 @@ export default function HomePage() {
                             </Button>
                           </div>
                         </div>
-                        <div className="p-4 flex-grow flex flex-col justify-between">
+                        <div className="p-4">
                           <h3 className="text-lg font-medium line-clamp-1">
                             {entry.title}
                           </h3>
@@ -248,51 +267,57 @@ export default function HomePage() {
                       </>
                     ) : (
                       <>
-                        {/* Card without image */}
-                        <div className="p-5 flex-grow flex flex-col h-full">
-                          <div className="flex-grow">
-                            <h3 className="text-lg font-medium line-clamp-2 mb-2">
-                              {entry.title}
-                            </h3>
-                          </div>
-                          <div className="flex justify-between items-end mt-4">
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
-                            </p>
-                            <div className="flex gap-2">
-                              <Button 
-                                size="icon" 
-                                variant="ghost"
-                                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity mr-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedEntry(entry);
-                                  setIsEditing(true);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                size="icon" 
-                                variant="ghost"
-                                className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm('Are you sure you want to delete this entry?')) {
-                                    const res = await fetch(`/api/entries/${entry.id}`, {
-                                      method: 'DELETE',
-                                      credentials: 'include'
+                        {/* -------------------------------
+                            Card Without Image
+                             - Simpler layout for text-only entries.
+                             - Uses natural spacing so heights vary.
+                        ----------------------------------- */}
+                        <div className="p-5">
+                          <h3 className="text-lg font-medium line-clamp-2 mb-2">
+                            {entry.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(entry.createdAt), "MMMM d, yyyy")}
+                          </p>
+                          <div className="flex justify-end items-center mt-4 gap-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEntry(entry);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this entry?"
+                                  )
+                                ) {
+                                  const res = await fetch(`/api/entries/${entry.id}`, {
+                                    method: "DELETE",
+                                    credentials: "include",
+                                  });
+                                  if (res.ok) {
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["/api/entries"],
                                     });
-                                    if (res.ok) {
-                                      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-                                      setViewEntryId(null);
-                                    }
+                                    setViewEntryId(null);
                                   }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       </>
@@ -326,6 +351,7 @@ export default function HomePage() {
         </nav>
       </div>
 
+      {/* Journal Editor Modal */}
       {isEditing && (
         <MinimalistJournalEditor
           entry={selectedEntry}
@@ -341,21 +367,21 @@ export default function HomePage() {
         <Dialog open={viewEntryId !== null} onOpenChange={() => setViewEntryId(null)}>
           <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 overflow-hidden">
             {(() => {
-              const entry = entries.find(e => e.id === viewEntryId);
+              const entry = entries.find((e) => e.id === viewEntryId);
               if (!entry) return null;
 
               return (
                 <div className="flex flex-col h-full">
                   {entry.imageUrl && (
                     <div className="relative w-full">
-                      <img 
-                        src={entry.imageUrl} 
-                        alt="Entry image" 
-                        className="w-full h-auto object-cover max-h-[40vh]" 
+                      <img
+                        src={entry.imageUrl}
+                        alt="Entry image"
+                        className="w-full h-auto object-cover max-h-[40vh]"
                       />
                       <div className="absolute top-4 right-4 flex gap-2">
-                        <Button 
-                          size="icon" 
+                        <Button
+                          size="icon"
                           variant="ghost"
                           className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm mr-2"
                           onClick={() => {
@@ -366,18 +392,22 @@ export default function HomePage() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="icon" 
+                        <Button
+                          size="icon"
                           variant="ghost"
                           className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
                           onClick={async () => {
-                            if (window.confirm('Are you sure you want to delete this entry?')) {
+                            if (
+                              window.confirm("Are you sure you want to delete this entry?")
+                            ) {
                               const res = await fetch(`/api/entries/${entry.id}`, {
-                                method: 'DELETE',
-                                credentials: 'include'
+                                method: "DELETE",
+                                credentials: "include",
                               });
                               if (res.ok) {
-                                queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                queryClient.invalidateQueries({
+                                  queryKey: ["/api/entries"],
+                                });
                                 setViewEntryId(null);
                               }
                             }
@@ -394,8 +424,8 @@ export default function HomePage() {
                       <div className="flex justify-between items-start mb-2">
                         <div></div>
                         <div className="flex gap-2">
-                          <Button 
-                            size="icon" 
+                          <Button
+                            size="icon"
                             variant="ghost"
                             onClick={() => {
                               setSelectedEntry(entry);
@@ -405,18 +435,22 @@ export default function HomePage() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            size="icon" 
+                          <Button
+                            size="icon"
                             variant="ghost"
                             className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm text-red-500 hover:text-red-700 hover:bg-red-100"
                             onClick={async () => {
-                              if (window.confirm('Are you sure you want to delete this entry?')) {
+                              if (
+                                window.confirm("Are you sure you want to delete this entry?")
+                              ) {
                                 const res = await fetch(`/api/entries/${entry.id}`, {
-                                  method: 'DELETE',
-                                  credentials: 'include'
+                                  method: "DELETE",
+                                  credentials: "include",
                                 });
                                 if (res.ok) {
-                                  queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+                                  queryClient.invalidateQueries({
+                                    queryKey: ["/api/entries"],
+                                  });
                                   setViewEntryId(null);
                                 }
                               }
@@ -436,7 +470,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="prose dark:prose-invert max-w-none">
-                      {entry.content.split('\n').map((paragraph, index) => (
+                      {entry.content.split("\n").map((paragraph, index) => (
                         <p key={index}>{paragraph}</p>
                       ))}
                     </div>
