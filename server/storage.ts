@@ -188,9 +188,9 @@ export class MemStorage implements IStorage {
       return 0;
     }
 
-    // Premium users are limited to 1000 words
+    // Premium users are limited to 2000 words
     if (user.subscriptionStatus === "active") {
-      return 1000;
+      return 2000;
     }
 
     // Free users are limited to 250 words

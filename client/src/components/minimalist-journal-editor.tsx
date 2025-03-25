@@ -127,12 +127,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         const newProgress = Math.min((words / wordLimit) * 100, 100);
         setProgress(newProgress);
 
-        // If content exceeds word limit, truncate it to the limit
-        if (words > wordLimit) {
-          // Find the position of the word at the limit
-          const allWords = content.trim().split(/\s+/);
-          const limitedWords = allWords.slice(0, wordLimit);
-          const limitedContent = limitedWords.join(' ');
+        // If content exceeds word limit, prevent additional input
+        if (words >= wordLimit && textareaRef.current) {
+          textareaRef.current.readOnly = true;
+          
+          // Revert to last valid content after a short delay
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.readOnly = false;
+            }
+          }, 100);
 
           // Find where this content ends in the original string to preserve whitespace/formatting
           const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
