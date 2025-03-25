@@ -419,7 +419,7 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                  <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar max-h-[calc(90vh-4rem)]">
                     {!entry.imageUrl && (
                       <div className="flex justify-between items-start mb-2">
                         <div></div>
