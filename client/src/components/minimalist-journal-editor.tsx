@@ -1,17 +1,31 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { X, Camera, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertEntrySchema, Entry } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Camera, Sparkles, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { insertEntrySchema, categoryOptions, Entry, moodOptions } from '@shared/schema';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
 
-// Sentence starters (for inspiration)
+
+// Array of writing prompts to cycle through
+const WRITING_PROMPTS = [
+  "What were the highlights of your day?",
+  "What are you feeling grateful for today?",
+  "What's something you learned recently?",
+  "What's been on your mind lately?",
+  "How did you take care of yourself today?",
+  "What's a challenge you're currently facing?",
+  "What made you smile today?",
+  "What are you looking forward to tomorrow?"
+];
+
+// Sentence starters to help get the writing flowing
 const SENTENCE_STARTERS = [
   "Today, I felt...",
   "I noticed that...",
@@ -22,70 +36,6 @@ const SENTENCE_STARTERS = [
   "I'm hoping to..."
 ];
 
-// A simple tag input component allowing up to 3 tags
-function TagInput({
-  tags,
-  setTags,
-}: {
-  tags: string[];
-  setTags: (tags: string[]) => void;
-}) {
-  const [inputValue, setInputValue] = useState("");
-
-  const addTag = () => {
-    const newTag = inputValue.trim();
-    if (newTag && !tags.includes(newTag) && tags.length < 3) {
-      setTags([...tags, newTag]);
-      setInputValue("");
-    }
-  };
-
-  return (
-    <div className="mt-4">
-      <label className="block text-sm font-medium text-muted-foreground mb-1">
-        Tags (up to 3):
-      </label>
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag, index) => (
-          <span
-            key={index}
-            className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs flex items-center"
-          >
-            {tag}
-            <button
-              type="button"
-              onClick={() => setTags(tags.filter((t) => t !== tag))}
-              className="ml-1 text-primary hover:text-primary-foreground"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </span>
-        ))}
-        {tags.length < 3 && (
-          <div className="flex items-center">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addTag();
-                }
-              }}
-              placeholder="Add tag"
-              className="border border-muted rounded px-2 py-1 text-sm focus:outline-none"
-            />
-            <Button onClick={addTag} variant="ghost" size="icon" className="ml-2">
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 type Props = {
   onClose: () => void;
   initialCategory?: string;
@@ -95,12 +45,12 @@ type Props = {
 export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Props) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(entry?.imageUrl || null);
+  const [currentPrompt, setCurrentPrompt] = useState<string>(WRITING_PROMPTS[0]);
   const [progress, setProgress] = useState<number>(0);
+  const [sectionTitle, setSectionTitle] = useState<string>("TODAY'S REFLECTIONS");
   const [wordLimit, setWordLimit] = useState<number>(250);
-  const [wordCount, setWordCount] = useState(0);
   const [isPremium, setIsPremium] = useState<boolean>(false);
-  // New state for tags; default from entry if available
-  const [tags, setTags] = useState<string[]>(entry?.tags || []);
+  const [wordCount, setWordCount] = useState(0); // Added word count state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<string>(entry?.content || "");
@@ -110,72 +60,133 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     defaultValues: {
       title: entry?.title || "",
       content: entry?.content || "",
+      mood: entry?.mood || "neutral",
       category: entry?.category || initialCategory || "Daily Reflection",
       imageUrl: entry?.imageUrl || "",
-      tags: entry?.tags || [],
     },
   });
 
-  // Whenever tags state changes, update the form's "tags" field
-  useEffect(() => {
-    form.setValue("tags", tags);
-  }, [tags, form]);
-
-  // Calculate word count from content
   const wordCountMemo = useMemo(() => {
-    const content = form.getValues("content");
-    return content ? content.trim().split(/\s+/).filter((word) => word.length > 0).length : 0;
-  }, [form.getValues("content")]);
+    const content = form.getValues('content');
+    return content ? content.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
+  }, [form.getValues('content')]);
 
-  // Check user subscription status and adjust word limit
+  // Cycle through prompts every few seconds when there's no content yet
+  useEffect(() => {
+    if (form.getValues('content')) return;
+
+    const interval = setInterval(() => {
+      const currentIndex = WRITING_PROMPTS.indexOf(currentPrompt);
+      const nextIndex = (currentIndex + 1) % WRITING_PROMPTS.length;
+      setCurrentPrompt(WRITING_PROMPTS[nextIndex]);
+
+      // Also cycle through section titles based on the prompt
+      if (nextIndex === 0) setSectionTitle("TODAY'S REFLECTIONS");
+      else if (nextIndex === 1) setSectionTitle("GRATITUDE");
+      else if (nextIndex === 2) setSectionTitle("LEARNING & GROWTH");
+      else if (nextIndex === 3) setSectionTitle("THOUGHTS & FEELINGS");
+      else if (nextIndex === 4) setSectionTitle("SELF-CARE");
+      else if (nextIndex === 5) setSectionTitle("CHALLENGES");
+      else if (nextIndex === 6) setSectionTitle("MOMENTS OF JOY");
+      else setSectionTitle("LOOKING AHEAD");
+
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentPrompt, form]);
+
+  // Check user subscription status
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
-        const response = await fetch("/api/user", { credentials: "include" });
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
         if (response.ok) {
           const user = await response.json();
-          setIsPremium(user.subscriptionStatus === "active");
-          setWordLimit(user.subscriptionStatus === "active" ? 1000 : 250);
+          setIsPremium(user.subscriptionStatus === 'active');
+          setWordLimit(user.subscriptionStatus === 'active' ? 1000 : 250);
         }
       } catch (error) {
-        console.error("Failed to fetch user status:", error);
+        console.error('Failed to fetch user status:', error);
       }
     };
+
     checkUserStatus();
   }, []);
 
-  // Watch for content changes to update word count and progress
+  // Update progress bar, word count, and adjust textarea height
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === "content" || name === undefined) {
-        const content = (value.content as string) || "";
+      if (name === 'content' || name === undefined) {
+        const content = value.content as string || '';
         const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-        setWordCount(words);
+        setWordCount(words); // Update word count state
+
+        // Set progress based on word count relative to limit
         const newProgress = Math.min((words / wordLimit) * 100, 100);
         setProgress(newProgress);
+
+        // If content exceeds word limit, prevent additional input
+        if (words >= wordLimit && textareaRef.current) {
+          textareaRef.current.readOnly = true;
+          
+          // Revert to last valid content after a short delay
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.readOnly = false;
+            }
+          }, 100);
+
+          // Find where this content ends in the original string to preserve whitespace/formatting
+          const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
+          const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
+
+          form.setValue('content', truncatedContent);
+
+          // Show toast notification about the limit
+          toast({
+            title: "Word limit reached",
+            description: isPremium 
+              ? "You've reached the maximum word count of 1000 words."
+              : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+
+        // Auto-grow textarea
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'; // Reset height
+          const scrollHeight = textareaRef.current.scrollHeight;
+          textareaRef.current.style.height = `${scrollHeight}px`;
+        }
       }
     });
+
     return () => subscription.unsubscribe();
-  }, [form.watch, wordLimit]);
+  }, [form.watch, wordLimit, isPremium, toast]);
 
   // Initialize textarea height on mount
   useEffect(() => {
-    if (textareaRef.current && form.getValues("content")) {
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (textareaRef.current && form.getValues('content')) {
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${scrollHeight}px`;
     }
   }, []);
 
-  // Handle image upload (editor stays open)
+  // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Check if user is on free plan and show an upgrade prompt
     if (!isPremium) {
       toast({
         title: "Premium Feature",
         description: (
           <div className="space-y-2">
             <p>Image uploads are available to Premium users only.</p>
-            <Button
-              variant="outline"
-              size="sm"
+            <Button 
+              variant="outline" 
+              size="sm" 
               className="mt-2 w-full"
               onClick={() => {
                 toast({
@@ -191,13 +202,19 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         variant: "destructive",
         duration: 5000,
       });
-      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
+
+    // Check if the file is an image
+    if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
         description: "Please select an image file (JPG, PNG, GIF, etc.)",
@@ -205,6 +222,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
+
+    // Check file size (limit to 5MB)
     const fileSizeMB = file.size / 1024 / 1024;
     if (fileSizeMB > 5) {
       toast({
@@ -215,6 +234,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       return;
     }
 
+    // Set local preview first for immediate feedback
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageDataUrl = event.target?.result as string;
@@ -222,28 +242,47 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     };
     reader.readAsDataURL(file);
 
+    // Upload the file to the server
     try {
       const formData = new FormData();
-      formData.append("image", file);
-      const response = await fetch("/api/upload", {
-        method: "POST",
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
         body: formData,
-        credentials: "include",
+        credentials: 'include',
       });
-      if (!response.ok) throw new Error("Image upload failed");
+
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+
       const data = await response.json();
       form.setValue("imageUrl", data.url);
-      toast({ title: "Image uploaded", description: "Your image has been successfully uploaded." });
-    } catch (error: any) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been successfully uploaded.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  // Add a sentence starter to the content
+  // Add a sentence starter to the current content
   const addSentenceStarter = (starter: string) => {
-    const currentContent = form.getValues("content");
-    const newContent = currentContent ? `${currentContent}\n\n${starter} ` : `${starter} `;
-    form.setValue("content", newContent);
+    const currentContent = form.getValues('content');
+    const newContent = currentContent 
+      ? `${currentContent}\n\n${starter} ` 
+      : `${starter} `;
+
+    form.setValue('content', newContent);
+
+    // Focus the textarea and place cursor at the end
     if (textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.selectionStart = newContent.length;
@@ -251,18 +290,45 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     }
   };
 
-  // Submit entry mutation
+  // AI assistance function
+  const getAIAssistance = () => {
+    // This would eventually connect to an AI service
+    // For now, just add a placeholder prompt
+    const starters = [
+      "Perhaps you could expand on...",
+      "Have you considered...",
+      "Another perspective might be...",
+      "It might be interesting to explore...",
+      "This reminds me of the concept of..."
+    ];
+
+    const randomStarter = starters[Math.floor(Math.random() * starters.length)];
+    addSentenceStarter(randomStarter);
+
+    toast({
+      title: "AI Assistance",
+      description: "We've added a prompt to help continue your thoughts.",
+    });
+  };
+
+  // Submit entry
   const entryMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Generate a title if none provided
       if (!data.title) {
         const content = data.content;
-        const firstLine = content.split("\n")[0].trim();
-        data.title = firstLine.length > 30 ? firstLine.substring(0, 30) + "..." : firstLine;
+        const firstLine = content.split('\n')[0].trim();
+        data.title = firstLine.length > 30 
+          ? firstLine.substring(0, 30) + '...' 
+          : firstLine;
       }
+
+      // If we have an existing entry, update it
       if (entry) {
         const res = await apiRequest("PATCH", `/api/entries/${entry.id}`, data);
         return res.json();
       } else {
+        // Otherwise create a new one
         const res = await apiRequest("POST", "/api/entries", data);
         return res.json();
       }
@@ -271,34 +337,69 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
       toast({
         title: entry ? "Entry updated" : "Entry saved",
-        description: entry
-          ? "Your journal entry has been updated successfully."
+        description: entry 
+          ? "Your journal entry has been updated successfully." 
           : "Your journal entry has been saved successfully.",
       });
       onClose();
     },
     onError: (error: Error) => {
-      toast({
-        title: entry ? "Failed to update entry" : "Failed to save entry",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Check if it's a free user limit error
+      const errorMessage = error.message;
+      const isLimitError = 
+        errorMessage.includes("Free users") && 
+        (
+          errorMessage.includes("entries per day") || 
+          errorMessage.includes("words per entry") ||
+          errorMessage.includes("image per day")
+        );
+
+      if (isLimitError) {
+        toast({
+          title: "Premium Feature",
+          description: (
+            <div className="space-y-2">
+              <p>{errorMessage}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => {
+                  // Here we would open the subscription dialog
+                  // You could implement a state/context to control this
+                  // For simplicity, we'll just show another toast for now
+                  toast({
+                    title: "Upgrade to Premium",
+                    description: "Unlock unlimited entries, images, and word count!",
+                  });
+                }}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: entry ? "Failed to update entry" : "Failed to save entry",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 
   return (
-    <Dialog open>
-      <DialogContent
-        className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-background p-4 sm:p-6 shadow-lg"
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent 
+        className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="journal-dialog-title" className="sr-only">
-          Journal Entry Editor
-        </h2>
-        <p id="journal-editor-description" className="sr-only">
-          Create or edit your journal entry with this editor.
-        </p>
+        <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
+        <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
 
         <Button
           variant="ghost"
@@ -325,34 +426,40 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             />
           </div>
 
-          {/* Tag Input */}
-          <TagInput tags={tags} setTags={setTags} />
-
           {/* Word Count */}
           <div className="flex justify-end mb-4">
             <div className="text-xs text-muted-foreground/80 font-medium bg-background/40 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-              {wordCount} / {wordLimit} words{" "}
-              {!isPremium && wordCount >= wordLimit * 0.9 && (
+              {wordCount} / {wordLimit} words {!isPremium && wordCount >= wordLimit * 0.9 && 
                 <span className="text-destructive font-semibold"> (Free limit)</span>
-              )}
+              }
             </div>
           </div>
 
-          {/* Sentence Starters */}
+          {/* Simplified Sentence Starters */}
           <div className="sentence-starters-container">
             <div className="sentence-starters">
-              {["Today I felt...", "I'm grateful for...", "Looking forward to..."].map((starter, index) => (
-                <motion.button
+              {['Today I felt...', 'I\'m grateful for...', 'Looking forward to...'].map((starter, index) => (
+                <motion.button 
                   key={index}
                   className="sentence-starter"
                   onClick={() => addSentenceStarter(starter)}
-                  whileHover={{ scale: 1.05, y: -2, transition: { duration: 0.2 } }}
-                  whileTap={{ scale: 0.98, y: 0 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    y: -2,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ 
+                    scale: 0.98,
+                    y: 0 
+                  }}
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{
-                    opacity: 1,
+                  animate={{ 
+                    opacity: 1, 
                     y: 0,
-                    transition: { delay: index * 0.05, duration: 0.3 },
+                    transition: { 
+                      delay: index * 0.05,
+                      duration: 0.3
+                    }
                   }}
                 >
                   {starter}
@@ -366,40 +473,38 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             ref={textareaRef}
             className="journal-textarea"
             placeholder="Begin writing here..."
-            {...form.register("content", {
+            {...form.register('content', {
               onChange: (e) => {
-                const newValue = e.target.value;
-                const newWords = newValue.trim() ? newValue.trim().split(/\s+/).length : 0;
-                if (newWords <= wordLimit || newValue.length < contentRef.current.length) {
-                  form.setValue("content", newValue);
-                  contentRef.current = newValue;
-                } else {
-                  toast({
-                    title: "Word limit reached",
-                    description: isPremium
-                      ? "You've reached the maximum word count of 1000 words."
-                      : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
-                    variant: "destructive",
-                    duration: 5000,
-                  });
+                if (wordCount < wordLimit || isPremium) {
+                  form.setValue('content', e.target.value);
+                } else if (e.target.value.length < contentRef.current.length) {
+                  form.setValue('content', e.target.value);
                 }
-              },
+                contentRef.current = e.target.value;
+              }
             })}
             aria-label="Journal entry content"
           />
 
           {/* Image Preview */}
           {imagePreview && (
-            <motion.div
+            <motion.div 
               className="relative mb-6 rounded-xl overflow-hidden shadow-md"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               <div className="w-full">
-                <img src={imagePreview} alt="Journal entry" className="w-full rounded-lg object-contain max-h-[60vh]" />
+                <img 
+                  src={imagePreview} 
+                  alt="Journal entry" 
+                  className="w-full rounded-lg object-contain max-h-[60vh]"
+                />
               </div>
-              <motion.div whileHover={{ scale: 1.1 }} className="absolute top-3 right-3">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="absolute top-3 right-3"
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -416,7 +521,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           )}
 
           {/* Action Bar */}
-          <motion.div
+          <motion.div 
             className="action-bar"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -424,20 +529,26 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           >
             <div className="flex space-x-3">
               {/* Camera Button */}
-              <motion.button
+              <motion.button 
                 type="button"
                 className="action-button"
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (fileInputRef.current) fileInputRef.current.click();
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
                 }}
                 data-tooltip="Attach image"
-                whileHover={{ scale: 1.08, y: -2, transition: { duration: 0.2 } }}
+                whileHover={{ 
+                  scale: 1.08, 
+                  y: -2,
+                  transition: { duration: 0.2 } 
+                }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Camera className="h-5 w-5" />
-                <input
+                <input 
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
@@ -446,29 +557,44 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   className="hidden"
                 />
               </motion.button>
+
+              {/* AI Assist Button */}
+              <motion.button 
+                className="action-button"
+                onClick={getAIAssistance}
+                data-tooltip="Need a prompt?"
+                whileHover={{ 
+                  scale: 1.08, 
+                  y: -2,
+                  transition: { duration: 0.2 } 
+                }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Sparkles className="h-5 w-5" />
+              </motion.button>
             </div>
 
             {/* Submit Button */}
-            <motion.button
+            <motion.button 
               className={cn(
-                "submit-button",
-                (!form.getValues("content") || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
+                "submit-button", 
+                (!form.getValues('content') || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
               )}
               onClick={() => {
-                if (form.getValues("content") && !entryMutation.isPending) {
+                if (form.getValues('content') && !entryMutation.isPending) {
                   entryMutation.mutate(form.getValues());
                 }
               }}
-              disabled={!form.getValues("content") || entryMutation.isPending}
+              disabled={!form.getValues('content') || entryMutation.isPending}
               data-tooltip="Save entry"
-              whileHover={
-                form.getValues("content") && !entryMutation.isPending
-                  ? { scale: 1.08, y: -2, transition: { duration: 0.2 } }
-                  : {}
-              }
-              whileTap={
-                form.getValues("content") && !entryMutation.isPending ? { scale: 0.95 } : {}
-              }
+              whileHover={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 1.08, 
+                y: -2,
+                transition: { duration: 0.2 } 
+              } : {}}
+              whileTap={form.getValues('content') && !entryMutation.isPending ? { 
+                scale: 0.95 
+              } : {}}
             >
               <ArrowRight className="h-5 w-5" />
             </motion.button>

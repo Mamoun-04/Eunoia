@@ -6,19 +6,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import { SubscriptionDialog } from "@/components/subscription-dialog";
-import {
-  LogOut,
-  Settings,
-  PenSquare,
-  BookOpen,
-  Home,
-  Trash2,
-} from "lucide-react";
+import { LogOut, Settings, PenSquare, BookOpen, Home, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation, refetchUser } = useAuth();
   const { toast } = useToast();
   const [location] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -27,7 +20,7 @@ export default function SettingsPage() {
   // Treat any subscriptionStatus not equal to "free" as premium.
   const isPremium = user && user.subscriptionStatus !== "free";
 
-  // Cancel subscription function (you must implement the /api/cancel-subscription endpoint)
+  // Cancel subscription function (assumes your API endpoint exists)
   const cancelSubscription = async () => {
     try {
       const response = await fetch("/api/cancel-subscription", {
@@ -39,8 +32,7 @@ export default function SettingsPage() {
           title: "Subscription Cancelled",
           description: "Your premium subscription has been cancelled.",
         });
-        // Reload the page or update your auth state
-        window.location.reload();
+        await refetchUser();
       } else {
         throw new Error("Failed to cancel subscription");
       }
@@ -123,12 +115,15 @@ export default function SettingsPage() {
               </div>
               <div className="flex gap-2">
                 {isPremium ? (
-                  <Button variant="destructive" onClick={cancelSubscription}>
+                  <Button
+                    variant="destructive"
+                    onClick={cancelSubscription}
+                  >
                     Cancel Subscription
                   </Button>
                 ) : (
                   <Button
-                    variant="default"
+                    variant="gradient"
                     className="animate-pulse shadow-lg"
                     onClick={() => setSubscriptionDialogOpen(true)}
                   >
