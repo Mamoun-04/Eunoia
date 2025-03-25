@@ -282,7 +282,7 @@ export default function HomePage() {
           <div className="space-y-6">
             {isLoading ? (
               <Card className="p-4">Loading entries...</Card>
-            ) : totalEntries === 0 ? (
+            ) : entries.length === 0 ? (
               <Card className="p-8 text-center">
                 <h3 className="text-lg font-semibold mb-2">Start Your Journey</h3>
                 <p className="text-muted-foreground mb-4">
