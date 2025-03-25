@@ -1,0 +1,1 @@
+resolver: zodResolver(insertUserSchema.partial().pick({ username: true, password: true })),
