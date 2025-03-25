@@ -3,6 +3,55 @@
 
 @tailwind base;
 
+:root {
+  /* Base theme colors - Light theme by default */
+  --primary-color: #0000CC;
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+/* Dark theme */
+.dark {
+  --primary-color: #6666FF;
+  --background-color: #121212;
+  --text-color: #ffffff;
+}
+
+/* Sunset theme */
+.theme-sunset {
+  --primary-color: #FF5733;
+  --background-color: #1F1A38;
+  --text-color: #F8C471;
+}
+
+/* Forest theme */
+.theme-forest {
+  --primary-color: #2ECC71;
+  --background-color: #1E3D2F;
+  --text-color: #A9DFBF;
+}
+
+/* Ocean theme */
+.theme-ocean {
+  --primary-color: #3498DB;
+  --background-color: #1A2930;
+  --text-color: #85C1E9;
+}
+
+/* Beach theme */
+.theme-beach {
+  --primary-color: #F4D03F;
+  --background-color: #F5F5DC;
+  --text-color: #6E7F80;
+}
+
+/* Midnight theme */
+.theme-midnight {
+  --primary-color: #9B59B6;
+  --background-color: #0A0A2A;
+  --text-color: #D2B4DE;
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;

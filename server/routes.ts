@@ -178,6 +178,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to process subscription" });
     }
   });
+  
+  // Mock cancel subscription endpoint
+  app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
+    try {
+      // Set subscription status to "canceled" but keep the end date
+      // This allows users to continue using premium features until their subscription period ends
+      await storage.updateUser(req.user!.id, {
+        subscriptionStatus: "canceled"
+      });
+      
+      res.json({ message: "Subscription cancelled successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
 
   // AI Chat endpoint
   app.post("/api/chat", requireAuth, async (req, res) => {

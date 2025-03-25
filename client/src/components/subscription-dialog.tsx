@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
 import {
   Dialog,
   DialogContent,
@@ -6,17 +11,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { subscriptionPlans } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, Check, HelpCircle } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Check, Sparkles, Calendar, Image, FileText } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -24,11 +22,12 @@ type Props = {
 };
 
 export function SubscriptionDialog({ open, onOpenChange }: Props) {
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
   const { toast } = useToast();
-
-  const subscribeMutation = useMutation({
-    mutationFn: async (plan: "monthly" | "yearly") => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan });
+  
+  const subscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/subscribe", { plan: selectedPlan });
       return res.json();
     },
     onSuccess: () => {
@@ -41,133 +40,126 @@ export function SubscriptionDialog({ open, onOpenChange }: Props) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Subscription failed",
+        title: "Error activating subscription",
         description: error.message,
         variant: "destructive",
       });
     },
   });
-
+  
   const features = [
-    "Unlimited journal entries",
-    "Advanced mood analytics",
-    "Cloud backup & sync",
-    "Premium journal prompts",
-    "Custom categories",
-    "Priority support",
+    { icon: Calendar, text: "Unlimited entries per day" },
+    { icon: FileText, text: "Unlimited content length for entries" },
+    { icon: Image, text: "Unlimited image uploads for entries" },
+    { icon: Sparkles, text: "Access to premium themes" },
   ];
-
+  
+  const planOptions = [
+    {
+      id: "monthly",
+      title: "Monthly Plan",
+      price: "$4.99",
+      period: "per month",
+      description: "Enjoy all premium features with monthly billing",
+      featured: false,
+    },
+    {
+      id: "yearly",
+      title: "Yearly Plan",
+      price: "$49.99",
+      period: "per year",
+      description: "Save 15% with annual billing",
+      featured: true,
+    },
+  ];
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Upgrade to Premium</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Upgrade to Eunoia Premium
+          </DialogTitle>
           <DialogDescription>
-            Unlock all features and start your journey to mindful journaling
+            Unlock the full potential of your journaling practice
           </DialogDescription>
         </DialogHeader>
-
-        <div className="grid gap-6 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Monthly Plan */}
-            <div className="border rounded-lg p-6 space-y-4">
-              <div className="text-xl font-semibold">
-                {subscriptionPlans.monthly.name}
-              </div>
-              <div className="text-3xl font-bold">
-                ${subscriptionPlans.monthly.price}
-                <span className="text-sm font-normal text-muted-foreground">
-                  /month
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className="w-full"
-                onClick={() => subscribeMutation.mutate("monthly")}
-                disabled={subscribeMutation.isPending}
-              >
-                {subscribeMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Start Monthly Plan"
-                )}
-              </Button>
-            </div>
-
-            {/* Yearly Plan */}
-            <div className="border rounded-lg p-6 space-y-4 bg-primary/5 relative overflow-hidden">
-              <div className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
-                Best Value
-              </div>
-              <div className="text-xl font-semibold">
-                {subscriptionPlans.yearly.name}
-              </div>
-              <div className="text-3xl font-bold">
-                ${subscriptionPlans.yearly.price}
-                <span className="text-sm font-normal text-muted-foreground">
-                  /year
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className="w-full"
-                onClick={() => subscribeMutation.mutate("yearly")}
-                disabled={subscribeMutation.isPending}
-              >
-                {subscribeMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Start Yearly Plan"
-                )}
-              </Button>
+        
+        <div className="mt-4 space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-medium text-lg">Premium Features</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {features.map((feature, i) => (
+                <div key={i} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+                  <feature.icon className="h-5 w-5 text-primary mt-0.5" />
+                  <span className="text-sm">{feature.text}</span>
+                </div>
+              ))}
             </div>
           </div>
-
-          <Accordion type="single" collapsible>
-            <AccordionItem value="faq">
-              <AccordionTrigger className="flex items-center gap-2">
-                <HelpCircle className="h-4 w-4" />
-                Frequently Asked Questions
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold">What's included in Premium?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Premium includes unlimited journal entries, advanced mood analytics,
-                    cloud backup, premium prompts, and priority support.
-                  </p>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="font-medium text-lg">Choose a Plan</h3>
+            <RadioGroup 
+              value={selectedPlan} 
+              onValueChange={(value) => setSelectedPlan(value as "monthly" | "yearly")}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            >
+              {planOptions.map((plan) => (
+                <div key={plan.id} className={`relative rounded-lg border p-4 hover:border-primary cursor-pointer ${selectedPlan === plan.id ? 'border-primary bg-primary/5' : ''}`}>
+                  {plan.featured && (
+                    <div className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                      Best Value
+                    </div>
+                  )}
+                  <RadioGroupItem 
+                    value={plan.id as "monthly" | "yearly"} 
+                    id={plan.id} 
+                    className="sr-only"
+                  />
+                  <Label htmlFor={plan.id} className="block cursor-pointer">
+                    <div>
+                      <div className="font-semibold">{plan.title}</div>
+                      <div className="mt-1 mb-2">
+                        <span className="text-2xl font-bold">{plan.price}</span>
+                        <span className="text-muted-foreground text-sm"> {plan.period}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{plan.description}</p>
+                    </div>
+                    {selectedPlan === plan.id && (
+                      <div className="absolute bottom-4 right-4 h-5 w-5 text-primary">
+                        <Check className="h-5 w-5" />
+                      </div>
+                    )}
+                  </Label>
                 </div>
-                <div>
-                  <h4 className="font-semibold">Can I cancel anytime?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Yes, you can cancel your subscription at any time. You'll
-                    continue to have access until the end of your billing period.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Is there a free trial?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Yes, all new subscribers get a 7-day free trial to explore all
-                    premium features.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              ))}
+            </RadioGroup>
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => subscriptionMutation.mutate()}
+              disabled={subscriptionMutation.isPending}
+              className="bg-gradient-to-r from-primary/80 to-primary"
+            >
+              {subscriptionMutation.isPending ? (
+                <span className="animate-spin mr-2">●</span>
+              ) : (
+                <Sparkles className="h-4 w-4 mr-2" />
+              )}
+              Subscribe Now
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
