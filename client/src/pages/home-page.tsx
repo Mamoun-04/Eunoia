@@ -373,7 +373,7 @@ export default function HomePage() {
               return (
                 <div className="flex flex-col h-full">
                   {entry.imageUrl && (
-                    <div className="relative w-full">
+                    <div className="relative w-full sticky top-0 z-10">
                       <img
                         src={entry.imageUrl}
                         alt="Entry image"
