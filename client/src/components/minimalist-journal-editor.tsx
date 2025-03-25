@@ -530,7 +530,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               {/* Camera Button */}
               <motion.button 
                 className="action-button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
                 data-tooltip="Attach image"
                 whileHover={{ 
                   scale: 1.08, 
