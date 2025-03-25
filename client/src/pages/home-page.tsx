@@ -371,13 +371,13 @@ export default function HomePage() {
               if (!entry) return null;
 
               return (
-                <div className="flex flex-col h-full overflow-y-auto">
+                <div className="flex flex-col h-full">
                   {entry.imageUrl && (
-                    <div className="relative w-full">
+                    <div className="relative w-full sticky top-0 z-10">
                       <img
                         src={entry.imageUrl}
                         alt="Entry image"
-                        className="w-full h-auto object-cover"
+                        className="w-full h-auto object-cover max-h-[40vh]"
                       />
                       <div className="absolute top-4 right-4 flex gap-2">
                         <Button
@@ -419,7 +419,7 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  <div className="p-6 space-y-6">
+                  <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar max-h-[calc(90vh-4rem)]">
                     {!entry.imageUrl && (
                       <div className="flex justify-between items-start mb-2">
                         <div></div>
