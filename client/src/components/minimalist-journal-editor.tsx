@@ -530,11 +530,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             <div className="flex space-x-3">
               {/* Camera Button */}
               <motion.button 
+                type="button"
                 className="action-button"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  fileInputRef.current?.click();
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
                 }}
                 data-tooltip="Attach image"
                 whileHover={{ 
@@ -550,8 +553,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   accept="image/*"
                   ref={fileInputRef}
                   onChange={handleImageUpload}
+                  onClick={(e) => e.stopPropagation()}
                   className="hidden"
-                  value=""
                 />
               </motion.button>
 
