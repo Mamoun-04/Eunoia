@@ -268,28 +268,52 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         });
       }
   
-      // Upload the file to the server
+      // Upload the file to the server in a way that won't break the component
       try {
+        // Create form data
         const formData = new FormData();
         formData.append('image', file);
-  
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
+
+        // Do the upload in a way that prevents component closure
+        const uploadPromise = new Promise((resolve, reject) => {
+          setTimeout(async () => {
+            try {
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+              });
+              
+              // Handle non-200 responses
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                reject(new Error(errorData.message || `Server error: ${response.status}`));
+                return;
+              }
+              
+              // Parse response data
+              const data = await response.json();
+              resolve(data);
+            } catch (error) {
+              reject(error);
+            }
+          }, 50); // Small delay to ensure UI updates first
         });
-  
-        if (!response.ok) {
-          throw new Error('Image upload failed');
+        
+        // Wait for the upload
+        const data = await uploadPromise as { url: string };
+        
+        // Update form with URL once upload completes
+        if (data && data.url) {
+          form.setValue("imageUrl", data.url);
+          
+          toast({
+            title: "Image uploaded",
+            description: "Your image has been successfully uploaded.",
+          });
+        } else {
+          throw new Error('Invalid server response');
         }
-  
-        const data = await response.json();
-        form.setValue("imageUrl", data.url);
-  
-        toast({
-          title: "Image uploaded",
-          description: "Your image has been successfully uploaded.",
-        });
       } catch (uploadError) {
         console.error("Upload error:", uploadError);
         // Keep showing the local preview even if server upload fails

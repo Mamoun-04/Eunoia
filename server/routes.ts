@@ -37,30 +37,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Journal entries routes
-  app.post("/api/upload", requireAuth, async (req, res) => {
-    try {
-      // Check if user can add an image (free user limit)
-      const canAddImage = await storage.canAddImage(req.user!.id);
-      if (!canAddImage.allowed) {
-        return res.status(403).json({ message: canAddImage.reason });
-      }
-
-      // Process the upload
-      upload.single('image')(req, res, async (err) => {
+  app.post("/api/upload", requireAuth, (req, res) => {
+    // First handle the file upload with multer
+    upload.single('image')(req, res, async (err) => {
+      try {
+        // Check for multer errors first
         if (err) {
+          console.error("Multer error:", err);
           return res.status(400).json({ message: err.message });
         }
 
+        // Then check for authenticated user (should always be there due to requireAuth middleware)
+        if (!req.user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        // Check if user can add an image (free user limit)
+        const canAddImage = await storage.canAddImage(req.user.id);
+        if (!canAddImage.allowed) {
+          return res.status(403).json({ message: canAddImage.reason });
+        }
+
+        // Check if file was uploaded
         if (!req.file) {
           return res.status(400).json({ message: "No image provided" });
         }
         
         const imageUrl = `/uploads/${req.file.filename}`;
-        res.json({ url: imageUrl });
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to process image upload" });
-    }
+        return res.status(200).json({ url: imageUrl });
+      } catch (error) {
+        console.error("Image upload error:", error);
+        return res.status(500).json({ message: "Failed to process image upload" });
+      }
+    });
   });
 
   app.post("/api/entries", requireAuth, async (req, res) => {
