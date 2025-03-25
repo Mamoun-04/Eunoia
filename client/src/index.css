@@ -1,4 +1,67 @@
+:root.light {
+  /* Subtle off-white background, soft gray text, mild blue accent */
+  --background: 210 25% 98%;
+  --foreground: 210 10% 20%;
+  --card: 210 25% 100%;
+  --card-foreground: 210 10% 20%;
+  --primary: 220 50% 50%;
+}
 
+:root.dark {
+  /* Almost-black charcoal with gentle off-white text and subdued accent */
+  --background: 210 15% 10%;
+  --foreground: 210 15% 90%;
+  --card: 210 10% 15%;
+  --card-foreground: 210 15% 90%;
+  --primary: 220 50% 56%;
+}
+
+:root.sunset {
+  /* Soft peach background, warm brown text, delicate orange accent */
+  --background: 25 80% 95%;
+  --foreground: 25 20% 20%;
+  --card: 25 80% 98%;
+  --card-foreground: 25 20% 20%;
+  --primary: 15 50% 45%;
+}
+
+:root.beach {
+  /* Light, airy aquas with a calm accent */
+  --background: 195 60% 96%;
+  --foreground: 195 20% 20%;
+  --card: 195 60% 99%;
+  --card-foreground: 195 20% 20%;
+  --primary: 185 50% 45%;
+}
+
+:root.forest {
+  /* Muted greens and gentle browns for an organic sophistication */
+  --background: 140 40% 96%;
+  --foreground: 140 25% 18%;
+  --card: 140 40% 99%;
+  --card-foreground: 140 25% 18%;
+  --primary: 140 45% 40%;
+}
+
+:root.ocean {
+  /* Cool, crisp blues with a mild accent */
+  --background: 190 40% 96%;
+  --foreground: 190 25% 18%;
+  --card: 190 40% 99%;
+  --card-foreground: 190 25% 18%;
+  --primary: 190 50% 40%;
+}
+
+:root.midnight {
+  /* Deep navy background with bright, sharp text and a sophisticated accent */
+  --background: 240 20% 10%;
+  --foreground: 240 15% 92%;
+  --card: 240 20% 15%;
+  --card-foreground: 240 15% 92%;
+  --primary: 240 40% 52%;
+}
+
+/* ===== Existing Global Styles ===== */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
