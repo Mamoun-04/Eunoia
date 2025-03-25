@@ -1,4 +1,8 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=EB+Garamond:wght@400;500;600&display=swap');
+
+@tailwind base;
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
@@ -16,10 +20,6 @@
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Spectral:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=EB+Garamond:wght@400;500;600&display=swap');
-
-@tailwind base;
 @tailwind components;
 @tailwind utilities;
 

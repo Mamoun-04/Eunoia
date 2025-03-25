@@ -3,7 +3,7 @@ import { X, Camera, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { insertEntrySchema, categoryOptions, Entry, moodOptions } from '@shared/schema';
+import { insertEntrySchema, Entry } from '@shared/schema';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -138,7 +138,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             }
           }, 100);
 
-          // Find where this content ends in the original string to preserve whitespace/formatting
+          // Split content into words and properly limit it
+          const allWords = content.trim().split(/\s+/);
+          const limitedContent = allWords.slice(0, wordLimit).join(' ');
+          // Calculate position in the original text where the word limit is reached
           const endPos = content.indexOf(allWords[wordLimit] || '') - 1;
           const truncatedContent = endPos > 0 ? content.substring(0, endPos) : limitedContent;
 
