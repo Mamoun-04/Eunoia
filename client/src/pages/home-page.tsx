@@ -194,7 +194,7 @@ export default function HomePage() {
               // Replace Grid layout with CSS columns for Masonry
               // ***********************************************
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
-                {[...filteredEntries].reverse().map((entry) => (
+                {filteredEntries.map((entry) => (
                   // Each Card uses "break-inside-avoid" to prevent breaking between columns
                   <Card
                     key={entry.id}
