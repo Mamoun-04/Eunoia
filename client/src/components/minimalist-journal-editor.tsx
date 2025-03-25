@@ -130,7 +130,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         // If content exceeds word limit, prevent additional input
         if (words >= wordLimit && textareaRef.current) {
           textareaRef.current.readOnly = true;
-          
+
           // Revert to last valid content after a short delay
           setTimeout(() => {
             if (textareaRef.current) {
