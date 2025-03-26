@@ -480,8 +480,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     try {
       // Only close if user explicitly requests it
       if (!open) {
-        // If there's unsaved content, ask for confirmation
-        if (form.getValues('content') && form.getValues('content') !== (entry?.content || "")) {
+        // Get current form values including unsaved image
+        const currentContent = form.getValues('content');
+        const currentImageUrl = form.getValues('imageUrl');
+        const hasChanges = currentContent !== (entry?.content || "") || currentImageUrl !== (entry?.imageUrl || "");
+        
+        // If there's unsaved content or image, ask for confirmation
+        if (hasChanges) {
           const isConfirmed = window.confirm("You have unsaved changes. Are you sure you want to close the editor?");
           if (isConfirmed) {
             onClose();
