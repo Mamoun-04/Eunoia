@@ -8,6 +8,17 @@
   --primary-color: #0000CC;
   --background-color: #ffffff;
   --text-color: #000000;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(0, 0, 0, 0.05);
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.1);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(255, 255, 255, 0.95);
+  --tooltip-bg: rgba(0, 0, 0, 0.75);
+  --tooltip-text: white;
 }
 
 /* Dark theme */
@@ -15,6 +26,17 @@
   --primary-color: #6666FF;
   --background-color: #121212;
   --text-color: #ffffff;
+  
+  /* UI elements consistent styling for dark mode */
+  --card-bg: rgba(30, 30, 30, 0.85);
+  --card-border: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(30, 30, 30, 0.9);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(30, 30, 30, 0.95);
+  --tooltip-bg: rgba(0, 0, 0, 0.85);
+  --tooltip-text: white;
 }
 
 /* Premium Theme Animation Keyframes */
@@ -41,6 +63,17 @@
   --primary-color: #FF5733;
   --background-color: #1F1A38;
   --text-color: #F8C471;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(43, 36, 74, 0.85);
+  --card-border: rgba(255, 87, 51, 0.15);
+  --input-bg: rgba(31, 26, 56, 0.8);
+  --input-border: rgba(255, 87, 51, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(43, 36, 74, 0.95);
+  --tooltip-bg: rgba(31, 26, 56, 0.9);
+  --tooltip-text: #F8C471;
 }
 
 .theme-sunset body {
@@ -66,6 +99,17 @@
   --primary-color: #2ECC71;
   --background-color: #1E3D2F;
   --text-color: #A9DFBF;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(30, 61, 47, 0.85);
+  --card-border: rgba(46, 204, 113, 0.15);
+  --input-bg: rgba(30, 61, 47, 0.8);
+  --input-border: rgba(46, 204, 113, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: #0A2512;
+  --dropdown-bg: rgba(30, 61, 47, 0.95);
+  --tooltip-bg: rgba(10, 37, 18, 0.85);
+  --tooltip-text: #A9DFBF;
 }
 
 .theme-forest body {
@@ -92,6 +136,17 @@
   --primary-color: #3498DB;
   --background-color: #1A2930;
   --text-color: #85C1E9;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(26, 41, 48, 0.85);
+  --card-border: rgba(52, 152, 219, 0.15);
+  --input-bg: rgba(26, 41, 48, 0.8);
+  --input-border: rgba(52, 152, 219, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(26, 41, 48, 0.95);
+  --tooltip-bg: rgba(15, 25, 35, 0.9);
+  --tooltip-text: #85C1E9;
 }
 
 .theme-ocean body {
@@ -133,6 +188,17 @@
   --primary-color: #F4D03F;
   --background-color: #F5F5DC;
   --text-color: #6E7F80;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(245, 245, 220, 0.85);
+  --card-border: rgba(244, 208, 63, 0.2);
+  --input-bg: rgba(245, 245, 220, 0.7);
+  --input-border: rgba(244, 208, 63, 0.3);
+  --button-bg: var(--primary-color);
+  --button-text: #654E0C;
+  --dropdown-bg: rgba(245, 245, 220, 0.95);
+  --tooltip-bg: rgba(110, 127, 128, 0.85);
+  --tooltip-text: #F5F5DC;
 }
 
 .theme-beach body {
@@ -174,6 +240,17 @@
   --primary-color: #9B59B6;
   --background-color: #0A0A2A;
   --text-color: #D2B4DE;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(10, 10, 42, 0.85);
+  --card-border: rgba(155, 89, 182, 0.15);
+  --input-bg: rgba(10, 10, 42, 0.8);
+  --input-border: rgba(155, 89, 182, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(15, 15, 50, 0.95);
+  --tooltip-bg: rgba(10, 10, 42, 0.9);
+  --tooltip-text: #D2B4DE;
 }
 
 .theme-midnight body {
@@ -205,6 +282,17 @@
   --primary-color: #4CAF50;
   --background-color: #0D1117;
   --text-color: #AAFFAA;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(13, 17, 23, 0.85);
+  --card-border: rgba(76, 175, 80, 0.15);
+  --input-bg: rgba(13, 17, 23, 0.8);
+  --input-border: rgba(76, 175, 80, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(13, 17, 23, 0.95);
+  --tooltip-bg: rgba(10, 15, 20, 0.9);
+  --tooltip-text: #AAFFAA;
 }
 
 .theme-aurora body {
@@ -267,6 +355,17 @@
   --primary-color: #EC407A;
   --background-color: #050520;
   --text-color: #FDA7DF;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(5, 5, 32, 0.85);
+  --card-border: rgba(236, 64, 122, 0.15);
+  --input-bg: rgba(5, 5, 32, 0.8);
+  --input-border: rgba(236, 64, 122, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(5, 5, 32, 0.95);
+  --tooltip-bg: rgba(5, 5, 32, 0.9);
+  --tooltip-text: #FDA7DF;
 }
 
 .theme-cosmic body {
@@ -330,6 +429,17 @@
   --primary-color: #00BCD4;
   --background-color: #0F3443;
   --text-color: #AEECEF;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(15, 52, 67, 0.85);
+  --card-border: rgba(0, 188, 212, 0.15);
+  --input-bg: rgba(15, 52, 67, 0.8);
+  --input-border: rgba(0, 188, 212, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(15, 52, 67, 0.95);
+  --tooltip-bg: rgba(10, 40, 55, 0.9);
+  --tooltip-text: #AEECEF;
 }
 
 .theme-lagoon body {
@@ -390,6 +500,17 @@
   --primary-color: #FF5722;
   --background-color: #1C0B09;
   --text-color: #FFAB91;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(28, 11, 9, 0.85);
+  --card-border: rgba(255, 87, 34, 0.15);
+  --input-bg: rgba(28, 11, 9, 0.8);
+  --input-border: rgba(255, 87, 34, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(28, 11, 9, 0.95);
+  --tooltip-bg: rgba(20, 8, 6, 0.9);
+  --tooltip-text: #FFAB91;
 }
 
 .theme-ember body {
