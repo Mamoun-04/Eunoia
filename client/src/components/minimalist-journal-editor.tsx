@@ -483,7 +483,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                 type="button"
                 className="action-button"
                 onClick={(e) => {
-                  e.preventDefault();
+                  // Only prevent the click event from reaching the editor
                   e.stopPropagation();
                   if (fileInputRef.current) {
                     fileInputRef.current.click();
