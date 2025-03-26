@@ -124,17 +124,17 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             const content = value.content as string || '';
             const words = content.trim() ? content.trim().split(/\s+/).length : 0;
             setWordCount(words); // Update word count state
-  
+
             // Set progress based on word count relative to limit
             const newProgress = Math.min((words / wordLimit) * 100, 100);
             setProgress(newProgress);
-  
+
             // If content exceeds word limit, prevent additional input
             if (words >= wordLimit) {
               // Split content into words and properly limit it
               const allWords = content.trim().split(/\s+/);
               const limitedContent = allWords.slice(0, wordLimit).join(' ');
-              
+
               // Calculate position in the original text where the word limit is reached
               let truncatedContent = limitedContent;
               try {
@@ -147,9 +147,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               } catch (error) {
                 console.error("Error truncating content:", error);
               }
-  
+
               form.setValue('content', truncatedContent);
-  
+
               // Show toast notification about the limit
               toast({
                 title: "Word limit reached",
@@ -165,7 +165,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           }
         }
       });
-  
+
       return () => subscription.unsubscribe();
     } catch (error) {
       console.error("Error setting up form watch:", error);
@@ -177,17 +177,17 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   // Add component cleanup and properly handle unmounting
   useEffect(() => {
     let isComponentMounted = true;
-    
+
     // Initial textarea height adjustment
     if (textareaRef.current && form.getValues('content')) {
       const scrollHeight = textareaRef.current.scrollHeight;
       textareaRef.current.style.height = `${scrollHeight}px`;
     }
-    
+
     // This is crucial: prevent any state updates after component unmounts
     return () => {
       isComponentMounted = false;
-      
+
       // Cancel any pending form submissions to prevent state updates after unmount
       if (entryMutation.isPending) {
         try {
@@ -205,7 +205,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       // Prevent the default behavior to avoid any unexpected closings
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Check if user is on free plan and show an upgrade prompt
       if (!isPremium) {
         toast({
@@ -233,17 +233,17 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           variant: "destructive",
           duration: 5000,
         });
-  
+
         // Reset the file input
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
         return;
       }
-  
+
       const file = e.target.files?.[0];
       if (!file) return;
-  
+
       // Check if the file is an image
       if (!file.type.startsWith('image/')) {
         toast({
@@ -253,7 +253,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         });
         return;
       }
-  
+
       // Check file size (limit to 5MB)
       const fileSizeMB = file.size / 1024 / 1024;
       if (fileSizeMB > 5) {
@@ -264,7 +264,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         });
         return;
       }
-  
+
       // Set local preview first for immediate feedback
       try {
         const reader = new FileReader();
@@ -285,7 +285,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           variant: "destructive",
         });
       }
-  
+
       // Upload the file to the server in a way that won't break the component
       try {
         // Create form data
@@ -301,14 +301,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                 body: formData,
                 credentials: 'include',
               });
-              
+
               // Handle non-200 responses
               if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
                 reject(new Error(errorData.message || `Server error: ${response.status}`));
                 return;
               }
-              
+
               // Parse response data
               const data = await response.json();
               resolve(data);
@@ -317,14 +317,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             }
           }, 50); // Small delay to ensure UI updates first
         });
-        
+
         // Wait for the upload
         const data = await uploadPromise as { url: string };
-        
+
         // Update form with URL once upload completes
         if (data && data.url) {
           form.setValue("imageUrl", data.url);
-          
+
           toast({
             title: "Image uploaded",
             description: "Your image has been successfully uploaded.",
@@ -506,8 +506,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       <DialogContent 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
         onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">Create or edit your journal entry with this editor.</p>
@@ -595,7 +597,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                     form.setValue('content', e.target.value);
                   }
                   contentRef.current = e.target.value;
-                  
+
                   // Auto-adjust height directly in onChange handler
                   if (e.target) {
                     const target = e.target as HTMLTextAreaElement;
