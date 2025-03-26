@@ -307,7 +307,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           ? "Your journal entry has been updated successfully." 
           : "Your journal entry has been saved successfully.",
       });
-      // Do not auto-close; let the user close manually
+      onClose();
     },
     onError: (error: Error) => {
       const errorMessage = error.message;
