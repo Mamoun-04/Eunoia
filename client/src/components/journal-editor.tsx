@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+// Removed Dialog import in favor of custom implementation
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -290,11 +290,15 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
   };
 
   return (
-    <Dialog 
-      open 
-      onOpenChange={handleDialogChange}
-    >
-      <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
+    // Use a custom modal implementation that won't close unexpectedly
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80" onClick={(e: React.MouseEvent) => e.stopPropagation()}></div>
+      
+      {/* Content */}
+      <div 
+        className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95 fixed z-50 grid w-full gap-4 border bg-background duration-200"
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
         <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
           {entry ? "Edit Journal Entry" : "New Journal Entry"}
         </h2>
