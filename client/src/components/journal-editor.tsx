@@ -260,8 +260,36 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
     },
   });
 
+  // Handle dialog state more carefully to prevent premature closing
+  const handleDialogChange = (open: boolean) => {
+    // Only close if user explicitly requests it
+    if (!open) {
+      // If there's unsaved content, ask for confirmation
+      if (form.formState.isDirty) {
+        const isConfirmed = window.confirm("You have unsaved changes. Are you sure you want to close the editor?");
+        if (isConfirmed) {
+          onClose();
+        }
+        // If not confirmed, we don't close, dialog stays open
+        return;
+      }
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
+    <Dialog 
+      open 
+      onOpenChange={handleDialogChange}
+      onPointerDownOutside={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onInteractOutside={(e) => {
+        e.preventDefault(); 
+        e.stopPropagation();
+      }}
+    >
       <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
         <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">
           {entry ? "Edit Journal Entry" : "New Journal Entry"}
