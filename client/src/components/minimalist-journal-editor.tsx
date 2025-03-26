@@ -524,10 +524,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    handleImageUpload(e);
-                  }}
+                  onChange={handleImageUpload}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
