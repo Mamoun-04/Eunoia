@@ -137,8 +137,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   // Handle image upload without closing the editor
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent any default behavior and stop event propagation
     e.preventDefault();
     e.stopPropagation();
+    
+    // Store the file immediately and reset the input to ensure proper behavior on repeated uploads
+    const file = e.target.files?.[0];
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    
     if (!isPremium) {
       toast({
         title: "Premium Feature",
@@ -164,11 +170,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         variant: "destructive",
         duration: 5000,
       });
-      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    const file = e.target.files?.[0];
+    
     if (!file) return;
+    
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
@@ -177,6 +183,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
+    
     const fileSizeMB = file.size / 1024 / 1024;
     if (fileSizeMB > 5) {
       toast({
@@ -186,6 +193,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
+    
+    // Set image preview first for immediate feedback
     try {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -201,9 +210,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         variant: "destructive",
       });
     }
+    
+    // Then upload the image to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
+      
+      // Use a Promise with setTimeout to ensure the state updates properly
       const uploadPromise = new Promise((resolve, reject) => {
         setTimeout(async () => {
           try {
@@ -212,11 +225,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               body: formData,
               credentials: 'include',
             });
+            
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
               reject(new Error(errorData.message || `Server error: ${response.status}`));
               return;
             }
+            
             const data = await response.json();
             resolve(data);
           } catch (error) {
@@ -224,12 +239,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           }
         }, 50);
       });
+      
       const data = await uploadPromise as { url: string };
       if (data && data.url) {
         form.setValue("imageUrl", data.url, { 
           shouldDirty: true,
           shouldTouch: true 
         });
+        
         toast({
           title: "Image uploaded",
           description: "Your image has been successfully uploaded.",
@@ -348,12 +365,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   });
 
   return (
-    <Dialog open>
+    <Dialog open={true} onOpenChange={() => {}}>
       <DialogContent 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
         aria-describedby="journal-editor-description"
         onInteractOutside={(e) => e.preventDefault()} // Prevent closing when clicking outside
         onClick={(e) => e.stopPropagation()}
+        onPointerDownOutside={(e) => e.preventDefault()}
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">
@@ -498,11 +516,18 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleImageUpload(e);
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
                   onFocus={handleFileInputFocus}
                   onBlur={handleFileInputBlur}
                   className="hidden"
+                  value=""
                 />
               </motion.button>
 
@@ -524,7 +549,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                 "submit-button", 
                 (!form.getValues('content') || entryMutation.isPending) && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (form.getValues('content') && !entryMutation.isPending) {
                   entryMutation.mutate(form.getValues());
                 }
