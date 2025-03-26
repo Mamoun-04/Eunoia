@@ -12,7 +12,15 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useRef, useEffect } from "react";
 import { insertEntrySchema, Entry } from "@shared/schema";
+import { MoodSelector } from "./mood-selector";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Image as ImageIcon, X, UploadCloud } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Define category options for the journal entries
 const categoryOptions = [
@@ -25,14 +33,6 @@ const categoryOptions = [
   "Personal Growth",
   "Other"
 ];
-import { MoodSelector } from "./mood-selector";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { Textarea } from "@/components/ui/textarea";
-import { Image as ImageIcon, X, UploadCloud } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
 
 
 type Props = {
