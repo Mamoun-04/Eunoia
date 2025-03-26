@@ -496,14 +496,10 @@ export default function HomePage() {
       {/* Minimalist Editor Modal */}
       {isEditing && (
         <MinimalistJournalEditor
-          key={selectedEntry?.id || 'new-entry'} 
           entry={selectedEntry}
           onClose={() => {
-            // This is intentionally wrapped in a setTimeout to avoid React state update conflicts
-            setTimeout(() => {
-              setIsEditing(false);
-              setSelectedEntry(null);
-            }, 50);
+            setIsEditing(false);
+            setSelectedEntry(null);
           }}
         />
       )}
