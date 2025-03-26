@@ -328,6 +328,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           toast({
             title: "Image uploaded",
             description: "Your image has been successfully uploaded.",
+            duration: 3000,
           });
         } else {
           throw new Error('Invalid server response');

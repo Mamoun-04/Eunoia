@@ -17,12 +17,28 @@ export type ThemeType =
   | "forest"
   | "ocean"
   | "beach"
-  | "midnight";
+  | "midnight"
+  | "aurora"
+  | "cosmic"
+  | "lagoon"
+  | "ember"
+  | "nebula";
 
 // Categorize themes as free or premium
 export const themeCategories = {
   free: ["light", "dark"] as ThemeType[],
-  premium: ["sunset", "forest", "ocean", "beach", "midnight"] as ThemeType[],
+  premium: [
+    "sunset", 
+    "forest", 
+    "ocean", 
+    "beach", 
+    "midnight",
+    "aurora",
+    "cosmic",
+    "lagoon",
+    "ember",
+    "nebula"
+  ] as ThemeType[],
 };
 
 // Theme colors configuration
@@ -61,6 +77,31 @@ export const themeColors = {
     primary: "#9B59B6",
     background: "#0A0A2A",
     text: "#D2B4DE",
+  },
+  aurora: {
+    primary: "#4CAF50",
+    background: "#0D1117",
+    text: "#AAFFAA",
+  },
+  cosmic: {
+    primary: "#EC407A",
+    background: "#050520",
+    text: "#FDA7DF",
+  },
+  lagoon: {
+    primary: "#00BCD4",
+    background: "#0F3443",
+    text: "#AEECEF",
+  },
+  ember: {
+    primary: "#FF5722",
+    background: "#1C0B09",
+    text: "#FFAB91",
+  },
+  nebula: {
+    primary: "#673AB7",
+    background: "#13111C",
+    text: "#D1C4E9",
   },
 };
 
@@ -144,6 +185,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       "theme-ocean",
       "theme-beach",
       "theme-midnight",
+      "theme-aurora",
+      "theme-cosmic",
+      "theme-lagoon",
+      "theme-ember",
+      "theme-nebula"
     );
 
     if (currentTheme === "dark") {

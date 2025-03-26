@@ -200,6 +200,318 @@
   opacity: 0.15;
 }
 
+/* Aurora theme - Nordic lights effect */
+.theme-aurora {
+  --primary-color: #4CAF50;
+  --background-color: #0D1117;
+  --text-color: #AAFFAA;
+}
+
+.theme-aurora body {
+  background: linear-gradient(135deg, #0D1117, #15202B, #182C3D, #0D1117);
+  background-size: 400% 400%;
+  animation: flow-sunset 25s ease infinite;
+}
+
+.theme-aurora::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(180deg, 
+    rgba(76, 175, 80, 0) 0%,
+    rgba(76, 175, 80, 0.15) 40%,
+    rgba(76, 175, 80, 0.1) 60%,
+    rgba(76, 175, 80, 0.05) 70%,
+    rgba(76, 175, 80, 0) 100%);
+  opacity: 0.7;
+  z-index: 1;
+  animation: aurora-flow 15s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.theme-aurora::after {
+  content: '';
+  position: fixed;
+  top: 15%;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: radial-gradient(ellipse at center, 
+    rgba(170, 255, 170, 0.3) 0%, 
+    rgba(40, 180, 99, 0.2) 50%, 
+    transparent 100%);
+  filter: blur(30px);
+  animation: aurora-pulse 8s ease-in-out infinite alternate;
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes aurora-flow {
+  0% { transform: translateY(-10%) scaleY(1.2); opacity: 0.4; }
+  50% { transform: translateY(0%) scaleY(1); opacity: 0.7; }
+  100% { transform: translateY(5%) scaleY(0.8); opacity: 0.5; }
+}
+
+@keyframes aurora-pulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(0.9); opacity: 0.4; }
+}
+
+/* Cosmic theme - Space and nebula effect */
+.theme-cosmic {
+  --primary-color: #EC407A;
+  --background-color: #050520;
+  --text-color: #FDA7DF;
+}
+
+.theme-cosmic body {
+  background: linear-gradient(135deg, #050520, #0F0F30, #190A25, #050520);
+  background-size: 400% 400%;
+  animation: flow-sunset 20s ease infinite;
+}
+
+.theme-cosmic::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 40px 60px, #EC407A 100%, transparent),
+    radial-gradient(2px 2px at 20px 50px, #9C27B0 100%, transparent),
+    radial-gradient(2px 2px at 30px 100px, #3F51B5 100%, transparent),
+    radial-gradient(2px 2px at 40px 60px, #EC407A 50%, transparent),
+    radial-gradient(2px 2px at 110px 90px, #9C27B0 50%, transparent),
+    radial-gradient(2px 2px at 160px 10px, #3F51B5 50%, transparent);
+  background-size: 200px 200px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 1;
+  animation: cosmic-stars 30s linear infinite;
+}
+
+.theme-cosmic::after {
+  content: '';
+  position: fixed;
+  top: 40%;
+  left: 30%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(ellipse at center, 
+    rgba(236, 64, 122, 0.3) 0%, 
+    rgba(156, 39, 176, 0.2) 40%, 
+    transparent 70%);
+  filter: blur(30px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+  animation: cosmic-nebula 15s ease infinite alternate;
+}
+
+@keyframes cosmic-stars {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes cosmic-nebula {
+  0% { transform: scale(0.9) translate(-5%, 5%); opacity: 0.3; }
+  50% { transform: scale(1.1) translate(5%, -5%); opacity: 0.5; }
+  100% { transform: scale(0.9) translate(-5%, 5%); opacity: 0.3; }
+}
+
+/* Lagoon theme - Underwater sanctuary feel */
+.theme-lagoon {
+  --primary-color: #00BCD4;
+  --background-color: #0F3443;
+  --text-color: #AEECEF;
+}
+
+.theme-lagoon body {
+  background: linear-gradient(135deg, #0F3443, #174350, #36505A, #0F3443);
+  background-size: 400% 400%;
+  animation: flow-sunset 18s ease infinite;
+}
+
+.theme-lagoon::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, 
+    rgba(0, 188, 212, 0.05) 0%, 
+    rgba(0, 188, 212, 0.1) 30%, 
+    rgba(73, 155, 234, 0.05) 70%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.theme-lagoon::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(0deg,
+    rgba(0, 188, 212, 0.08) 10%,
+    rgba(0, 105, 148, 0.05) 40%,
+    rgba(0, 188, 212, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+  animation: lagoon-ripple 10s ease-in-out infinite;
+}
+
+@keyframes lagoon-ripple {
+  0% { 
+    opacity: 0.5;
+    background-position: 0% 0%; 
+  }
+  50% { 
+    opacity: 0.7; 
+    background-position: 100% 100%;
+  }
+  100% { 
+    opacity: 0.5;
+    background-position: 0% 0%; 
+  }
+}
+
+/* Ember theme - Warm, glowing fire feel */
+.theme-ember {
+  --primary-color: #FF5722;
+  --background-color: #1C0B09;
+  --text-color: #FFAB91;
+}
+
+.theme-ember body {
+  background: linear-gradient(135deg, #1C0B09, #2D1107, #3C1D0E, #1C0B09);
+  background-size: 400% 400%;
+  animation: flow-sunset 15s ease infinite;
+}
+
+.theme-ember::before {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: radial-gradient(ellipse at bottom, 
+    rgba(255, 87, 34, 0.2) 0%, 
+    rgba(230, 81, 0, 0.1) 50%, 
+    transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+  animation: ember-glow 4s ease-in-out infinite alternate;
+}
+
+.theme-ember::after {
+  content: '';
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, 
+    rgba(255, 152, 0, 0.15) 0%, 
+    rgba(255, 87, 34, 0.1) 40%, 
+    transparent 80%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 1;
+  animation: ember-flicker 3s ease-in-out infinite;
+}
+
+@keyframes ember-glow {
+  0% { opacity: 0.6; transform: scale(0.98); }
+  100% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes ember-flicker {
+  0%, 100% { opacity: 0.5; }
+  25% { opacity: 0.7; }
+  50% { opacity: 0.5; }
+  75% { opacity: 0.6; }
+}
+
+/* Nebula theme - Cosmic space dust */
+.theme-nebula {
+  --primary-color: #673AB7;
+  --background-color: #13111C;
+  --text-color: #D1C4E9;
+}
+
+.theme-nebula body {
+  background: linear-gradient(135deg, #13111C, #251D3A, #462066, #13111C);
+  background-size: 400% 400%;
+  animation: flow-sunset 25s ease infinite;
+}
+
+.theme-nebula::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, 
+    rgba(103, 58, 183, 0.15) 0%, 
+    rgba(156, 39, 176, 0.1) 40%, 
+    transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+  animation: nebula-pulse 8s ease infinite alternate;
+}
+
+.theme-nebula::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, rgba(216, 184, 234, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(186, 104, 200, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 50px 160px, rgba(103, 58, 183, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 90px 40px, rgba(216, 184, 234, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 130px 80px, rgba(186, 104, 200, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 160px 120px, rgba(103, 58, 183, 0.8) 100%, transparent);
+  background-size: 200px 200px;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes nebula-pulse {
+  0% { 
+    opacity: 0.5;
+    background-position: center;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    background-position: center;
+    transform: scale(1.05);
+  }
+  100% { 
+    opacity: 0.5;
+    background-position: center;
+    transform: scale(0.98);
+  }
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
