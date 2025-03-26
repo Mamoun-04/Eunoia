@@ -139,11 +139,11 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     // Prevent any default behavior and stop event propagation
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Store the file immediately and reset the input to ensure proper behavior on repeated uploads
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = "";
-    
+
     if (!isPremium) {
       toast({
         title: "Premium Feature",
@@ -171,9 +171,9 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
-    
+
     if (!file) return;
-    
+
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
@@ -182,7 +182,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
-    
+
     const fileSizeMB = file.size / 1024 / 1024;
     if (fileSizeMB > 5) {
       toast({
@@ -192,7 +192,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       return;
     }
-    
+
     // Set image preview first for immediate feedback
     try {
       const reader = new FileReader();
@@ -209,12 +209,12 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
         variant: "destructive",
       });
     }
-    
+
     // Then upload the image to the server
     try {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       // Use a Promise with setTimeout to ensure the state updates properly
       const uploadPromise = new Promise((resolve, reject) => {
         setTimeout(async () => {
@@ -224,13 +224,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               body: formData,
               credentials: 'include',
             });
-            
+
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
               reject(new Error(errorData.message || `Server error: ${response.status}`));
               return;
             }
-            
+
             const data = await response.json();
             resolve(data);
           } catch (error) {
@@ -238,14 +238,14 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           }
         }, 50);
       });
-      
+
       const data = await uploadPromise as { url: string };
       if (data && data.url) {
         form.setValue("imageUrl", data.url, { 
           shouldDirty: true,
           shouldTouch: true 
         });
-        
+
         toast({
           title: "Image uploaded",
           description: "Your image has been successfully uploaded.",
@@ -365,10 +365,15 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
 
   return (
     // Use a custom modal implementation that won't close unexpectedly
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onKeyDown={(e) => {
+      if (e.key === 'Escape' && (form.getValues('title') || form.getValues('content'))) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }}>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/80" onClick={(e: React.MouseEvent) => e.stopPropagation()}></div>
-      
+
       {/* Content */}
       <div 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg fixed z-50 grid w-full gap-4 border bg-background duration-200"
@@ -387,7 +392,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
           className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm rounded-full"
           onClick={(e) => {
             e.stopPropagation();
-            onClose();
+            const confirmed = window.confirm("Are you sure you want to close? Any unsaved changes will be lost.");
+            if (confirmed) onClose();
           }}
         >
           <X className="h-4 w-4" />
