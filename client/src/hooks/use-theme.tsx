@@ -125,13 +125,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     
     // Apply the CSS classes for theming
-    document.documentElement.classList.remove("dark", "theme-sunset", "theme-forest", "theme-ocean", "theme-beach", "theme-midnight");
+    const themeClasses = ["dark", "theme-sunset", "theme-forest", "theme-ocean", "theme-beach", "theme-midnight"];
+    document.documentElement.classList.remove(...themeClasses);
     
     if (currentTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else if (currentTheme !== "light") {
       document.documentElement.classList.add(`theme-${currentTheme}`);
     }
+
+    // Force a re-render of theme-dependent styles
+    document.documentElement.style.setProperty("--theme-update", Date.now().toString());
   }, [currentTheme, isPremium, setCurrentTheme]);
   
   const contextValue: ThemeContextType = {
