@@ -570,6 +570,17 @@
   --primary-color: #673AB7;
   --background-color: #13111C;
   --text-color: #D1C4E9;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(19, 17, 28, 0.85);
+  --card-border: rgba(103, 58, 183, 0.15);
+  --input-bg: rgba(19, 17, 28, 0.8);
+  --input-border: rgba(103, 58, 183, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(19, 17, 28, 0.95);
+  --tooltip-bg: rgba(15, 13, 24, 0.9);
+  --tooltip-text: #D1C4E9;
 }
 
 .theme-nebula body {

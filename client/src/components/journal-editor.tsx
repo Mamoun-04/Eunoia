@@ -12,7 +12,19 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertEntrySchema, categoryOptions, Entry } from "@shared/schema";
+import { insertEntrySchema, Entry } from "@shared/schema";
+
+// Define category options for the journal entries
+const categoryOptions = [
+  "Daily Reflection",
+  "Gratitude",
+  "Goals",
+  "Dreams",
+  "Ideas",
+  "Memories",
+  "Personal Growth",
+  "Other"
+];
 import { MoodSelector } from "./mood-selector";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -281,14 +293,6 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
     <Dialog 
       open 
       onOpenChange={handleDialogChange}
-      onPointerDownOutside={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onInteractOutside={(e) => {
-        e.preventDefault(); 
-        e.stopPropagation();
-      }}
     >
       <DialogContent className="sm:max-w-xl max-h-[90vh] p-5 md:p-7 rounded-xl shadow-lg border-0 bg-gradient-to-b from-background to-background/95">
         <h2 className="text-lg font-semibold text-center mb-5 text-primary/90">

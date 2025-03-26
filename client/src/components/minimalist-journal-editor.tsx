@@ -501,15 +501,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   return (
     <Dialog 
       open 
-      onOpenChange={handleDialogChange} 
-      onPointerDownOutside={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onInteractOutside={(e) => {
-        e.preventDefault(); 
-        e.stopPropagation();
-      }}
+      onOpenChange={handleDialogChange}
     >
       <DialogContent 
         className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
