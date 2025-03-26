@@ -8,7 +8,6 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 
 const WRITING_PROMPTS = [
@@ -365,15 +364,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
   });
 
   return (
-    // Use hardcoded open={true} and empty onOpenChange to maintain control over dialog visibility
-    <Dialog open={true} modal={true} onOpenChange={() => {}}>
-      <DialogContent 
-        className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg"
+    // Use a custom modal implementation that won't close unexpectedly
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80" onClick={(e: React.MouseEvent) => e.stopPropagation()}></div>
+      
+      {/* Content */}
+      <div 
+        className="sm:max-w-[min(600px,90vw)] min-h-[100dvh] sm:min-h-0 sm:max-h-[90vh] mx-0 sm:mx-auto rounded-none sm:rounded-[1.25rem] border-0 overflow-hidden bg-gradient-to-b from-[#fcfbf9] to-[#f8f7f2] p-4 sm:p-6 shadow-lg fixed z-50 grid w-full gap-4 border bg-background duration-200"
         aria-describedby="journal-editor-description"
-        onInteractOutside={(e) => e.preventDefault()} // Prevent closing when clicking outside
-        onClick={(e) => e.stopPropagation()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent ESC key from closing
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <h2 id="journal-dialog-title" className="sr-only">Journal Entry Editor</h2>
         <p id="journal-editor-description" className="sr-only">
@@ -567,7 +567,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             </motion.button>
           </motion.div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
