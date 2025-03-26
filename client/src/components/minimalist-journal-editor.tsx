@@ -226,7 +226,10 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
       const data = await uploadPromise as { url: string };
       if (data && data.url) {
-        form.setValue("imageUrl", data.url);
+        form.setValue("imageUrl", data.url, { 
+          shouldDirty: true,
+          shouldTouch: true 
+        });
         toast({
           title: "Image uploaded",
           description: "Your image has been successfully uploaded.",
