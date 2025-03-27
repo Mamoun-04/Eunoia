@@ -295,9 +295,9 @@ export function MinimalistJournalEditor({
   };
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Sticky top bar with progress and actions */}
-      <div className="sticky top-0 z-10 bg-background pt-2 pb-4">
+      <div className="sticky top-0 z-10 bg-background pt-1 pb-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-bold">
             {existingEntry ? "Edit Entry" : "New Entry"}
@@ -356,13 +356,13 @@ export function MinimalistJournalEditor({
       </div>
       
       {/* Image upload section (premium only) */}
-      <div className="space-y-4 mb-4">
+      <div className="space-y-2 mb-2">
         {imageUrl && (
           <div className="relative rounded-lg overflow-hidden border border-border/60">
             <img 
               src={imageUrl} 
               alt="Journal entry" 
-              className="w-full h-auto max-h-[300px] object-cover" 
+              className="w-full h-auto max-h-[220px] object-cover" 
             />
             <Button
               size="sm"
@@ -388,7 +388,7 @@ export function MinimalistJournalEditor({
           <Button
             type="button"
             variant="outline"
-            className="w-full py-8 border-dashed"
+            className="w-full py-6 border-dashed"
             onClick={(e) => {
               // Prevent the event from bubbling up and potentially closing dialogs
               e.stopPropagation();
@@ -427,7 +427,7 @@ export function MinimalistJournalEditor({
         value={content}
         onChange={handleContentChange}
         onKeyDown={handleKeyDown}
-        className="journal-textarea min-h-[250px] resize-y p-4 text-base leading-relaxed"
+        className="journal-textarea min-h-[180px] resize-y p-4 text-base leading-relaxed"
       />
     </div>
   );
