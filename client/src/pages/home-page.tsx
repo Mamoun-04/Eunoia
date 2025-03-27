@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { SubscriptionDialog } from "@/components/subscription-dialog";
 import { PremiumFeatureModal } from "@/components/premium-feature-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 
 /**
  * ConfirmDeleteDialog:
@@ -498,17 +499,14 @@ export default function HomePage() {
           setIsEditing(false);
           setSelectedEntry(null);
         }}>
-          <DialogContent className="sm:max-w-[600px]">
-            <h2 className="text-2xl font-bold mb-4">Entry Editor Coming Soon</h2>
-            <p className="mb-4">The journal entry editor is being rebuilt from scratch.</p>
-            <Button 
-              onClick={() => {
+          <DialogContent className="sm:max-w-[800px]">
+            <MinimalistJournalEditor 
+              onClose={() => {
                 setIsEditing(false);
                 setSelectedEntry(null);
               }}
-            >
-              Close
-            </Button>
+              existingEntry={selectedEntry || undefined}
+            />
           </DialogContent>
         </Dialog>
       )}
