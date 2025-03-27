@@ -298,21 +298,6 @@ User message: ${message}`;
       res.status(500).json({ message: "Failed to delete saved lesson" });
     }
   });
-  
-  app.patch("/api/saved-lessons/:id/toggle-pin", requireAuth, async (req, res) => {
-    try {
-      const savedLesson = await storage.getSavedLesson(parseInt(req.params.id));
-      
-      if (!savedLesson || savedLesson.userId !== req.user!.id) {
-        return res.status(404).json({ message: "Saved lesson not found" });
-      }
-      
-      const updatedLesson = await storage.togglePinSavedLesson(savedLesson.id);
-      res.json(updatedLesson);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to toggle pin status" });
-    }
-  });
 
   // Delete account endpoint
   app.post("/api/delete-account", requireAuth, async (req, res) => {

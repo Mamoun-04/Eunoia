@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useMutation } from '@tanstack/react-query';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Bookmark, BookmarkCheck, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { SavedLesson } from '@shared/schema';
 
 interface SavedLessonViewerProps {
@@ -14,65 +11,15 @@ interface SavedLessonViewerProps {
 }
 
 export function SavedLessonViewer({ savedLesson, onBack }: SavedLessonViewerProps) {
-  const [isPinned, setIsPinned] = useState(savedLesson.isPinnedToHome || false);
-  const { toast } = useToast();
-  
   // Format saved lesson content as sections
   const contentSections = savedLesson.userEntryText.split('\n\n');
-  
-  // Add mutation for pinning to home
-  const pinToHomeMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest(
-        "PATCH", 
-        `/api/saved-lessons/${savedLesson.id}/toggle-pin`, 
-        {}
-      );
-      return res;
-    },
-    onSuccess: () => {
-      setIsPinned(!isPinned);
-      queryClient.invalidateQueries({ queryKey: ["/api/saved-lessons"] });
-      toast({
-        title: isPinned ? "Removed from Home" : "Added to Home",
-        description: isPinned 
-          ? "This entry has been removed from your home dashboard." 
-          : "This entry has been added to your home dashboard.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "There was a problem updating this entry.",
-        variant: "destructive",
-      });
-    },
-  });
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center mb-6">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft className="h-4 w-4" /> 
           Back to Lessons
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          className={`gap-2 ${isPinned ? 'text-amber-500 border-amber-500' : ''}`}
-          onClick={() => pinToHomeMutation.mutate()}
-        >
-          {isPinned ? (
-            <>
-              <BookmarkCheck className="h-4 w-4" /> 
-              Pinned to Home
-            </>
-          ) : (
-            <>
-              <Bookmark className="h-4 w-4" /> 
-              Add to Home
-            </>
-          )}
         </Button>
       </div>
       
