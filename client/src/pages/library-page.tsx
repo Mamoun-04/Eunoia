@@ -2428,17 +2428,56 @@ const SAMPLE_LESSONS = [
 
 export default function LibraryPage() {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
-  const { logoutMutation } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  //Removed lengthFilter state
+  
+  // Check if user has premium subscription
+  const isPremium = user?.subscriptionStatus === "active";
 
-  const filteredLessons = SAMPLE_LESSONS.filter((lesson) => {
+  // Generate a daily featured lesson based on the date
+  const getFeaturedLessonForToday = () => {
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    
+    // Use the date string to create a deterministic index for today's featured lesson
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    
+    // Get a positive index within the range of available lessons
+    const index = Math.abs(hash) % SAMPLE_LESSONS.length;
+    return SAMPLE_LESSONS[index];
+  };
+  
+  // Get today's featured lesson
+  const featuredLesson = getFeaturedLessonForToday();
+  
+  // Prepare lessons with featured status and accessibility info
+  const preparedLessons = SAMPLE_LESSONS.map(lesson => ({
+    ...lesson,
+    isFeatured: lesson.id === featuredLesson.id,
+    isAccessible: isPremium || lesson.id === featuredLesson.id
+  }));
+  
+  // Filter lessons based on search query
+  const filteredLessons = preparedLessons.filter((lesson) => {
     const searchTerm = searchQuery.toLowerCase();
     const titleMatch = lesson.title.toLowerCase().includes(searchTerm);
     const topicMatch = lesson.topic.toLowerCase().includes(searchTerm);
-    //Removed lengthMatch condition
     return titleMatch || topicMatch;
+  });
+  
+  // Sort lessons: featured lesson first, others in random but consistent order
+  const sortedLessons = [...filteredLessons].sort((a, b) => {
+    if (a.isFeatured) return -1;
+    if (b.isFeatured) return 1;
+    
+    // Create deterministic but random-looking order using string comparison
+    // This ensures the order remains the same during a user's session
+    return a.id.localeCompare(b.id);
   });
 
   const navigation = [
@@ -2514,9 +2553,21 @@ export default function LibraryPage() {
             <>
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-2">
                   Choose a lesson below to begin your reflection journey
                 </p>
+                
+                {/* Featured lesson explanation */}
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-md p-3 mb-4 text-sm flex items-start gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-amber-800 dark:text-amber-400">Featured lesson of the day</p>
+                    <p className="text-amber-700 dark:text-amber-300/80">
+                      Each day, we feature one premium lesson that's free for everyone. Check back daily for new content!
+                    </p>
+                  </div>
+                </div>
+                
                 <div className="flex gap-4 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -2532,23 +2583,75 @@ export default function LibraryPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredLessons.map((lesson) => (
+                {sortedLessons.map((lesson) => (
                   <Card
                     key={lesson.id}
-                    className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={() => setSelectedLesson(lesson)}
+                    className={`relative overflow-hidden transition-all duration-300 ${
+                      lesson.isFeatured 
+                        ? "p-6 cursor-pointer ring-2 ring-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:shadow-[0_0_18px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(251,191,36,0.15)] dark:hover:shadow-[0_0_18px_rgba(251,191,36,0.25)]" 
+                        : "p-6 cursor-pointer hover:bg-accent/50"
+                    } ${
+                      !lesson.isAccessible 
+                        ? "opacity-80" 
+                        : ""
+                    }`}
+                    onClick={() => {
+                      if (lesson.isAccessible) {
+                        setSelectedLesson(lesson);
+                      } else {
+                        // Could show premium feature modal here
+                        alert("This lesson is available only for premium users");
+                      }
+                    }}
                   >
-                    <Sparkles className="h-8 w-8 mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold mb-2">
-                      {lesson.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {lesson.description}
-                    </p>
-                    <div className="text-sm text-primary">
-                      {lesson.questions.length} prompts •{" "}
-                      {lesson.questions.length * 2} min
+                    {/* Badge for featured lessons */}
+                    {lesson.isFeatured && (
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        Featured Today
+                      </div>
+                    )}
+                    
+                    {/* Apply blur effect for non-accessible lessons */}
+                    <div className={`${!lesson.isAccessible ? "blur-[3px]" : ""}`}>
+                      <Sparkles className={`h-8 w-8 mb-4 ${lesson.isFeatured ? "text-amber-500" : "text-primary"}`} />
+                      <h3 className="text-xl font-semibold mb-2">
+                        {lesson.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        {lesson.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-primary">
+                          {lesson.questions.length} prompts •{" "}
+                          {lesson.questions.length * 2} min
+                        </div>
+                        <div>
+                          {lesson.isFeatured ? (
+                            <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full px-2 py-0.5">
+                              Free
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                              {isPremium ? "Premium" : "Premium Only"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    
+                    {/* Lock overlay for non-accessible lessons */}
+                    {!lesson.isAccessible && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
+                        <div className="bg-black/60 text-white text-sm font-medium rounded-full px-3 py-1.5 flex items-center gap-1.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                          </svg>
+                          Premium Only
+                        </div>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -2563,7 +2666,10 @@ export default function LibraryPage() {
                 ← Back to Lessons
               </Button>
               <GuidedLesson
-                {...selectedLesson}
+                title={selectedLesson.title}
+                topic={selectedLesson.topic}
+                description={selectedLesson.description}
+                questions={selectedLesson.questions}
                 onComplete={handleLessonComplete}
                 onClose={() => setSelectedLesson(null)}
               />
