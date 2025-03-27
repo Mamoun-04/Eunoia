@@ -21,6 +21,7 @@ export interface IStorage {
   getSavedLessons(userId: number): Promise<SavedLesson[]>;
   getSavedLesson(id: number): Promise<SavedLesson | undefined>;
   deleteSavedLesson(id: number): Promise<void>;
+  togglePinSavedLesson(id: number): Promise<SavedLesson>;
   
   // Free user limit methods
   canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }>;
@@ -248,6 +249,7 @@ export class MemStorage implements IStorage {
       ...insertSavedLesson,
       id,
       userId,
+      isPinnedToHome: false,
       completionTimestamp: now,
       createdAt: now
     };
@@ -269,6 +271,19 @@ export class MemStorage implements IStorage {
 
   async deleteSavedLesson(id: number): Promise<void> {
     this.savedLessons.delete(id);
+  }
+  
+  async togglePinSavedLesson(id: number): Promise<SavedLesson> {
+    const savedLesson = this.savedLessons.get(id);
+    
+    if (!savedLesson) {
+      throw new Error('Saved lesson not found');
+    }
+    
+    savedLesson.isPinnedToHome = !savedLesson.isPinnedToHome;
+    this.savedLessons.set(id, savedLesson);
+    
+    return savedLesson;
   }
 }
 

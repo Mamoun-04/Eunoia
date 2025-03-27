@@ -85,6 +85,7 @@ export const savedLessons = pgTable("saved_lessons", {
   lessonId: text("lesson_id").notNull(),
   title: text("title").notNull(),
   userEntryText: text("user_entry_text").notNull(), // Stores the full text of the user's answers
+  isPinnedToHome: boolean("is_pinned_to_home").default(false).notNull(),
   completionTimestamp: timestamp("completion_timestamp").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

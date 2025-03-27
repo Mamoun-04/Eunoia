@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { GuidedLesson } from "@/components/guided-lesson";
+import { SavedLessonViewer } from "@/components/saved-lesson-viewer";
 import { useState } from "react";
 import {
   LogOut,
@@ -2430,6 +2431,7 @@ const SAMPLE_LESSONS = [
 
 export default function LibraryPage() {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedSavedLesson, setSelectedSavedLesson] = useState<SavedLesson | null>(null);
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -2572,6 +2574,11 @@ export default function LibraryPage() {
     setSelectedLesson(null);
   };
 
+  // Handler to close the saved lesson viewer
+  const handleBackFromSavedLesson = () => {
+    setSelectedSavedLesson(null);
+  };
+
   return (
     <div className="flex min-h-screen bg-background pb-16 lg:pb-0">
       {/* Desktop Sidebar */}
@@ -2615,7 +2622,12 @@ export default function LibraryPage() {
       {/* Main Content */}
       <div className="flex-1 p-4 lg:p-8">
         <div className="container mx-auto">
-          {!selectedLesson ? (
+          {selectedSavedLesson ? (
+            <SavedLessonViewer 
+              savedLesson={selectedSavedLesson} 
+              onBack={handleBackFromSavedLesson} 
+            />
+          ) : !selectedLesson ? (
             <>
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Guided Journaling</h1>
@@ -2776,6 +2788,7 @@ export default function LibraryPage() {
                           <Card
                             key={savedLesson.id}
                             className="p-6 relative overflow-hidden hover:bg-accent/50 cursor-pointer"
+                            onClick={() => setSelectedSavedLesson(savedLesson)}
                           >
                             <div className="flex items-start justify-between mb-4">
                               <CalendarDays className="h-8 w-8 text-primary" />

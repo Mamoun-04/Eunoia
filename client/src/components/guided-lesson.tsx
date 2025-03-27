@@ -28,6 +28,7 @@ interface LessonProps {
 export function GuidedLesson({ id, title, topic, description, questions, onComplete, onClose }: LessonProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
 
   const handleAnswer = (value: any) => {
     setAnswers(prev => ({ ...prev, [questions[currentQuestion].id]: value }));
@@ -35,10 +36,20 @@ export function GuidedLesson({ id, title, topic, description, questions, onCompl
 
   const handleNext = () => {
     if (currentQuestion === questions.length - 1) {
-      onComplete(answers);
+      setShowSavePrompt(true);
     } else {
       setCurrentQuestion(prev => prev + 1);
     }
+  };
+  
+  const handleSave = () => {
+    // Save the entry
+    onComplete(answers);
+  };
+  
+  const handleDontSave = () => {
+    // Don't save, just close
+    onClose();
   };
 
   const renderQuestion = () => {
@@ -86,6 +97,35 @@ export function GuidedLesson({ id, title, topic, description, questions, onCompl
         );
     }
   };
+
+  if (showSavePrompt) {
+    return (
+      <Card className="max-w-2xl mx-auto p-6 space-y-6">
+        <div className="space-y-4 text-center">
+          <h3 className="text-2xl font-semibold">Save your reflection?</h3>
+          <p className="text-muted-foreground">
+            Would you like to save this entry for later, or leave it as a one-time reflection?
+          </p>
+        </div>
+        
+        <div className="flex flex-col space-y-2 pt-4">
+          <Button 
+            onClick={handleSave}
+            className="w-full"
+          >
+            Save Entry
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleDontSave}
+            className="w-full"
+          >
+            Don't Save
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto p-6 space-y-6">
