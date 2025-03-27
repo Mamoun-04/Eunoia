@@ -121,9 +121,20 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
     return () => subscription.unsubscribe();
   }, [form.watch, wordLimit, isPremium, toast]);
 
-  // Handle image upload
+  // Handle image upload with improved error handling and event protection
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent any default behavior and stop event propagation
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Store the file immediately
     const file = e.target.files?.[0];
+    
+    // Reset the input to ensure it works for the same file selection
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    
     if (!file) return;
 
     // Check if the file is an image
@@ -147,44 +158,64 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
       return;
     }
 
-    // Set local preview for immediate feedback
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageDataUrl = event.target?.result as string;
-      setImagePreview(imageDataUrl);
-    };
-    reader.readAsDataURL(file);
-    
-    // Upload the file to the server
+    // Set local preview immediately for better user experience
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Image upload failed');
-      }
-      
-      const data = await response.json();
-      form.setValue("imageUrl", data.url);
-      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imageDataUrl = event.target?.result as string;
+          setImagePreview(imageDataUrl);
+        } catch (previewError) {
+          console.error("Failed to set image preview:", previewError);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (readerError) {
+      console.error("Error reading file:", readerError);
       toast({
-        title: "Image uploaded",
-        description: "Your image has been successfully uploaded.",
-        variant: "default",
-      });
-    } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
+        title: "Preview failed",
+        description: "Could not generate a preview for this image.",
         variant: "destructive",
       });
     }
+    
+    // Upload the file to the server with timeout to ensure UI updates first
+    setTimeout(async () => {
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(errorData.message || `Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        form.setValue("imageUrl", data.url, { 
+          shouldDirty: true,
+          shouldTouch: true 
+        });
+        
+        toast({
+          title: "Image uploaded",
+          description: "Your image has been successfully uploaded.",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast({
+          title: "Upload failed",
+          description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }, 50); // Small delay to ensure UI updates first
   };
 
   const removeImage = () => {
@@ -214,15 +245,35 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
         return res.json();
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      
+      // Show toast notification without automatically closing
       toast({
         title: entry ? "Entry updated" : "Entry saved",
-        description: entry 
-          ? "Your journal entry has been updated successfully." 
-          : "Your journal entry has been saved successfully.",
+        description: (
+          <div className="space-y-2">
+            <p>{entry 
+              ? "Your journal entry has been updated successfully." 
+              : "Your journal entry has been saved successfully."}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+            >
+              Close Editor
+            </Button>
+          </div>
+        ),
+        duration: 5000,
       });
-      onClose();
+      
+      // DON'T automatically close the editor - let user decide
+      // This prevents unexpected closing behavior
     },
     onError: (error: Error) => {
       // Check if it's a free user limit error
@@ -245,7 +296,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                 variant="outline" 
                 size="sm" 
                 className="mt-2 w-full"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   // Here we would open the subscription dialog
                   // You could implement a state/context to control this
                   // For simplicity, we'll just show another toast for now
@@ -401,6 +453,8 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                         ref={fileInputRef}
                         onChange={handleImageUpload}
                         className="hidden"
+                        onFocus={(e) => e.stopPropagation()}
+                        onBlur={(e) => e.stopPropagation()}
                         // Don't use {...field} as it would override ref and onChange
                         value="" // Reset the value to allow the same file to be selected again
                       />
@@ -430,6 +484,16 @@ export function JournalEditor({ onClose, initialCategory, entry }: Props) {
                       style={{ 
                         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                         boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.02)"
+                      }}
+                      onFocus={(e) => e.stopPropagation()}
+                      onBlur={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        // Prevent escape key from closing modal when typing
+                        if (e.key === 'Escape') {
+                          e.stopPropagation();
+                          e.preventDefault();
+                        }
                       }}
                       {...field}
                     />

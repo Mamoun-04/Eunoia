@@ -134,13 +134,13 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
     }
   }, []);
 
-  // Handle image upload without closing the editor
+  // Handle image upload with improved error handling and stability
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Prevent any default behavior and stop event propagation
     e.preventDefault();
     e.stopPropagation();
 
-    // Store the file immediately and reset the input to ensure proper behavior on repeated uploads
+    // Immediately capture the file and reset input for consistent behavior
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = "";
 
@@ -156,6 +156,7 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
               className="mt-2 w-full"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 toast({
                   title: "Upgrade to Premium",
                   description: "Unlock unlimited entries, images, and word count!",
@@ -193,12 +194,16 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       return;
     }
 
-    // Set image preview first for immediate feedback
+    // Set image preview immediately for better UX
     try {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const imageDataUrl = event.target?.result as string;
-        setImagePreview(imageDataUrl);
+        try {
+          const imageDataUrl = event.target?.result as string;
+          setImagePreview(imageDataUrl);
+        } catch (previewError) {
+          console.error("Failed to set image preview:", previewError);
+        }
       };
       reader.readAsDataURL(file);
     } catch (readerError) {
@@ -210,68 +215,50 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
       });
     }
 
-    // Then upload the image to the server
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
+    // Upload with timeout to ensure UI updates first and prevent flickering
+    setTimeout(async () => {
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
 
-      // Use a Promise with setTimeout to ensure the state updates properly
-      const uploadPromise = new Promise((resolve, reject) => {
-        setTimeout(async () => {
-          try {
-            const response = await fetch('/api/upload', {
-              method: 'POST',
-              body: formData,
-              credentials: 'include',
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-              reject(new Error(errorData.message || `Server error: ${response.status}`));
-              return;
-            }
-
-            const data = await response.json();
-            resolve(data);
-          } catch (error) {
-            reject(error);
-          }
-        }, 50);
-      });
-
-      const data = await uploadPromise as { url: string };
-      if (data && data.url) {
-        form.setValue("imageUrl", data.url, { 
-          shouldDirty: true,
-          shouldTouch: true 
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
         });
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(errorData.message || `Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data && data.url) {
+          form.setValue("imageUrl", data.url, { 
+            shouldDirty: true,
+            shouldTouch: true 
+          });
+
+          toast({
+            title: "Image uploaded",
+            description: "Your image has been successfully uploaded.",
+            duration: 3000,
+          });
+        } else {
+          throw new Error('Invalid server response');
+        }
+      } catch (uploadError) {
+        console.error("Upload error:", uploadError);
         toast({
-          title: "Image uploaded",
-          description: "Your image has been successfully uploaded.",
-          duration: 3000,
+          title: "Upload failed",
+          description: uploadError instanceof Error ? uploadError.message : "Failed to upload image. Please try again.",
+          variant: "destructive",
         });
-      } else {
-        throw new Error('Invalid server response');
       }
-    } catch (uploadError) {
-      console.error("Upload error:", uploadError);
-      toast({
-        title: "Upload failed",
-        description: uploadError instanceof Error ? uploadError.message : "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
-    }
+    }, 50); // Small delay to ensure UI updates first
   };
 
-  // Stop propagation on file input focus and blur to prevent unintended closure
-  const handleFileInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-  };
-
-  const handleFileInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-  };
+  // File input handlers have been replaced with inline event stopPropagation
 
   const addSentenceStarter = (starter: string) => {
     const currentContent = form.getValues('content');
@@ -444,20 +431,39 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
             </div>
           </div>
 
-          {/* Journal Entry Textarea */}
+          {/* Journal Entry Textarea with enhanced stability */}
           <textarea
             className="journal-textarea"
             placeholder="Begin writing here..."
+            onClick={(e) => e.stopPropagation()}
+            onFocus={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              // Prevent escape key from closing modal when typing
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                e.preventDefault();
+              }
+            }}
             {...form.register('content', {
               onChange: (e) => {
-                if (wordCount < wordLimit || isPremium) {
-                  form.setValue('content', e.target.value);
-                } else if (e.target.value.length < form.getValues('content').length) {
-                  form.setValue('content', e.target.value);
-                }
-                if (e.target) {
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${e.target.scrollHeight}px`;
+                try {
+                  // Stop propagation to prevent accidental editor closing
+                  e.stopPropagation();
+                  
+                  // Handle word limit
+                  if (wordCount < wordLimit || isPremium) {
+                    form.setValue('content', e.target.value);
+                  } else if (e.target.value.length < form.getValues('content').length) {
+                    form.setValue('content', e.target.value);
+                  }
+                  
+                  // Auto-resize the textarea
+                  if (e.target) {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }
+                } catch (error) {
+                  console.error("Error in textarea onChange:", error);
                 }
               }
             })}
@@ -529,8 +535,8 @@ export function MinimalistJournalEditor({ onClose, initialCategory, entry }: Pro
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onFocus={handleFileInputFocus}
-                  onBlur={handleFileInputBlur}
+                  // Use inline function to prevent potential issues with multiple handlers
+                  onFocus={(e) => e.stopPropagation()}
                   className="hidden"
                   value=""
                 />
