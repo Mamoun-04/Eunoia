@@ -4,7 +4,6 @@ import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { StableJournalEditor } from "@/components/stable-journal-editor";
 import { useState } from "react";
 import {
   LogOut,
@@ -493,15 +492,25 @@ export default function HomePage() {
         </nav>
       </div>
 
-      {/* Minimalist Editor Modal */}
+      {/* Journal Entry Editor Placeholder */}
       {isEditing && (
-        <StableJournalEditor
-          entry={selectedEntry}
-          onClose={() => {
-            setIsEditing(false);
-            setSelectedEntry(null);
-          }}
-        />
+        <Dialog open={isEditing} onOpenChange={() => {
+          setIsEditing(false);
+          setSelectedEntry(null);
+        }}>
+          <DialogContent className="sm:max-w-[600px]">
+            <h2 className="text-2xl font-bold mb-4">Entry Editor Coming Soon</h2>
+            <p className="mb-4">The journal entry editor is being rebuilt from scratch.</p>
+            <Button 
+              onClick={() => {
+                setIsEditing(false);
+                setSelectedEntry(null);
+              }}
+            >
+              Close
+            </Button>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Entry Viewing Dialog */}
