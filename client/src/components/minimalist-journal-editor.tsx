@@ -356,7 +356,7 @@ export function MinimalistJournalEditor({
       </div>
       
       {/* Image upload section (premium only) */}
-      <div className="space-y-2">
+      <div className="space-y-4 mb-4">
         {imageUrl && (
           <div className="relative rounded-lg overflow-hidden border border-border/60">
             <img 
