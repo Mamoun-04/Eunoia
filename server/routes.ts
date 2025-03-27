@@ -165,15 +165,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      // Set subscription end date
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
       
+      // Get user for current preferences
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update user preferences with subscription plan
+      let userPreferences = {};
+      if (user.preferences) {
+        try {
+          userPreferences = JSON.parse(user.preferences);
+        } catch (e) {
+          console.error("Error parsing user preferences:", e);
+        }
+      }
+      
+      // Update preferences with the new subscription plan
+      userPreferences = {
+        ...userPreferences,
+        subscriptionPlan: plan
+      };
+      
+      // Update user in database
       await storage.updateUser(req.user!.id, {
         subscriptionStatus: "active",
-        subscriptionEndDate: endDate
+        subscriptionEndDate: endDate,
+        preferences: JSON.stringify(userPreferences)
       });
 
-      res.json({ message: "Subscription activated" });
+      res.json({ 
+        message: "Subscription activated",
+        plan: plan,
+        endDate: endDate
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to process subscription" });
     }
@@ -261,6 +290,44 @@ User message: ${message}`;
     }
   });
 
+  // Get user info route
+  app.get("/api/user", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      
+      // Create a sanitized user object without sensitive data
+      const userInfo: {
+        id: number;
+        username: string;
+        subscriptionStatus: string;
+        subscriptionEndDate: Date | null;
+        subscriptionPlan?: string;
+      } = {
+        id: user!.id,
+        username: user!.username,
+        subscriptionStatus: user!.subscriptionStatus,
+        subscriptionEndDate: user!.subscriptionEndDate
+      };
+      
+      // Add subscription plan from preferences if available
+      if (user!.preferences) {
+        try {
+          const preferences = JSON.parse(user!.preferences);
+          userInfo.subscriptionPlan = preferences.subscriptionPlan || "free";
+        } catch (e) {
+          console.error("Error parsing user preferences:", e);
+          userInfo.subscriptionPlan = "free";
+        }
+      } else {
+        userInfo.subscriptionPlan = "free";
+      }
+      
+      res.json(userInfo);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user information" });
+    }
+  });
+  
   app.get("/api/saved-lessons", requireAuth, async (req, res) => {
     try {
       const savedLessons = await storage.getSavedLessons(req.user!.id);

@@ -1,4 +1,4 @@
-import { User, InsertUser, Entry, InsertEntry, SavedLesson, InsertSavedLesson } from "@shared/schema";
+import { User, InsertUser, Entry, InsertEntry, SavedLesson, InsertSavedLesson, UserPreferences } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 const MemoryStore = createMemoryStore(session);
@@ -158,8 +158,23 @@ export class MemStorage implements IStorage {
       return { allowed: false, reason: "User not found" };
     }
 
+    // Parse user preferences to get subscription plan
+    let userPreferences: Partial<UserPreferences> = { 
+      subscriptionPlan: "free", 
+      interests: [], 
+      theme: "light" 
+    };
+    
+    if (user.preferences) {
+      try {
+        userPreferences = JSON.parse(user.preferences) as UserPreferences;
+      } catch (e) {
+        console.error("Error parsing user preferences:", e);
+      }
+    }
+
     // Premium users can create unlimited entries
-    if (user.subscriptionStatus === "active") {
+    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
       return { allowed: true };
     }
 
@@ -168,7 +183,7 @@ export class MemStorage implements IStorage {
     if (dailyEntryCount >= 1) {
       return { 
         allowed: false, 
-        reason: "You've reached your daily entry limit. Upgrade to Premium for unlimited journaling."
+        reason: "Free users are limited to 1 entry per day. Upgrade to Premium for unlimited journaling."
       };
     }
 
@@ -181,21 +196,31 @@ export class MemStorage implements IStorage {
       return { allowed: false, reason: "User not found" };
     }
 
+    // Parse user preferences to get subscription plan
+    let userPreferences: Partial<UserPreferences> = { 
+      subscriptionPlan: "free", 
+      interests: [], 
+      theme: "light" 
+    };
+    
+    if (user.preferences) {
+      try {
+        userPreferences = JSON.parse(user.preferences) as UserPreferences;
+      } catch (e) {
+        console.error("Error parsing user preferences:", e);
+      }
+    }
+
     // Premium users can add unlimited images
-    if (user.subscriptionStatus === "active") {
+    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
       return { allowed: true };
     }
 
-    // Free users are limited to 1 image per day
-    const dailyImageCount = await this.getUserDailyImageCount(userId);
-    if (dailyImageCount >= 1) {
-      return { 
-        allowed: false, 
-        reason: "Free users can only upload 1 image per day. Upgrade to Premium for unlimited images."
-      };
-    }
-
-    return { allowed: true };
+    // Free users cannot upload images at all
+    return { 
+      allowed: false, 
+      reason: "Image uploads are a premium feature. Upgrade to Premium to add images to your entries."
+    };
   }
 
   async getEntryContentLimit(userId: number): Promise<number> {
@@ -204,9 +229,24 @@ export class MemStorage implements IStorage {
       return 0;
     }
 
-    // Premium users are limited to 2000 words
-    if (user.subscriptionStatus === "active") {
-      return 2000;
+    // Parse user preferences to get subscription plan
+    let userPreferences: Partial<UserPreferences> = { 
+      subscriptionPlan: "free", 
+      interests: [], 
+      theme: "light" 
+    };
+    
+    if (user.preferences) {
+      try {
+        userPreferences = JSON.parse(user.preferences) as UserPreferences;
+      } catch (e) {
+        console.error("Error parsing user preferences:", e);
+      }
+    }
+
+    // Premium users are limited to 1000 words
+    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
+      return 1000;
     }
 
     // Free users are limited to 250 words

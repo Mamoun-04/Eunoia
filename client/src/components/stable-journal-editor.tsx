@@ -91,17 +91,18 @@ export function StableJournalEditor({ onClose, initialCategory, entry }: Journal
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [currentPrompt, form]);
+  }, [currentPrompt]);
 
-  // Check user subscription status
+  // Check user subscription status - once at component mount
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
         const response = await fetch('/api/user', { credentials: 'include' });
         if (response.ok) {
           const user = await response.json();
-          setIsPremium(user.subscriptionStatus === 'active');
-          setWordLimit(user.subscriptionStatus === 'active' ? 1000 : 250);
+          const isPremiumUser = user.subscriptionPlan === 'monthly' || user.subscriptionPlan === 'yearly';
+          setIsPremium(isPremiumUser);
+          setWordLimit(isPremiumUser ? 1000 : 250);
         }
       } catch (error) {
         console.error('Failed to fetch user status:', error);
@@ -110,42 +111,26 @@ export function StableJournalEditor({ onClose, initialCategory, entry }: Journal
     checkUserStatus();
   }, []);
 
-  // Update progress bar and word count
+  // Calculate word count separately from form watch to prevent re-renders
   useEffect(() => {
-    // Watch for content changes to update word count and progress
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'content' || name === undefined) {
-        try {
-          const content = value.content as string || '';
-          const words = content.trim() ? content.trim().split(/\s+/).length : 0;
-          setWordCount(words);
-          
-          const newProgress = Math.min((words / wordLimit) * 100, 100);
-          setProgress(newProgress);
-          
-          // Handle word limit
-          if (words > wordLimit && !isPremium) {
-            const allWords = content.trim().split(/\s+/);
-            const limitedContent = allWords.slice(0, wordLimit).join(' ');
-            
-            form.setValue('content', limitedContent);
-            toast({
-              title: "Word limit reached",
-              description: isPremium 
-                ? "You've reached the maximum word count of 1000 words."
-                : "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
-              variant: "destructive",
-              duration: 5000,
-            });
-          }
-        } catch (error) {
-          console.error("Error in form watch handler:", error);
-        }
-      }
-    });
+    // Calculate word count from content
+    const calculateWordCount = () => {
+      const content = form.getValues('content') || '';
+      const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+      setWordCount(words);
+      
+      const newProgress = Math.min((words / wordLimit) * 100, 100);
+      setProgress(newProgress);
+    };
+
+    // Set up interval to update word count without watching form
+    const wordCountInterval = setInterval(calculateWordCount, 500);
     
-    return () => subscription.unsubscribe();
-  }, [form.watch, wordLimit, isPremium, toast]);
+    // Initial calculation
+    calculateWordCount();
+    
+    return () => clearInterval(wordCountInterval);
+  }, [wordLimit]);
 
   // Adjust initial textarea height
   useEffect(() => {
@@ -418,15 +403,48 @@ export function StableJournalEditor({ onClose, initialCategory, entry }: Journal
     },
   });
 
-  // Handle content change and auto-resize
+  // Handle content change and auto-resize with better word limit handling
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     
     try {
-      if (wordCount < wordLimit || isPremium) {
-        form.setValue('content', e.target.value);
-      } else if (e.target.value.length < form.getValues('content').length) {
-        form.setValue('content', e.target.value);
+      const newValue = e.target.value;
+      const currentValue = form.getValues('content');
+      
+      // Always allow deletions (backspace/cut operations)
+      if (newValue.length <= currentValue.length) {
+        form.setValue('content', newValue);
+      } else {
+        // For additions, check word limit
+        const words = newValue.trim().split(/\s+/).length;
+        
+        if (isPremium) {
+          // Premium users: limit at 1000 words
+          if (words <= 1000) {
+            form.setValue('content', newValue);
+          } else if (words > 1000 && currentValue.split(/\s+/).length !== 1000) {
+            // Show toast only once when the limit is first reached
+            toast({
+              title: "Word limit reached",
+              description: "You've reached the maximum word count of 1000 words.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+        } else {
+          // Free users: limit at 250 words
+          if (words <= 250) {
+            form.setValue('content', newValue);
+          } else if (words > 250 && currentValue.split(/\s+/).length !== 250) {
+            // Show toast only once when the limit is first reached
+            toast({
+              title: "Free account limit reached",
+              description: "You've reached the free limit of 250 words. Upgrade to Premium for up to 1000 words.",
+              variant: "destructive",
+              duration: 5000,
+            });
+          }
+        }
       }
       
       // Auto-resize textarea
