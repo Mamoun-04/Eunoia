@@ -4,7 +4,7 @@ import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LogOut,
   PenSquare,
@@ -194,6 +194,19 @@ export default function HomePage() {
   const [viewEntryId, setViewEntryId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [location] = useLocation();
+  
+  // Listen for the custom event to open the subscription dialog
+  useEffect(() => {
+    const handleOpenSubscriptionDialog = () => {
+      setShowSubscriptionDialog(true);
+    };
+    
+    document.addEventListener('open-subscription-dialog', handleOpenSubscriptionDialog);
+    
+    return () => {
+      document.removeEventListener('open-subscription-dialog', handleOpenSubscriptionDialog);
+    };
+  }, []);
 
   // For the custom delete confirmation
   const [entryToDelete, setEntryToDelete] = useState<Entry | null>(null);

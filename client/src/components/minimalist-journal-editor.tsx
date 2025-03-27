@@ -63,26 +63,42 @@ export function MinimalistJournalEditor({
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
-    // Check if user can upload images (premium only)
-    if (!isPremium) {
-      showPremiumFeatureModal("Image Upload");
+    try {
+      // Check if user can upload images (premium only)
+      if (!isPremium) {
+        // Show premium modal but don't close the editor
+        showPremiumFeatureModal("Image Upload");
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+      
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Display a preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setImageUrl(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Image selection error:", error);
+      toast({
+        title: "Image selection failed",
+        description: "There was an error selecting your image. Please try again.",
+        variant: "destructive"
+      });
+      
+      // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      return;
     }
-    
-    const file = e.target.files[0];
-    setImageFile(file);
-    
-    // Display a preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        setImageUrl(e.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
   };
   
   // Handle content change with limiting behavior
@@ -218,6 +234,7 @@ export function MinimalistJournalEditor({
       // Special handling for 403 Forbidden (daily entry limit or content limit)
       if (error instanceof Error && 'status' in error && (error as any).status === 403) {
         const message = (error as any).data?.message || "You've reached your limit. Upgrade to Premium for more features.";
+        // Show modal but don't close the editor
         showPremiumFeatureModal("Entry Limit", message);
         return;
       }
@@ -243,8 +260,9 @@ export function MinimalistJournalEditor({
           size="sm" 
           className="gap-1"
           onClick={() => {
-            // You can dispatch an event to open subscription modal here
+            // Open the subscription dialog by triggering the state change in the parent
             document.dispatchEvent(new CustomEvent('open-subscription-dialog'));
+            // Don't close the editor
           }}
         >
           <Sparkles className="h-4 w-4" />
@@ -350,7 +368,10 @@ export function MinimalistJournalEditor({
               size="sm"
               variant="destructive"
               className="absolute top-2 right-2"
-              onClick={() => {
+              onClick={(e) => {
+                // Prevent event from bubbling up (important)
+                e.stopPropagation();
+                
                 setImageUrl("");
                 setImageFile(null);
                 if (fileInputRef.current) {
@@ -368,7 +389,10 @@ export function MinimalistJournalEditor({
             type="button"
             variant="outline"
             className="w-full py-8 border-dashed"
-            onClick={() => {
+            onClick={(e) => {
+              // Prevent the event from bubbling up and potentially closing dialogs
+              e.stopPropagation();
+              
               if (!isPremium) {
                 showPremiumFeatureModal("Image Upload");
                 return;
