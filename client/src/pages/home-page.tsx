@@ -4,7 +4,7 @@ import { Entry } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
+import { StableJournalEditor } from "@/components/stable-journal-editor";
 import { useState } from "react";
 import {
   LogOut,
@@ -495,7 +495,7 @@ export default function HomePage() {
 
       {/* Minimalist Editor Modal */}
       {isEditing && (
-        <MinimalistJournalEditor
+        <StableJournalEditor
           entry={selectedEntry}
           onClose={() => {
             setIsEditing(false);
