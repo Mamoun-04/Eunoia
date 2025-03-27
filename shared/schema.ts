@@ -16,6 +16,8 @@ export const users = pgTable("users", {
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionEndDate: timestamp("subscription_end_date"),
   preferences: text("preferences"), // Stored as JSON string
+  currentStreak: integer("current_streak").default(0),
+  lastActivityDate: timestamp("last_activity_date"),
 });
 
 export const entries = pgTable("entries", {

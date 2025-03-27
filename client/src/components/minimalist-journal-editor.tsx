@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/use-streak";
 import { 
   Textarea
 } from "@/components/ui/textarea";
@@ -24,6 +25,7 @@ export function MinimalistJournalEditor({
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { refreshStreak } = useStreak();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Calculate word count limit based on user subscription
@@ -227,6 +229,12 @@ export function MinimalistJournalEditor({
       
       // Refresh entries list
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      
+      // For new entries, refresh the user streak
+      if (!existingEntry) {
+        await refreshStreak();
+      }
+      
       onClose();
     } catch (error) {
       console.error("Save entry error:", error);

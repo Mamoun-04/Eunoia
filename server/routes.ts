@@ -94,7 +94,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const entry = await storage.createEntry(req.user!.id, data);
-      res.status(201).json(entry);
+      
+      // Update user streak for this activity
+      const updatedStreak = await storage.updateUserStreak(req.user!.id);
+      
+      res.status(201).json({ ...entry, currentStreak: updatedStreak });
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid entry data", errors: error.errors });
@@ -280,7 +284,11 @@ User message: ${message}`;
     try {
       const data = insertSavedLessonSchema.parse(req.body);
       const savedLesson = await storage.createSavedLesson(req.user!.id, data);
-      res.status(201).json(savedLesson);
+      
+      // Update user streak for this guided lesson activity
+      const updatedStreak = await storage.updateUserStreak(req.user!.id);
+      
+      res.status(201).json({ ...savedLesson, currentStreak: updatedStreak });
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid saved lesson data", errors: error.errors });
@@ -302,11 +310,15 @@ User message: ${message}`;
         subscriptionStatus: string;
         subscriptionEndDate: Date | null;
         subscriptionPlan?: string;
+        currentStreak: number;
+        lastActivityDate: Date | null;
       } = {
         id: user!.id,
         username: user!.username,
         subscriptionStatus: user!.subscriptionStatus,
-        subscriptionEndDate: user!.subscriptionEndDate
+        subscriptionEndDate: user!.subscriptionEndDate,
+        currentStreak: user!.currentStreak || 0,
+        lastActivityDate: user!.lastActivityDate
       };
       
       // Add subscription plan from preferences if available
@@ -334,6 +346,16 @@ User message: ${message}`;
       res.json(savedLessons);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch saved lessons" });
+    }
+  });
+  
+  // Get user streak data
+  app.get("/api/streak", requireAuth, async (req, res) => {
+    try {
+      const currentStreak = await storage.getUserStreak(req.user!.id);
+      res.json({ currentStreak });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch streak data" });
     }
   });
 
@@ -366,6 +388,8 @@ User message: ${message}`;
     }
   });
 
+  // (Endpoint already defined above)
+  
   // Delete account endpoint
   app.post("/api/delete-account", requireAuth, async (req, res) => {
     try {

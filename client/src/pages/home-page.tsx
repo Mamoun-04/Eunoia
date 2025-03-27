@@ -22,6 +22,8 @@ import { SubscriptionDialog } from "@/components/subscription-dialog";
 import { PremiumFeatureModal } from "@/components/premium-feature-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
+import { StreakIndicator } from "@/components/streak-indicator";
+import { useStreak } from "@/hooks/use-streak";
 
 /**
  * ConfirmDeleteDialog:
@@ -186,6 +188,7 @@ function FadeOutImageDialog({
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const queryClient = useQueryClient();
+  const streakData = useStreak();
 
   const [isEditing, setIsEditing] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
@@ -309,7 +312,10 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 className="text-3xl font-bold">My Journal</h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-3xl font-bold">My Journal</h2>
+              <StreakIndicator streak={streakData.streak} className="mt-1" />
+            </div>
             {user?.subscriptionStatus === "active" ||
             (entries &&
               entries.filter((entry) => {

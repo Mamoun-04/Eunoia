@@ -22,6 +22,10 @@ export interface IStorage {
   getSavedLesson(id: number): Promise<SavedLesson | undefined>;
   deleteSavedLesson(id: number): Promise<void>;
   
+  // Streak methods
+  updateUserStreak(userId: number): Promise<number>;
+  getUserStreak(userId: number): Promise<number>;
+  
   // Free user limit methods
   canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }>;
   canAddImage(userId: number): Promise<{ allowed: boolean; reason?: string }>;
@@ -77,7 +81,9 @@ export class MemStorage implements IStorage {
       id,
       subscriptionStatus: "free",
       subscriptionEndDate: null,
-      preferences: preferencesString
+      preferences: preferencesString,
+      currentStreak: 0,
+      lastActivityDate: null
     };
     this.users.set(id, user);
     return user;
@@ -310,6 +316,56 @@ export class MemStorage implements IStorage {
 
   async deleteSavedLesson(id: number): Promise<void> {
     this.savedLessons.delete(id);
+  }
+  
+  // Streak methods implementation
+  async getUserStreak(userId: number): Promise<number> {
+    const user = await this.getUser(userId);
+    if (!user) return 0;
+    return user.currentStreak || 0;
+  }
+  
+  async updateUserStreak(userId: number): Promise<number> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastActivity = user.lastActivityDate ? new Date(user.lastActivityDate) : null;
+    let streak = user.currentStreak || 0;
+    
+    if (!lastActivity) {
+      // First activity ever - start streak at 1
+      streak = 1;
+    } else {
+      const lastActivityDay = new Date(lastActivity);
+      lastActivityDay.setHours(0, 0, 0, 0);
+      
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const daysSinceLastActivity = Math.floor((today.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (lastActivityDay.getTime() === today.getTime()) {
+        // Already logged activity today, don't increment streak
+        return streak;
+      } else if (daysSinceLastActivity === 1 || lastActivityDay.getTime() === yesterday.getTime()) {
+        // Activity was yesterday, increment streak
+        streak += 1;
+      } else if (daysSinceLastActivity > 1) {
+        // Broke the streak, start over
+        streak = 1;
+      }
+    }
+    
+    // Update user with new streak and activity timestamp
+    await this.updateUser(userId, { 
+      currentStreak: streak,
+      lastActivityDate: today
+    });
+    
+    return streak;
   }
 }
 
