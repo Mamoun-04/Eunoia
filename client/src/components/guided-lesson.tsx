@@ -16,6 +16,7 @@ interface Question {
 }
 
 interface LessonProps {
+  id: string; // Adding lesson ID for saving
   title: string;
   topic: string;
   description: string;
@@ -24,7 +25,7 @@ interface LessonProps {
   onClose: () => void;
 }
 
-export function GuidedLesson({ title, topic, description, questions, onComplete, onClose }: LessonProps) {
+export function GuidedLesson({ id, title, topic, description, questions, onComplete, onClose }: LessonProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 

@@ -22,7 +22,7 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB
   }
 });
-import { insertEntrySchema } from "@shared/schema";
+import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -246,6 +246,59 @@ User message: ${message}`;
     }
   });
   
+  // Saved Lessons routes
+  app.post("/api/saved-lessons", requireAuth, async (req, res) => {
+    try {
+      const data = insertSavedLessonSchema.parse(req.body);
+      const savedLesson = await storage.createSavedLesson(req.user!.id, data);
+      res.status(201).json(savedLesson);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid saved lesson data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to save lesson" });
+      }
+    }
+  });
+
+  app.get("/api/saved-lessons", requireAuth, async (req, res) => {
+    try {
+      const savedLessons = await storage.getSavedLessons(req.user!.id);
+      res.json(savedLessons);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch saved lessons" });
+    }
+  });
+
+  app.get("/api/saved-lessons/:id", requireAuth, async (req, res) => {
+    try {
+      const savedLesson = await storage.getSavedLesson(parseInt(req.params.id));
+      
+      if (!savedLesson || savedLesson.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Saved lesson not found" });
+      }
+      
+      res.json(savedLesson);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch saved lesson" });
+    }
+  });
+
+  app.delete("/api/saved-lessons/:id", requireAuth, async (req, res) => {
+    try {
+      const savedLesson = await storage.getSavedLesson(parseInt(req.params.id));
+      
+      if (!savedLesson || savedLesson.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Saved lesson not found" });
+      }
+      
+      await storage.deleteSavedLesson(savedLesson.id);
+      res.sendStatus(204);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete saved lesson" });
+    }
+  });
+
   // Delete account endpoint
   app.post("/api/delete-account", requireAuth, async (req, res) => {
     try {

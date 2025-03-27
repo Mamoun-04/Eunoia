@@ -1,4 +1,4 @@
-import { User, InsertUser, Entry, InsertEntry } from "@shared/schema";
+import { User, InsertUser, Entry, InsertEntry, SavedLesson, InsertSavedLesson } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 const MemoryStore = createMemoryStore(session);
@@ -16,6 +16,12 @@ export interface IStorage {
   updateEntry(id: number, data: Partial<Entry>): Promise<Entry>;
   deleteEntry(id: number): Promise<void>;
   
+  // Saved Lessons methods
+  createSavedLesson(userId: number, savedLesson: InsertSavedLesson): Promise<SavedLesson>;
+  getSavedLessons(userId: number): Promise<SavedLesson[]>;
+  getSavedLesson(id: number): Promise<SavedLesson | undefined>;
+  deleteSavedLesson(id: number): Promise<void>;
+  
   // Free user limit methods
   canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }>;
   canAddImage(userId: number): Promise<{ allowed: boolean; reason?: string }>;
@@ -29,15 +35,19 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private entries: Map<number, Entry>;
+  private savedLessons: Map<number, SavedLesson>;
   private currentUserId: number;
   private currentEntryId: number;
+  private currentSavedLessonId: number;
   sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
     this.entries = new Map();
+    this.savedLessons = new Map();
     this.currentUserId = 1;
     this.currentEntryId = 1;
+    this.currentSavedLessonId = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000
     });
@@ -131,6 +141,12 @@ export class MemStorage implements IStorage {
       await this.deleteEntry(entry.id);
     }
     
+    // Delete all user's saved lessons
+    const userSavedLessons = await this.getSavedLessons(id);
+    for (const savedLesson of userSavedLessons) {
+      await this.deleteSavedLesson(savedLesson.id);
+    }
+    
     // Delete the user
     this.users.delete(id);
   }
@@ -221,6 +237,38 @@ export class MemStorage implements IStorage {
       entryDate.setHours(0, 0, 0, 0);
       return entryDate.getTime() === today.getTime() && entry.imageUrl !== null;
     }).length;
+  }
+
+  // Saved Lessons Implementation
+  async createSavedLesson(userId: number, insertSavedLesson: InsertSavedLesson): Promise<SavedLesson> {
+    const id = this.currentSavedLessonId++;
+    const now = new Date();
+    
+    const savedLesson: SavedLesson = {
+      ...insertSavedLesson,
+      id,
+      userId,
+      completionTimestamp: now,
+      createdAt: now
+    };
+    
+    this.savedLessons.set(id, savedLesson);
+    return savedLesson;
+  }
+
+  async getSavedLessons(userId: number): Promise<SavedLesson[]> {
+    return Array.from(this.savedLessons.values())
+      .filter(savedLesson => savedLesson.userId === userId)
+      // Sort by completionTimestamp descending (newest first)
+      .sort((a, b) => b.completionTimestamp.getTime() - a.completionTimestamp.getTime());
+  }
+
+  async getSavedLesson(id: number): Promise<SavedLesson | undefined> {
+    return this.savedLessons.get(id);
+  }
+
+  async deleteSavedLesson(id: number): Promise<void> {
+    this.savedLessons.delete(id);
   }
 }
 

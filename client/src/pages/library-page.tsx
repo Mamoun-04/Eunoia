@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
-import { Entry } from "@shared/schema";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Entry, SavedLesson } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
@@ -24,6 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const SAMPLE_LESSONS = [
   {
@@ -2431,9 +2433,16 @@ export default function LibraryPage() {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"guided" | "saved">("guided");
   
   // Check if user has premium subscription
   const isPremium = user?.subscriptionStatus === "active";
+  
+  // Fetch saved lessons
+  const { data: savedLessons = [], isLoading: savedLessonsLoading } = useQuery<SavedLesson[]>({
+    queryKey: ["/api/saved-lessons"],
+    enabled: viewMode === "saved" && !selectedLesson,
+  });
 
   // Generate a daily featured lesson based on the date
   const getFeaturedLessonForToday = () => {
@@ -2487,22 +2496,79 @@ export default function LibraryPage() {
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
+  const { toast } = useToast();
+  const saveLessonMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/saved-lessons", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/saved-lessons"] });
+      toast({
+        title: "Lesson saved",
+        description: "Your completed lesson has been saved successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "There was a problem saving your lesson.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const deleteSavedLessonMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("DELETE", `/api/saved-lessons/${id}`);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/saved-lessons"] });
+      toast({
+        title: "Deleted",
+        description: "The saved lesson has been deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "There was a problem deleting your saved lesson.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLessonComplete = (answers: Record<string, any>) => {
+    // Create formatted content from answers
+    const formattedContent = Object.entries(answers)
+      .map(([key, value]) => {
+        const question = selectedLesson.questions.find(
+          (q: any) => q.id === key,
+        );
+        return `${question.prompt}\n${value}`;
+      })
+      .join("\n\n");
+    
+    // Save as regular entry
     const entry = {
       title: selectedLesson.title,
-      content: Object.entries(answers)
-        .map(([key, value]) => {
-          const question = selectedLesson.questions.find(
-            (q: any) => q.id === key,
-          );
-          return `${question.prompt}\n${value}`;
-        })
-        .join("\n\n"),
+      content: formattedContent,
       mood: "neutral",
       category: selectedLesson.topic,
     };
+    
+    // Save as lesson entry
+    const savedLesson = {
+      lessonId: selectedLesson.id,
+      title: selectedLesson.title,
+      userEntryText: formattedContent,
+    };
 
-    console.log("New entry:", entry);
+    // Save to saved lessons
+    saveLessonMutation.mutate(savedLesson);
+    
+    // Return to lessons list
     setSelectedLesson(null);
   };
 
@@ -2568,93 +2634,196 @@ export default function LibraryPage() {
                   </div>
                 </div>
                 
+                {/* View toggle buttons */}
+                <div className="flex border rounded-lg overflow-hidden mb-4">
+                  <button
+                    className={`flex-1 px-4 py-2 text-sm font-medium ${
+                      viewMode === "guided"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
+                    }`}
+                    onClick={() => setViewMode("guided")}
+                  >
+                    Guided Lessons
+                  </button>
+                  <button
+                    className={`flex-1 px-4 py-2 text-sm font-medium ${
+                      viewMode === "saved"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
+                    }`}
+                    onClick={() => setViewMode("saved")}
+                  >
+                    Saved Lessons
+                  </button>
+                </div>
+                
                 <div className="flex gap-4 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by topic or title..."
+                      placeholder={viewMode === "guided" ? "Search by topic or title..." : "Search saved lessons..."}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9"
                     />
                   </div>
-                  {/*Removed DropdownMenu*/}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedLessons.map((lesson) => (
-                  <Card
-                    key={lesson.id}
-                    className={`relative overflow-hidden transition-all duration-300 ${
-                      lesson.isFeatured 
-                        ? "p-6 cursor-pointer ring-2 ring-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:shadow-[0_0_18px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(251,191,36,0.15)] dark:hover:shadow-[0_0_18px_rgba(251,191,36,0.25)]" 
-                        : "p-6 cursor-pointer hover:bg-accent/50"
-                    } ${
-                      !lesson.isAccessible 
-                        ? "opacity-80" 
-                        : ""
-                    }`}
-                    onClick={() => {
-                      if (lesson.isAccessible) {
-                        setSelectedLesson(lesson);
-                      } else {
-                        // Could show premium feature modal here
-                        alert("This lesson is available only for premium users");
-                      }
-                    }}
-                  >
-                    {/* Badge for featured lessons */}
-                    {lesson.isFeatured && (
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        Featured Today
-                      </div>
-                    )}
-                    
-                    {/* Apply blur effect for non-accessible lessons */}
-                    <div className={`${!lesson.isAccessible ? "blur-[3px]" : ""}`}>
-                      <Sparkles className={`h-8 w-8 mb-4 ${lesson.isFeatured ? "text-amber-500" : "text-primary"}`} />
-                      <h3 className="text-xl font-semibold mb-2">
-                        {lesson.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm mb-4">
-                        {lesson.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-primary">
-                          {lesson.questions.length} prompts •{" "}
-                          {lesson.questions.length * 2} min
+              {viewMode === "guided" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {sortedLessons.map((lesson) => (
+                    <Card
+                      key={lesson.id}
+                      className={`relative overflow-hidden transition-all duration-300 ${
+                        lesson.isFeatured 
+                          ? "p-6 cursor-pointer ring-2 ring-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:shadow-[0_0_18px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(251,191,36,0.15)] dark:hover:shadow-[0_0_18px_rgba(251,191,36,0.25)]" 
+                          : "p-6 cursor-pointer hover:bg-accent/50"
+                      } ${
+                        !lesson.isAccessible 
+                          ? "opacity-80" 
+                          : ""
+                      }`}
+                      onClick={() => {
+                        if (lesson.isAccessible) {
+                          setSelectedLesson(lesson);
+                        } else {
+                          // Could show premium feature modal here
+                          alert("This lesson is available only for premium users");
+                        }
+                      }}
+                    >
+                      {/* Badge for featured lessons */}
+                      {lesson.isFeatured && (
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          Featured Today
                         </div>
-                        <div>
-                          {lesson.isFeatured ? (
-                            <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full px-2 py-0.5">
-                              Free
-                            </span>
-                          ) : (
-                            <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
-                              {isPremium ? "Premium" : "Premium Only"}
-                            </span>
-                          )}
+                      )}
+                      
+                      {/* Apply blur effect for non-accessible lessons */}
+                      <div className={`${!lesson.isAccessible ? "blur-[3px]" : ""}`}>
+                        <Sparkles className={`h-8 w-8 mb-4 ${lesson.isFeatured ? "text-amber-500" : "text-primary"}`} />
+                        <h3 className="text-xl font-semibold mb-2">
+                          {lesson.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm mb-4">
+                          {lesson.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-primary">
+                            {lesson.questions.length} prompts •{" "}
+                            {lesson.questions.length * 2} min
+                          </div>
+                          <div>
+                            {lesson.isFeatured ? (
+                              <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full px-2 py-0.5">
+                                Free
+                              </span>
+                            ) : (
+                              <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                                {isPremium ? "Premium" : "Premium Only"}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Lock overlay for non-accessible lessons */}
+                      {!lesson.isAccessible && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
+                          <div className="bg-black/60 text-white text-sm font-medium rounded-full px-3 py-1.5 flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Premium Only
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                // Saved Lessons View
+                <div>
+                  {savedLessonsLoading ? (
+                    <div className="flex items-center justify-center h-40">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
-                    
-                    {/* Lock overlay for non-accessible lessons */}
-                    {!lesson.isAccessible && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
-                        <div className="bg-black/60 text-white text-sm font-medium rounded-full px-3 py-1.5 flex items-center gap-1.5">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                          </svg>
-                          Premium Only
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
+                  ) : savedLessons.length === 0 ? (
+                    <div className="text-center py-20 border rounded-md bg-muted/20">
+                      <h3 className="text-lg font-medium mb-2">No saved lessons yet</h3>
+                      <p className="text-muted-foreground mb-4">Complete guided lessons to save them here</p>
+                      <Button 
+                        variant="outline" 
+                        className="gap-2"
+                        onClick={() => setViewMode("guided")}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Browse Guided Lessons
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {savedLessons
+                        .filter((lesson: SavedLesson) => {
+                          if (!searchQuery) return true;
+                          return lesson.title.toLowerCase().includes(searchQuery.toLowerCase());
+                        })
+                        .map((savedLesson: SavedLesson) => (
+                          <Card
+                            key={savedLesson.id}
+                            className="p-6 relative overflow-hidden hover:bg-accent/50 cursor-pointer"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <CalendarDays className="h-8 w-8 text-primary" />
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(savedLesson.completionTimestamp).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-semibold mb-2">{savedLesson.title}</h3>
+                            <p className="text-muted-foreground text-sm line-clamp-3 mb-2">
+                              {savedLesson.userEntryText.split('\n\n')[0]}
+                            </p>
+                            <div className="flex justify-end">
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                className="hover:bg-destructive/10 hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm("Are you sure you want to delete this saved lesson?")) {
+                                    deleteSavedLessonMutation.mutate(savedLesson.id);
+                                  }
+                                }}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-4 w-4"
+                                >
+                                  <path d="M3 6h18"></path>
+                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                </svg>
+                              </Button>
+                            </div>
+                          </Card>
+                        ))
+                      }
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <div className="max-w-2xl mx-auto">
@@ -2666,6 +2835,7 @@ export default function LibraryPage() {
                 ← Back to Lessons
               </Button>
               <GuidedLesson
+                id={selectedLesson.id}
                 title={selectedLesson.title}
                 topic={selectedLesson.topic}
                 description={selectedLesson.description}

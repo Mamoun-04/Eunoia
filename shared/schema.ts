@@ -79,6 +79,25 @@ export const lessons = pgTable("lessons", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const savedLessons = pgTable("saved_lessons", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  lessonId: text("lesson_id").notNull(),
+  title: text("title").notNull(),
+  userEntryText: text("user_entry_text").notNull(), // Stores the full text of the user's answers
+  completionTimestamp: timestamp("completion_timestamp").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertSavedLessonSchema = createInsertSchema(savedLessons).pick({
+  lessonId: true,
+  title: true,
+  userEntryText: true,
+});
+
+export type SavedLesson = typeof savedLessons.$inferSelect;
+export type InsertSavedLesson = z.infer<typeof insertSavedLessonSchema>;
+
 export const subscriptionPlans = {
   monthly: {
     price: 3.99,
