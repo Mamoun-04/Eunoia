@@ -27,18 +27,24 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
   
   const subscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan: "monthly" });
+      const res = await apiRequest("POST", "/api/subscription", { plan: "monthly" });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Subscription activated",
-        description: "Thank you for subscribing to Eunoia Premium!",
-      });
-      onOpenChange(false);
-      if (onSubscribe) {
-        onSubscribe();
+      
+      // If we received redirect URL (for Stripe), redirect to it
+      if (data?.data?.url) {
+        window.location.href = data.data.url;
+      } else {
+        toast({
+          title: "Subscription activated",
+          description: "Thank you for subscribing to Eunoia Premium!",
+        });
+        onOpenChange(false);
+        if (onSubscribe) {
+          onSubscribe();
+        }
       }
     },
     onError: (error: Error) => {

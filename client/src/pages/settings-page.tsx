@@ -49,7 +49,7 @@ export default function SettingsPage() {
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/cancel-subscription");
+      const res = await apiRequest("POST", "/api/subscription/cancel");
       return res.json();
     },
     onSuccess: () => {

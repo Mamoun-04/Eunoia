@@ -27,16 +27,22 @@ export function SubscriptionDialog({ open, onOpenChange }: Props) {
   
   const subscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan: selectedPlan });
+      const res = await apiRequest("POST", "/api/subscription", { plan: selectedPlan });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Subscription activated",
-        description: "Thank you for subscribing to Eunoia Premium!",
-      });
-      onOpenChange(false);
+      
+      // If we received redirect URL (for Stripe), redirect to it
+      if (data?.data?.url) {
+        window.location.href = data.data.url;
+      } else {
+        toast({
+          title: "Subscription activated",
+          description: "Thank you for subscribing to Eunoia Premium!",
+        });
+        onOpenChange(false);
+      }
     },
     onError: (error: Error) => {
       toast({

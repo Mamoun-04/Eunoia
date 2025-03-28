@@ -10,6 +10,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
   deleteUser(id: number, feedback?: string): Promise<void>;
+  getAllUsers(): Promise<User[]>;
   
   createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
   getEntries(userId: number): Promise<Entry[]>;
@@ -67,6 +68,10 @@ export class MemStorage implements IStorage {
       (user) => user.username === username
     );
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
@@ -82,6 +87,10 @@ export class MemStorage implements IStorage {
       id,
       subscriptionStatus: "free",
       subscriptionEndDate: null,
+      subscriptionPlatform: null,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      appleOriginalTransactionId: null,
       preferences: preferencesString,
       currentStreak: 0,
       lastActivityDate: null

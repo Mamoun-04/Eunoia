@@ -15,6 +15,10 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  subscriptionPlatform: text("subscription_platform"), // 'stripe', 'apple', or null
+  stripeCustomerId: text("stripe_customer_id"), // Stripe customer ID for web users
+  stripeSubscriptionId: text("stripe_subscription_id"), // Stripe subscription ID
+  appleOriginalTransactionId: text("apple_original_transaction_id"), // Apple's original transaction ID
   preferences: text("preferences"), // Stored as JSON string
   currentStreak: integer("current_streak").default(0),
   lastActivityDate: timestamp("last_activity_date"),
@@ -105,14 +109,14 @@ export type InsertSavedLesson = z.infer<typeof insertSavedLessonSchema>;
 
 export const subscriptionPlans = {
   monthly: {
-    price: 3.99,
+    price: 4.99,
     name: "Monthly Plan",
     interval: "month",
   },
   yearly: {
-    price: 34.99,
+    price: 49.99,
     name: "Yearly Plan",
     interval: "year",
-    monthlyPrice: 2.92,
+    monthlyPrice: 4.17,
   },
 } as const;

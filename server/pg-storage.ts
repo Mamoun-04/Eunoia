@@ -47,6 +47,10 @@ export class PgStorage implements IStorage {
           password TEXT NOT NULL,
           subscription_status TEXT NOT NULL DEFAULT 'free',
           subscription_end_date TIMESTAMP,
+          subscription_platform TEXT,
+          stripe_customer_id TEXT,
+          stripe_subscription_id TEXT,
+          apple_original_transaction_id TEXT,
           preferences TEXT,
           current_streak INTEGER DEFAULT 0,
           last_activity_date TIMESTAMP
@@ -98,6 +102,15 @@ export class PgStorage implements IStorage {
       return users.length ? users[0] : undefined;
     } catch (error) {
       console.error('Error getting user by username:', error);
+      throw error;
+    }
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    try {
+      return await db.select().from(schema.users);
+    } catch (error) {
+      console.error('Error getting all users:', error);
       throw error;
     }
   }
