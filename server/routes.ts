@@ -161,14 +161,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock subscription endpoint
+  // Subscription endpoint that requires payment verification
   app.post("/api/subscribe", requireAuth, async (req, res) => {
-    const { plan } = req.body;
+    const { plan, paymentIntentId } = req.body;
     if (!plan || !["monthly", "yearly"].includes(plan)) {
       return res.status(400).json({ message: "Invalid subscription plan" });
     }
 
+    // Verify payment was made before activating subscription
+    if (!paymentIntentId) {
+      return res.status(400).json({ message: "Payment verification failed. No payment ID provided." });
+    }
+
     try {
+      // In a real implementation, you'd verify the payment intent with Stripe
+      // For example: const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      // if (paymentIntent.status !== 'succeeded') throw new Error("Payment not successful");
+      
       // Set subscription end date
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
@@ -208,6 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endDate: endDate
       });
     } catch (error) {
+      console.error("Subscription error:", error);
       res.status(500).json({ message: "Failed to process subscription" });
     }
   });

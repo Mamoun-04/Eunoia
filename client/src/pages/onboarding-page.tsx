@@ -27,12 +27,15 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (user) {
       if (step === 5) {
-        setStep(6);
+        // Move to subscription step after account creation
+        setTimeout(() => {
+          setStep(6);
+        }, 300); // Small delay for smoother transition
       } else if (step > 6) {
         setLocation("/home");
       }
-    } else if (step > 1 && !user) {
-      // If no user and beyond welcome screen, go back to start
+    } else if (step > 1 && step <= 5 && !user) {
+      // If no user and we're in steps that require login (except splash & welcome), go back to start
       setStep(1);
     }
   }, [user, step, setStep, setLocation]);
