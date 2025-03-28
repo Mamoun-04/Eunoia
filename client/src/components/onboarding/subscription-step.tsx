@@ -16,8 +16,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { toast } from "@/hooks/use-toast";
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// Initialize Stripe with the publishable key
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51PExm5OX3dFAFDCYL4WHhMV3Ovs98EDr54S7ZHCfWlOkEGF7lA2vTQSkkFO94iKPBNx3W9QFILNIk8cEcv1GYHel00JbUEctdw';
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const plans = {
   free: {
