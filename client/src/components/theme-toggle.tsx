@@ -18,16 +18,11 @@ import { Badge } from "@/components/ui/badge";
 const themeIcons = {
   light: <Sun className="h-5 w-5" />,
   dark: <Moon className="h-5 w-5" />,
-  sunset: <Moon className="h-5 w-5 text-amber-500" />,
-  forest: <Palette className="h-5 w-5 text-green-500" />,
-  ocean: <Palette className="h-5 w-5 text-blue-500" />,
-  beach: <Sun className="h-5 w-5 text-yellow-500" />,
-  midnight: <Moon className="h-5 w-5 text-purple-500" />,
-  aurora: <Palette className="h-5 w-5 text-green-400" />,
-  cosmic: <Palette className="h-5 w-5 text-pink-500" />,
-  lagoon: <Palette className="h-5 w-5 text-cyan-400" />,
-  ember: <Palette className="h-5 w-5 text-orange-600" />,
-  nebula: <Palette className="h-5 w-5 text-purple-400" />
+  serenity: <Palette className="h-5 w-5 text-blue-400" />,
+  midnight: <Moon className="h-5 w-5 text-violet-400" />,
+  olive: <Palette className="h-5 w-5 text-green-600" />,
+  rose: <Palette className="h-5 w-5 text-pink-400" />,
+  ocean: <Palette className="h-5 w-5 text-teal-500" />
 };
 
 export function ThemeToggle() {

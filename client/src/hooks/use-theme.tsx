@@ -13,31 +13,21 @@ import { useAuth } from "./use-auth";
 export type ThemeType =
   | "light"
   | "dark"
-  | "sunset"
-  | "forest"
-  | "ocean"
-  | "beach"
+  | "serenity"
   | "midnight"
-  | "aurora"
-  | "cosmic"
-  | "lagoon"
-  | "ember"
-  | "nebula";
+  | "olive"
+  | "rose"
+  | "ocean";
 
 // Categorize themes as free or premium
 export const themeCategories = {
   free: ["light", "dark"] as ThemeType[],
   premium: [
-    "sunset", 
-    "forest", 
-    "ocean", 
-    "beach", 
-    "midnight",
-    "aurora",
-    "cosmic",
-    "lagoon",
-    "ember",
-    "nebula"
+    "serenity", 
+    "midnight", 
+    "olive", 
+    "rose", 
+    "ocean"
   ] as ThemeType[],
 };
 
@@ -53,55 +43,30 @@ export const themeColors = {
     background: "#121212",
     text: "#ffffff",
   },
-  sunset: {
-    primary: "#FF5733",
-    background: "#1F1A38",
-    text: "#F8C471",
-  },
-  forest: {
-    primary: "#2ECC71",
-    background: "#1E3D2F",
-    text: "#A9DFBF",
-  },
-  ocean: {
-    primary: "#3498DB",
-    background: "#1A2930",
-    text: "#85C1E9",
-  },
-  beach: {
-    primary: "#F4D03F",
-    background: "#F5F5DC",
-    text: "#6E7F80",
+  serenity: {
+    primary: "#64B5F6",
+    background: "#ECEFF1",
+    text: "#37474F",
   },
   midnight: {
-    primary: "#9B59B6",
-    background: "#0A0A2A",
-    text: "#D2B4DE",
+    primary: "#7E57C2",
+    background: "#1A1A2E",
+    text: "#E0E0E0",
   },
-  aurora: {
-    primary: "#4CAF50",
-    background: "#0D1117",
-    text: "#AAFFAA",
+  olive: {
+    primary: "#7CB342",
+    background: "#333C33",
+    text: "#E8F5E9",
   },
-  cosmic: {
+  rose: {
     primary: "#EC407A",
-    background: "#050520",
-    text: "#FDA7DF",
+    background: "#FFF1F2",
+    text: "#4A2932",
   },
-  lagoon: {
-    primary: "#00BCD4",
-    background: "#0F3443",
-    text: "#AEECEF",
-  },
-  ember: {
-    primary: "#FF5722",
-    background: "#1C0B09",
-    text: "#FFAB91",
-  },
-  nebula: {
-    primary: "#673AB7",
-    background: "#13111C",
-    text: "#D1C4E9",
+  ocean: {
+    primary: "#26A69A",
+    background: "#0A2E36",
+    text: "#E0F2F1",
   },
 };
 
@@ -180,16 +145,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Apply the CSS classes for theming
     document.documentElement.classList.remove(
       "dark",
-      "theme-sunset",
-      "theme-forest",
-      "theme-ocean",
-      "theme-beach",
+      "theme-serenity",
       "theme-midnight",
-      "theme-aurora",
-      "theme-cosmic",
-      "theme-lagoon",
-      "theme-ember",
-      "theme-nebula"
+      "theme-olive",
+      "theme-rose",
+      "theme-ocean"
     );
 
     if (currentTheme === "dark") {
