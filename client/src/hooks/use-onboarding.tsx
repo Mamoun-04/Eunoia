@@ -8,7 +8,9 @@ type OnboardingData = {
   goal?: string;
   customGoal?: string;
   interests: string[];
-  subscriptionPlan?: 'free' | 'monthly' | 'yearly';
+  subscriptionPlan?: 'free' | 'premium';
+  subscriptionStatus?: 'free' | 'monthly' | 'yearly';
+  userId?: number;
 };
 
 type OnboardingContextType = {

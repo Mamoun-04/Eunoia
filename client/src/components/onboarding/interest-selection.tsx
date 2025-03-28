@@ -42,7 +42,7 @@ export default function InterestSelection() {
 
   const handleContinue = () => {
     updateData({ interests: selectedInterests });
-    setStep(5);
+    setStep(5); // Go to account creation
   };
 
   return (

@@ -98,9 +98,9 @@ export default function OnboardingPage() {
                 case 4:
                   return <InterestSelection />;
                 case 5:
-                  return <SubscriptionStep />;
-                case 6:
                   return <CreateAccount />;
+                case 6:
+                  return <SubscriptionStep />;
                 default:
                   return <WelcomeScreen />;
               }

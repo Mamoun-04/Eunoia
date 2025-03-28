@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
@@ -11,6 +11,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { toast } from "@/hooks/use-toast";
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const plans = {
   free: {
@@ -30,7 +36,8 @@ const plans = {
   premium: {
     name: "Premium",
     monthlyPrice: 3.99,
-    yearlyPrice: 39.99,
+    yearlyPrice: 34.99,
+    yearlyMonthlyPrice: 2.92,
     topFeatures: [
       "Unlimited journal entries",
       "Unlimited guided journaling lessons",
@@ -42,6 +49,11 @@ const plans = {
       "Unlimited AI assistant access",
       "Priority support",
     ],
+    // These would be your actual Stripe price IDs
+    priceIds: {
+      monthly: "price_monthly_id",
+      yearly: "price_yearly_id"
+    }
   },
 };
 
@@ -58,20 +70,190 @@ const faqs = [
   },
 ];
 
+// CheckoutForm component for Stripe Elements
+function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
+  priceId: string;
+  amount: number;
+  billingType: 'monthly' | 'yearly';
+  onSuccess: () => void;
+  onCancel: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { data } = useOnboarding();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      // Create the subscription
+      const response = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: priceId,
+          userId: 1, // We'll use a placeholder user ID for now, this would normally come from authentication
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      
+      if (result.error) {
+        setErrorMessage(result.error.message);
+      } else {
+        toast({
+          title: 'Subscription created!',
+          description: `You're now subscribed to the ${billingType === 'yearly' ? 'yearly' : 'monthly'} plan.`,
+        });
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Payment failed:', error);
+      setErrorMessage('Payment failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <PaymentElement />
+      
+      {errorMessage && (
+        <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+      )}
+      
+      <div className="flex gap-2 mt-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={!stripe || isLoading} 
+          className="flex-1"
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Processing...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Pay ${amount}
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 export default function SubscriptionStep() {
   const { data, updateData, setStep } = useOnboarding();
-  const [selectedPlan, setSelectedPlan] = useState(
-    data.subscriptionPlan || "free",
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium'>(
+    (data.subscriptionPlan as 'free' | 'premium') || "free",
   );
   const [isYearly, setIsYearly] = useState(false);
   const [showMoreFeatures, setShowMoreFeatures] = useState({
     free: false,
     premium: false,
   });
+  const [showPayment, setShowPayment] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  // Get the payment intent when the premium plan is selected
+  useEffect(() => {
+    if (selectedPlan === 'premium' && !clientSecret) {
+      const fetchPaymentIntent = async () => {
+        try {
+          const amount = isYearly ? plans.premium.yearlyPrice : plans.premium.monthlyPrice;
+          const subscription_type = isYearly ? 'yearly' : 'monthly';
+          
+          const response = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              amount,
+              subscription_type,
+            }),
+          });
+          
+          const data = await response.json();
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          }
+        } catch (error) {
+          console.error('Error fetching payment intent:', error);
+          toast({
+            title: 'Error',
+            description: 'Could not connect to payment service. Please try again.',
+            variant: 'destructive',
+          });
+        }
+      };
+      
+      fetchPaymentIntent();
+    }
+  }, [selectedPlan, isYearly]);
 
   const handleContinue = () => {
-    updateData({ subscriptionPlan: selectedPlan });
+    if (selectedPlan === 'free') {
+      updateData({ subscriptionPlan: selectedPlan, subscriptionStatus: 'free' });
+      setStep(6);
+    } else {
+      setShowPayment(true);
+    }
+  };
+  
+  const handlePaymentSuccess = () => {
+    updateData({ 
+      subscriptionPlan: selectedPlan,
+      subscriptionStatus: isYearly ? 'yearly' : 'monthly'
+    });
     setStep(6);
+  };
+  
+  const handlePaymentCancel = () => {
+    setShowPayment(false);
+  };
+
+  // Stripe payment options
+  const stripeOptions = {
+    clientSecret: clientSecret || '',
+    appearance: {
+      theme: 'stripe' as const,
+      variables: {
+        colorPrimary: '#6366f1',
+        colorBackground: '#ffffff',
+        colorText: '#1f2937',
+        colorDanger: '#ef4444',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        borderRadius: '8px',
+      },
+    },
   };
 
   return (
@@ -82,6 +264,28 @@ export default function SubscriptionStep() {
       exit={{ opacity: 0 }}
     >
       <div className="max-w-4xl mx-auto px-4 py-8 flex-1">
+        {/* Payment Modal */}
+        {showPayment && clientSecret && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          >
+            <Card className="w-full max-w-md p-6">
+              <h3 className="text-xl font-semibold mb-6">Complete Your Payment</h3>
+              <Elements stripe={stripePromise} options={stripeOptions}>
+                <CheckoutForm 
+                  priceId={isYearly ? plans.premium.priceIds.yearly : plans.premium.priceIds.monthly}
+                  amount={isYearly ? plans.premium.yearlyPrice : plans.premium.monthlyPrice}
+                  billingType={isYearly ? 'yearly' : 'monthly'}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={handlePaymentCancel}
+                />
+              </Elements>
+            </Card>
+          </motion.div>
+        )}
+
         <h1 className="text-2xl font-bold text-center mb-2">
           Choose Your Plan
         </h1>
@@ -163,7 +367,7 @@ export default function SubscriptionStep() {
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1 font-light">For serious journalers</p>
                 <div className="text-5xl font-light mt-4 flex items-baseline tracking-tight transition-transform duration-300 hover:scale-105">
-                  <span className="font-normal">${isYearly ? "2.92" : "3.99"}</span>
+                  <span className="font-normal">${isYearly ? plans.premium.yearlyMonthlyPrice.toFixed(2) : plans.premium.monthlyPrice.toFixed(2)}</span>
                   <span className="text-base font-light text-muted-foreground ml-1">
                     /month
                   </span>
@@ -174,7 +378,7 @@ export default function SubscriptionStep() {
                       Billed ${plans.premium.yearlyPrice}/year
                     </div>
                     <div className="text-sm text-primary font-medium mt-1">
-                      Save ${(3.99 * 12 - 34.99).toFixed(2)} per year
+                      Save ${(plans.premium.monthlyPrice * 12 - plans.premium.yearlyPrice).toFixed(2)} per year
                     </div>
                   </div>
                 )}
@@ -195,7 +399,8 @@ export default function SubscriptionStep() {
               <Button
                 variant="ghost"
                 className="w-full justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800/50"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowMoreFeatures((prev) => ({
                     ...prev,
                     premium: !prev.premium,

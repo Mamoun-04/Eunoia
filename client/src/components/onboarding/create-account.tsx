@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useAuth } from "@/hooks/use-auth";
@@ -29,7 +28,7 @@ const createAccountSchema = insertUserSchema.extend({
 type CreateAccountFormValues = z.infer<typeof createAccountSchema>;
 
 export default function CreateAccount() {
-  const { data } = useOnboarding();
+  const { data, setStep } = useOnboarding();
   const { registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -73,17 +72,18 @@ export default function CreateAccount() {
           goal: data.goal,
           customGoal: data.customGoal,
           interests: data.interests || [],
-          subscriptionPlan: data.subscriptionPlan || 'free',
+          subscriptionPlan: 'free', // Default to free, will update after subscription step
           theme: "light"
         }
       });
 
       toast({
         title: "Account created!",
-        description: "Welcome to Eunoia"
+        description: "Now let's select your subscription plan"
       });
 
-      setLocation("/home");
+      // Move to subscription step
+      setStep(6);
     } catch (error) {
       toast({
         variant: "destructive",
