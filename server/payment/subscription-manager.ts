@@ -170,7 +170,8 @@ async function createStripeSubscription(
     }
     
     // Create checkout session
-    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+    // Use the actual host from the server
+    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:5000';
     const successUrl = `${baseUrl}/subscription/success?plan=${plan}`;
     const cancelUrl = `${baseUrl}/subscription/cancel`;
     

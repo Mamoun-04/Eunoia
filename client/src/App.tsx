@@ -11,6 +11,8 @@ import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
+import SubscriptionSuccess from "@/pages/subscription-success";
+import SubscriptionCancel from "@/pages/subscription-cancel";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
@@ -47,6 +49,8 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/onboarding" component={OnboardingPage} />
+      <Route path="/subscription/success" component={SubscriptionSuccess} />
+      <Route path="/subscription/cancel" component={SubscriptionCancel} />
       <Route component={NotFound} />
     </Switch>
   );

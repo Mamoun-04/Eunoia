@@ -165,15 +165,16 @@ export default function SettingsPage() {
                   <Button 
                     variant="outline" 
                     onClick={() => cancelSubscriptionMutation.mutate()}
-                    disabled={cancelSubscriptionMutation.isPending}
-                    title={isAppleSubscription ? "This will mark your subscription as canceled, but you'll need to also cancel through your Apple account settings" : ""}
+                    disabled={cancelSubscriptionMutation.isPending || isAppleSubscription}
+                    title={isAppleSubscription ? "Apple subscriptions must be canceled through your Apple account settings" : 
+                           "Cancel your subscription but maintain premium access until the end of your billing period"}
                   >
                     {cancelSubscriptionMutation.isPending ? (
                       <span className="animate-spin mr-2">●</span>
                     ) : (
                       <CreditCard className="h-4 w-4 mr-2" />
                     )}
-                    Cancel Subscription
+                    {isAppleSubscription ? "Manage in Apple Settings" : "Cancel Subscription"}
                   </Button>
                 ) : (
                   <Button 
@@ -198,7 +199,7 @@ export default function SettingsPage() {
                           Subscribed through Apple
                         </div>
                         <p className="text-muted-foreground">
-                          To manage your subscription, open the App Store app, tap your profile icon, and select "Subscriptions".
+                          To manage or cancel your subscription, open the App Store app, tap your profile icon, and select "Subscriptions". Apple subscriptions cannot be canceled through our app.
                         </p>
                       </>
                     ) : isStripeSubscription ? (

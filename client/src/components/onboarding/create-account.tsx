@@ -13,8 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { EyeIcon, EyeOffIcon, Camera } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const createAccountSchema = insertUserSchema.extend({
   confirmPassword: z.string(),
@@ -35,8 +34,7 @@ export default function CreateAccount() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   
   const form = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountSchema),
@@ -48,27 +46,16 @@ export default function CreateAccount() {
     }
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (values: CreateAccountFormValues) => {
+    // Clear any previous username error
+    setUsernameError(null);
+    
     try {
       await registerMutation.mutateAsync({
         username: values.username,
         password: values.password,
         preferences: {
           name: data.name,
-          profilePhoto: imagePreview || undefined,
           bio: data.bio,
           goal: data.goal,
           customGoal: data.customGoal,
@@ -84,12 +71,30 @@ export default function CreateAccount() {
       });
 
       setLocation("/home");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create account. Please try again."
-      });
+    } catch (error: any) {
+      // Check if the error is specifically for username already exists
+      if (error.message?.includes("Username already exists") || 
+          (typeof error.response?.json === 'function' && 
+           await error.response.json().then((data: any) => 
+             data.message === "Username already exists"
+           ).catch(() => false))) {
+        
+        // Set inline error for username field
+        setUsernameError("Username already exists. Please choose another.");
+        
+        // Update form state to show error
+        form.setError("username", { 
+          type: "manual", 
+          message: "Username already exists. Please choose another." 
+        });
+      } else {
+        // Generic error toast for other errors
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create account. Please try again."
+        });
+      }
     }
   };
 
@@ -108,26 +113,13 @@ export default function CreateAccount() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex flex-col items-center mb-6">
-                <div className="relative">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={imagePreview || undefined} />
-                    <AvatarFallback className="bg-primary/10">
-                      <Camera className="w-8 h-8" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+              {/* Username error message displayed if present */}
+              {usernameError && (
+                <div className="text-destructive text-sm font-medium mt-1 mb-2">
+                  {usernameError}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Click to upload profile photo
-                </p>
-              </div>
-
+              )}
+              
               <FormField
                 control={form.control}
                 name="username"
@@ -135,7 +127,11 @@ export default function CreateAccount() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter username" {...field} />
+                      <Input 
+                        placeholder="Enter username" 
+                        {...field}
+                        className={usernameError ? "border-destructive" : ""} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
