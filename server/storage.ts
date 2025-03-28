@@ -7,7 +7,6 @@ const MemoryStore = createMemoryStore(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getAllUsers(): Promise<User[]>; // Added for webhook processing
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
   deleteUser(id: number, feedback?: string): Promise<void>;
@@ -68,10 +67,6 @@ export class MemStorage implements IStorage {
       (user) => user.username === username
     );
   }
-  
-  async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
-  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
@@ -86,12 +81,7 @@ export class MemStorage implements IStorage {
       password: insertUser.password,
       id,
       subscriptionStatus: "free",
-      subscriptionPlan: "free",
       subscriptionEndDate: null,
-      paymentProcessor: null,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      appleOriginalTransactionId: null,
       preferences: preferencesString,
       currentStreak: 0,
       lastActivityDate: null
