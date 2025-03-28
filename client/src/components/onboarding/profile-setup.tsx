@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Sparkles, Heart, BookOpen } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, BookOpen, Star, PenLine, Brain, Leaf } from "lucide-react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -10,13 +10,13 @@ export default function ProfileSetup() {
   const { setStep } = useOnboarding();
   const [hovered, setHovered] = useState(false);
   
-  // Random floating elements animation
+  // Design elements for animation
   const floatingElements = [
-    { icon: "✨", delay: 0, x: -20, y: -30 },
-    { icon: "💭", delay: 0.5, x: 20, y: -40 },
-    { icon: "📝", delay: 1, x: -30, y: 20 },
-    { icon: "🌱", delay: 1.5, x: 30, y: 30 },
-    { icon: "🧠", delay: 2, x: 0, y: -50 },
+    { icon: <Sparkles size={18} className="text-primary/60" />, delay: 0, x: -20, y: -30 },
+    { icon: <PenLine size={18} className="text-primary/60" />, delay: 0.5, x: 20, y: -40 },
+    { icon: <Heart size={18} className="text-primary/60" />, delay: 1, x: -30, y: 20 },
+    { icon: <Leaf size={18} className="text-primary/60" />, delay: 1.5, x: 30, y: 30 },
+    { icon: <Brain size={18} className="text-primary/60" />, delay: 2, x: 0, y: -50 },
   ];
 
   const handleNext = () => {
@@ -28,7 +28,7 @@ export default function ProfileSetup() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="w-full max-w-md mx-auto relative"
+      className="w-full max-w-md mx-auto relative px-4 sm:px-0"
     >
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-70"></div>  
@@ -75,7 +75,7 @@ export default function ProfileSetup() {
           
           {/* Main circle */}
           <motion.div 
-            className="relative w-64 h-64"
+            className="relative w-48 h-48 md:w-64 md:h-64"
             whileHover={{ scale: 1.05 }}
             onHoverStart={() => setHovered(true)}
             onHoverEnd={() => setHovered(false)}
@@ -90,7 +90,7 @@ export default function ProfileSetup() {
               transition={{ duration: 0.5 }}
             >
               <motion.div 
-                className="w-40 h-40 bg-gradient-to-r from-primary/20 to-primary/30 rounded-full flex items-center justify-center"
+                className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-primary/20 to-primary/30 rounded-full flex items-center justify-center"
                 animate={{ 
                   rotate: 360,
                   scale: [1, 1.05, 1]
@@ -101,14 +101,14 @@ export default function ProfileSetup() {
                 }}
               >
                 <motion.div
-                  className="text-5xl"
                   animate={{ 
                     scale: [1, 1.2, 1],
                     rotate: [0, 10, 0, -10, 0]
                   }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex items-center justify-center"
                 >
-                  ✨
+                  <Sparkles size={40} className="text-primary/80" />
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -142,7 +142,7 @@ export default function ProfileSetup() {
           >
             <Button 
               onClick={handleNext}
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full flex items-center gap-2 text-lg shadow-md"
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-4 sm:px-8 sm:py-6 rounded-full flex items-center gap-2 text-base sm:text-lg shadow-md w-full sm:w-auto"
             >
               <motion.span
                 animate={{ 
