@@ -344,19 +344,38 @@ User message: ${message}`;
   // Create subscription
   app.post("/api/subscription", requireAuth, async (req, res) => {
     try {
-      const { plan } = req.body;
+      const { plan, platform: clientPlatform } = req.body;
       
       if (!plan || !["monthly", "yearly"].includes(plan)) {
         return res.status(400).json({ message: "Invalid subscription plan" });
       }
       
-      // Get user agent to determine platform
+      // Get user agent to determine platform, but allow client platform to override
       const userAgent = req.headers["user-agent"] || "";
-      const platform = subscriptionManager.getSubscriptionPlatform(userAgent);
+      const platform = subscriptionManager.getSubscriptionPlatform(userAgent, clientPlatform);
+      
+      console.log(`Subscription request - Platform: ${platform}, User Agent: ${userAgent}, Client Platform: ${clientPlatform}`);
       
       // For Apple payments, receipt data is required
       if (platform === 'apple' && !req.body.receiptData) {
-        return res.status(400).json({ message: "Receipt data is required for Apple payments" });
+        return res.status(400).json({ 
+          message: "Receipt data is required for Apple payments",
+          data: { 
+            redirectToAppStore: true,
+            platform: platform 
+          }
+        });
+      }
+      
+      // For Android Play Store, handle similar to Apple
+      if (platform === 'android' && !req.body.receiptData) {
+        return res.status(400).json({ 
+          message: "Receipt data is required for Google Play payments",
+          data: { 
+            redirectToPlayStore: true,
+            platform: platform 
+          }
+        });
       }
       
       // For Stripe payments, email is helpful but we can fallback to username

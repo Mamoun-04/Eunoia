@@ -3,16 +3,39 @@ import * as appleHandler from './apple';
 import { storage } from '../storage';
 import { subscriptionPlans } from '@shared/schema';
 
-type SubscriptionPlatform = 'stripe' | 'apple';
+type SubscriptionPlatform = 'stripe' | 'apple' | 'android';
 
-// Determine subscription platform based on user agent
-export function getSubscriptionPlatform(userAgent: string): SubscriptionPlatform {
-  // Check if user is on iOS device (iPhone, iPad, or iPod)
-  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+// Determine subscription platform based on user agent and explicit platform choice
+export function getSubscriptionPlatform(userAgent: string, explicitPlatform?: string): SubscriptionPlatform {
+  // If platform is explicitly specified in the request, use that
+  if (explicitPlatform) {
+    if (explicitPlatform === 'ios') return 'apple';
+    if (explicitPlatform === 'android') return 'android';
+    if (explicitPlatform === 'web') return 'stripe';
+  }
   
-  // If on iOS, use Apple In-App Purchases
-  // Otherwise, use Stripe for web payments
-  return isIOS ? 'apple' : 'stripe';
+  // Otherwise, determine from user agent
+  // Check if user is on iOS device (iPhone, iPad, or iPod)
+  const isIOS = /iPhone|iPad|iPod/i.test(userAgent) || 
+    (/Macintosh/.test(userAgent) && /safari/i.test(userAgent) && isTouchDevice(userAgent));
+  
+  // Check if user is on Android
+  const isAndroid = /android/i.test(userAgent);
+  
+  // Determine platform based on device
+  if (isIOS) return 'apple';
+  if (isAndroid) return 'android'; // Currently handled same as Stripe
+  
+  // Default to Stripe for web
+  return 'stripe';
+}
+
+// Helper function to detect touch devices that might be iOS
+function isTouchDevice(userAgent: string): boolean {
+  // This is a simple check that would need to be done client-side
+  // For server-side, we're making a best guess based on userAgent
+  return /CriOS|FxiOS|EdgiOS/.test(userAgent) || 
+         /iPad|iPhone|iPod/.test(userAgent);
 }
 
 // Create a subscription for a user

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import {
   Dialog,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Sparkles, Image, Calendar, FileText } from "lucide-react";
+import { Sparkles, Image, Calendar, FileText, Info } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -24,21 +25,43 @@ type Props = {
 export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }: Props) {
   const { toast } = useToast();
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
+  const { isIOS, isAndroid } = useIsMobile();
   
   const subscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscription", { plan: "monthly" });
+      const res = await apiRequest("POST", "/api/subscription", { 
+        plan: "monthly",
+        platform: isIOS ? 'ios' : isAndroid ? 'android' : 'web'
+      });
       return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
-      // If we received redirect URL (for Stripe), redirect to it
-      if (data?.data?.url) {
-        window.location.href = data.data.url;
-      } else {
+      // Handle different response types based on platform
+      if (data?.data?.checkoutUrl) {
+        // Stripe checkout URL
+        window.location.href = data.data.checkoutUrl;
+      } else if (data?.data?.redirectToAppStore) {
+        // Should redirect to App Store - here we'd normally deep link
         toast({
-          title: "Subscription activated",
+          title: "App Store Required",
+          description: "Please complete your purchase through the App Store.",
+        });
+        // In production, you would use something like:
+        // window.location.href = "https://apps.apple.com/app/your-app-id";
+      } else if (data?.data?.redirectToPlayStore) {
+        // Should redirect to Play Store
+        toast({
+          title: "Google Play Required",
+          description: "Please complete your purchase through the Google Play Store.",
+        });
+        // In production, you would use something like:
+        // window.location.href = "https://play.google.com/store/apps/details?id=your.package.id";
+      } else {
+        // Regular success
+        toast({
+          title: "Subscription Activated",
           description: "Thank you for subscribing to Eunoia Premium!",
         });
         onOpenChange(false);
@@ -47,12 +70,27 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
         }
       }
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error activating subscription",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      // Check for mobile store redirects that might be in the error
+      if (error?.data?.redirectToAppStore) {
+        toast({
+          title: "App Store Required",
+          description: "Please complete your purchase through the App Store.",
+        });
+        // In production, deep link to App Store
+      } else if (error?.data?.redirectToPlayStore) {
+        toast({
+          title: "Google Play Required",
+          description: "Please complete your purchase through the Google Play Store.",
+        });
+        // In production, deep link to Play Store
+      } else {
+        toast({
+          title: "Error Activating Subscription",
+          description: error.message || "An unknown error occurred",
+          variant: "destructive",
+        });
+      }
     },
   });
   
@@ -97,6 +135,20 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
           </div>
           
           <Separator />
+          
+          {/* Mobile platform info notice */}
+          {(isIOS || isAndroid) && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg flex items-start gap-3 mb-4">
+              <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                {isIOS ? (
+                  <p>You'll be redirected to complete your purchase through Apple.</p>
+                ) : (
+                  <p>You'll be redirected to complete your purchase through Google Play.</p>
+                )}
+              </div>
+            </div>
+          )}
           
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
