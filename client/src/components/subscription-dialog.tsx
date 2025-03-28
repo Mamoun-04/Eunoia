@@ -54,14 +54,7 @@ export function SubscriptionDialog({ open, onOpenChange }: Props) {
         });
         // In production, you would use something like:
         // window.location.href = "https://apps.apple.com/app/your-app-id";
-      } else if (data?.data?.redirectToPlayStore) {
-        // Should redirect to Play Store
-        toast({
-          title: "Google Play Required",
-          description: "Please complete your purchase through the Google Play Store.",
-        });
-        // In production, you would use something like:
-        // window.location.href = "https://play.google.com/store/apps/details?id=your.package.id";
+      // We only support Stripe and App Store
       } else {
         // Regular success
         toast({
@@ -79,12 +72,7 @@ export function SubscriptionDialog({ open, onOpenChange }: Props) {
           description: "Please complete your purchase through the App Store.",
         });
         // In production, deep link to App Store
-      } else if (error?.data?.redirectToPlayStore) {
-        toast({
-          title: "Google Play Required",
-          description: "Please complete your purchase through the Google Play Store.",
-        });
-        // In production, deep link to Play Store
+      // We only support Apple Store redirects
       } else {
         toast({
           title: "Error Activating Subscription",
@@ -196,7 +184,7 @@ export function SubscriptionDialog({ open, onOpenChange }: Props) {
                 {isIOS ? (
                   <p>You'll be redirected to complete your purchase through Apple. Your subscription will be linked to your Apple ID.</p>
                 ) : (
-                  <p>You'll be redirected to complete your purchase through Google Play. Your subscription will be linked to your Google account.</p>
+                  <p>You'll be redirected to complete your purchase through our payment provider. Your subscription will be linked to your account.</p>
                 )}
               </div>
             </div>

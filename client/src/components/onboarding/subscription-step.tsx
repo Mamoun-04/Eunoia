@@ -29,8 +29,8 @@ const plans = {
   },
   premium: {
     name: "Premium",
-    monthlyPrice: 3.99,
-    yearlyPrice: 39.99,
+    monthlyPrice: 4.99,
+    yearlyPrice: 49.99,
     topFeatures: [
       "Unlimited journal entries",
       "Unlimited guided journaling lessons",
@@ -60,8 +60,8 @@ const faqs = [
 
 export default function SubscriptionStep() {
   const { data, updateData, setStep } = useOnboarding();
-  const [selectedPlan, setSelectedPlan] = useState(
-    data.subscriptionPlan || "free",
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium'>(
+    data.subscriptionPlan === 'monthly' || data.subscriptionPlan === 'yearly' ? 'premium' : 'free',
   );
   const [isYearly, setIsYearly] = useState(false);
   const [showMoreFeatures, setShowMoreFeatures] = useState({
@@ -70,7 +70,12 @@ export default function SubscriptionStep() {
   });
 
   const handleContinue = () => {
-    updateData({ subscriptionPlan: selectedPlan });
+    // Map 'premium' selection to the appropriate plan type based on toggle
+    const planToSave = selectedPlan === 'premium' 
+      ? (isYearly ? 'yearly' : 'monthly') 
+      : 'free';
+    
+    updateData({ subscriptionPlan: planToSave });
     setStep(6);
   };
 
@@ -163,7 +168,7 @@ export default function SubscriptionStep() {
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1 font-light">For serious journalers</p>
                 <div className="text-5xl font-light mt-4 flex items-baseline tracking-tight transition-transform duration-300 hover:scale-105">
-                  <span className="font-normal">${isYearly ? "2.92" : "3.99"}</span>
+                  <span className="font-normal">${isYearly ? "4.17" : "4.99"}</span>
                   <span className="text-base font-light text-muted-foreground ml-1">
                     /month
                   </span>
@@ -174,7 +179,7 @@ export default function SubscriptionStep() {
                       Billed ${plans.premium.yearlyPrice}/year
                     </div>
                     <div className="text-sm text-primary font-medium mt-1">
-                      Save ${(3.99 * 12 - 34.99).toFixed(2)} per year
+                      Save ${(4.99 * 12 - 49.99).toFixed(2)} per year
                     </div>
                   </div>
                 )}

@@ -23,8 +23,7 @@ import {
   Sparkles,
   CreditCard,
   Info,
-  AppleIcon,
-  ShoppingCart
+  AppleIcon
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -215,11 +214,11 @@ export default function SettingsPage() {
                     ) : (
                       <>
                         <div className="flex items-center gap-1 font-medium mb-1">
-                          <ShoppingCart className="h-4 w-4" /> 
-                          Subscribed through Google Play
+                          <Info className="h-4 w-4" /> 
+                          Subscription Details
                         </div>
                         <p className="text-muted-foreground">
-                          To manage your subscription, open the Google Play Store app, tap your profile icon, and select "Payments & subscriptions".
+                          To manage your subscription, please contact customer support.
                         </p>
                       </>
                     )}

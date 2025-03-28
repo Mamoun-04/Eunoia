@@ -50,14 +50,6 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
         });
         // In production, you would use something like:
         // window.location.href = "https://apps.apple.com/app/your-app-id";
-      } else if (data?.data?.redirectToPlayStore) {
-        // Should redirect to Play Store
-        toast({
-          title: "Google Play Required",
-          description: "Please complete your purchase through the Google Play Store.",
-        });
-        // In production, you would use something like:
-        // window.location.href = "https://play.google.com/store/apps/details?id=your.package.id";
       } else {
         // Regular success
         toast({
@@ -78,12 +70,7 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
           description: "Please complete your purchase through the App Store.",
         });
         // In production, deep link to App Store
-      } else if (error?.data?.redirectToPlayStore) {
-        toast({
-          title: "Google Play Required",
-          description: "Please complete your purchase through the Google Play Store.",
-        });
-        // In production, deep link to Play Store
+      // We only handle App Store redirects now
       } else {
         toast({
           title: "Error Activating Subscription",
@@ -144,7 +131,7 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
                 {isIOS ? (
                   <p>You'll be redirected to complete your purchase through Apple.</p>
                 ) : (
-                  <p>You'll be redirected to complete your purchase through Google Play.</p>
+                  <p>You'll be redirected to complete your purchase.</p>
                 )}
               </div>
             </div>
