@@ -23,12 +23,18 @@ export default function OnboardingPage() {
 
   const { user } = useAuth();
   
-  // Redirect to home if already logged in
+  // Only redirect to home if the user is logged in and we're not in the subscription step
   useEffect(() => {
-    if (user) {
-      setLocation("/home");
+    if (user && step !== 6) {
+      // If we're in the account creation step, move to subscription step
+      if (step === 5) {
+        setStep(6);
+      } else if (step < 5) {
+        // If we're in an earlier step and somehow logged in, redirect to home
+        setLocation("/home");
+      }
     }
-  }, [user, setLocation]);
+  }, [user, step, setStep, setLocation]);
 
   // If step is 0 or 1, auto-advance to step 2 (profile setup)
   useEffect(() => {

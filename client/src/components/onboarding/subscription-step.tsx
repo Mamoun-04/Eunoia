@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -219,10 +220,13 @@ export default function SubscriptionStep() {
     }
   }, [selectedPlan, isYearly]);
 
+  const [location, setLocation] = useLocation();
+
   const handleContinue = () => {
     if (selectedPlan === 'free') {
       updateData({ subscriptionPlan: selectedPlan, subscriptionStatus: 'free' });
-      setStep(6);
+      // Direct user to main app after selecting free plan
+      setLocation('/home');
     } else {
       setShowPayment(true);
     }
@@ -233,7 +237,8 @@ export default function SubscriptionStep() {
       subscriptionPlan: selectedPlan,
       subscriptionStatus: isYearly ? 'yearly' : 'monthly'
     });
-    setStep(6);
+    // Navigate to home page after successful payment
+    setLocation('/home');
   };
   
   const handlePaymentCancel = () => {
