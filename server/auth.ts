@@ -59,33 +59,20 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      // Log the registration request data (minus password)
-      const { password, ...loggableData } = req.body;
-      console.log("Registration data:", JSON.stringify(loggableData));
-
-      const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
-      });
-
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Login error after registration:", err);
-          return next(err);
-        }
-        res.status(201).json(user);
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to create account";
-      res.status(400).json({ message: errorMessage });
+    const existingUser = await storage.getUserByUsername(req.body.username);
+    if (existingUser) {
+      return res.status(400).send("Username already exists");
     }
+
+    const user = await storage.createUser({
+      ...req.body,
+      password: await hashPassword(req.body.password),
+    });
+
+    req.login(user, (err) => {
+      if (err) return next(err);
+      res.status(201).json(user);
+    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {

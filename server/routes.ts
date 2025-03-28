@@ -1,18 +1,10 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
-import express from "express";
-import { z } from "zod";
-import { 
-  subscriptionPlans, 
-  insertEntrySchema, 
-  insertSavedLessonSchema 
-} from "@shared/schema";
-import * as subscriptionManager from './payment/subscription-manager';
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -30,6 +22,8 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB
   }
 });
+import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -167,6 +161,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mock subscription endpoint
+  app.post("/api/subscribe", requireAuth, async (req, res) => {
+    const { plan } = req.body;
+    if (!plan || !["monthly", "yearly"].includes(plan)) {
+      return res.status(400).json({ message: "Invalid subscription plan" });
+    }
+
+    try {
+      // Set subscription end date
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
+      
+      // Get user for current preferences
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update user preferences with subscription plan
+      let userPreferences = {};
+      if (user.preferences) {
+        try {
+          userPreferences = JSON.parse(user.preferences);
+        } catch (e) {
+          console.error("Error parsing user preferences:", e);
+        }
+      }
+      
+      // Update preferences with the new subscription plan
+      userPreferences = {
+        ...userPreferences,
+        subscriptionPlan: plan
+      };
+      
+      // Update user in database
+      await storage.updateUser(req.user!.id, {
+        subscriptionStatus: "active",
+        subscriptionEndDate: endDate,
+        preferences: JSON.stringify(userPreferences)
+      });
+
+      res.json({ 
+        message: "Subscription activated",
+        plan: plan,
+        endDate: endDate
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to process subscription" });
+    }
+  });
+  
+  // Mock cancel subscription endpoint
+  app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
+    try {
+      // Set subscription status to "canceled" but keep the end date
+      // This allows users to continue using premium features until their subscription period ends
+      await storage.updateUser(req.user!.id, {
+        subscriptionStatus: "canceled"
+      });
+      
+      res.json({ message: "Subscription cancelled successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+
   // AI Chat endpoint
   app.post("/api/chat", requireAuth, async (req, res) => {
     try {
@@ -280,45 +340,6 @@ User message: ${message}`;
     }
   });
   
-  // Update user preferences
-  app.patch("/api/user/preferences", requireAuth, async (req, res) => {
-    try {
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      // Parse existing preferences
-      let preferences = {};
-      try {
-        preferences = user.preferences ? JSON.parse(user.preferences) : {};
-      } catch (e) {
-        console.error("Error parsing existing preferences:", e);
-      }
-      
-      // Merge with new preferences
-      const updatedPreferences = {
-        ...preferences,
-        ...req.body
-      };
-      
-      // Update user with new preferences
-      await storage.updateUser(userId, {
-        preferences: JSON.stringify(updatedPreferences)
-      });
-      
-      res.status(200).json({ 
-        message: "Preferences updated successfully",
-        preferences: updatedPreferences
-      });
-    } catch (error) {
-      console.error("Error updating user preferences:", error);
-      res.status(500).json({ message: "Failed to update preferences" });
-    }
-  });
-  
   app.get("/api/saved-lessons", requireAuth, async (req, res) => {
     try {
       const savedLessons = await storage.getSavedLessons(req.user!.id);
@@ -367,134 +388,7 @@ User message: ${message}`;
     }
   });
 
-  // Subscription routes
-  
-  // Get subscription plans
-  app.get("/api/subscription/plans", (req, res) => {
-    try {
-      res.json({
-        plans: subscriptionPlans,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch subscription plans" });
-    }
-  });
-  
-  // Create subscription
-  app.post("/api/subscription", requireAuth, async (req, res) => {
-    try {
-      const { plan, platform: clientPlatform } = req.body;
-      
-      if (!plan || !["monthly", "yearly"].includes(plan)) {
-        return res.status(400).json({ message: "Invalid subscription plan" });
-      }
-      
-      // Get user agent to determine platform, but allow client platform to override
-      const userAgent = req.headers["user-agent"] || "";
-      const platform = subscriptionManager.getSubscriptionPlatform(userAgent, clientPlatform);
-      
-      console.log(`Subscription request - Platform: ${platform}, User Agent: ${userAgent}, Client Platform: ${clientPlatform}`);
-      
-      // For Apple payments, receipt data is required
-      if (platform === 'apple' && !req.body.receiptData) {
-        return res.status(400).json({ 
-          message: "Receipt data is required for Apple payments",
-          data: { 
-            redirectToAppStore: true,
-            platform: platform 
-          }
-        });
-      }
-      
-      // For Android Play Store, handle similar to Apple
-      if (platform === 'android' && !req.body.receiptData) {
-        return res.status(400).json({ 
-          message: "Receipt data is required for Google Play payments",
-          data: { 
-            redirectToPlayStore: true,
-            platform: platform 
-          }
-        });
-      }
-      
-      // For Stripe payments, email is helpful but we can fallback to username
-      const email = req.body.email || `${req.user!.username}@example.com`;
-      
-      // Create subscription based on platform
-      const result = await subscriptionManager.createSubscription(
-        req.user!.id,
-        plan,
-        platform,
-        req.body.receiptData,
-        email
-      );
-      
-      if (!result.success) {
-        return res.status(400).json({ message: result.message, data: result.data });
-      }
-      
-      res.json({ 
-        message: result.message,
-        data: result.data
-      });
-    } catch (error) {
-      console.error('Subscription error:', error);
-      res.status(500).json({ message: "Failed to create subscription" });
-    }
-  });
-  
-  // Cancel subscription
-  app.post("/api/subscription/cancel", requireAuth, async (req, res) => {
-    try {
-      const cancelled = await subscriptionManager.cancelUserSubscription(req.user!.id);
-      
-      if (!cancelled) {
-        return res.status(400).json({ message: "Failed to cancel subscription" });
-      }
-      
-      res.json({ message: "Subscription cancelled successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to process cancellation request" });
-    }
-  });
-  
-  // Stripe webhook endpoint
-  app.post("/api/stripe-webhook", express.raw({ type: 'application/json' }), async (req, res) => {
-    try {
-      const signature = req.headers['stripe-signature'] as string;
-      
-      if (!signature) {
-        return res.status(400).json({ message: "Stripe signature missing" });
-      }
-      
-      // Process the webhook
-      await subscriptionManager.handleStripeWebhookEvent(req.body, signature);
-      
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('Stripe webhook error:', error);
-      res.status(500).json({ message: "Failed to process Stripe webhook" });
-    }
-  });
-  
-  // Apple app store server notification webhook
-  app.post("/api/apple-webhook", async (req, res) => {
-    try {
-      const { signedPayload } = req.body;
-      
-      if (!signedPayload) {
-        return res.status(400).json({ message: "Missing signed payload" });
-      }
-      
-      // Process the Apple server notification
-      await subscriptionManager.handleAppleServerNotification(signedPayload);
-      
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('Apple webhook error:', error);
-      res.status(500).json({ message: "Failed to process Apple server notification" });
-    }
-  });
+  // (Endpoint already defined above)
   
   // Delete account endpoint
   app.post("/api/delete-account", requireAuth, async (req, res) => {

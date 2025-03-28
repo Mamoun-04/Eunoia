@@ -67,7 +67,7 @@ export default function AuthPage() {
               <>
                 <RegisterForm onSubmit={(data) => {
                   registerMutation.mutate(data, {
-                    onSuccess: () => setLocation("/home")
+                    onSuccess: () => setLocation("/onboarding")
                   });
                 }} />
                 <div className="mt-3 text-center">
@@ -89,7 +89,7 @@ export default function AuthPage() {
                 onClick={() => setLocation("/")}
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to home
+                Back to welcome screen
               </Button>
             </div>
           </div>

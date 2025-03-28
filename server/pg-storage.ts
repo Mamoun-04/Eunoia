@@ -47,10 +47,6 @@ export class PgStorage implements IStorage {
           password TEXT NOT NULL,
           subscription_status TEXT NOT NULL DEFAULT 'free',
           subscription_end_date TIMESTAMP,
-          subscription_platform TEXT,
-          stripe_customer_id TEXT,
-          stripe_subscription_id TEXT,
-          apple_original_transaction_id TEXT,
           preferences TEXT,
           current_streak INTEGER DEFAULT 0,
           last_activity_date TIMESTAMP
@@ -105,51 +101,17 @@ export class PgStorage implements IStorage {
       throw error;
     }
   }
-  
-  async getAllUsers(): Promise<User[]> {
-    try {
-      return await db.select().from(schema.users);
-    } catch (error) {
-      console.error('Error getting all users:', error);
-      throw error;
-    }
-  }
 
   async createUser(user: InsertUser): Promise<User> {
     try {
       // Handle preferences - convert to string if provided
-      let preferencesString = null;
-      if (user.preferences) {
-        try {
-          preferencesString = JSON.stringify(user.preferences);
-        } catch (err) {
-          console.error('Failed to stringify preferences:', err);
-          // Continue without preferences rather than failing
-        }
-      }
-      
-      // Set subscription status based on preferences
-      let subscriptionStatus = 'free';
-      if (user.preferences?.subscriptionPlan === 'monthly' || user.preferences?.subscriptionPlan === 'yearly') {
-        // For registration during onboarding, we'll set it to pending
-        // The actual subscription will be activated later through payment flow
-        subscriptionStatus = 'pending';
-      }
-      
-      // Log what we're trying to insert
-      console.log('Inserting user with values:', {
-        username: user.username,
-        password: '******', // Don't log actual password
-        preferences: preferencesString ? '[JSON string]' : null,
-        subscriptionStatus,
-        currentStreak: 0
-      });
+      const preferencesString = user.preferences ? JSON.stringify(user.preferences) : null;
       
       const [newUser] = await db.insert(schema.users).values({
         username: user.username,
         password: user.password,
         preferences: preferencesString,
-        subscriptionStatus: subscriptionStatus,
+        subscriptionStatus: 'free',
         currentStreak: 0
       } as any).returning();
       

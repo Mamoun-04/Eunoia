@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   LogOut,
   Settings,
@@ -21,9 +20,7 @@ import {
   Home,
   Trash2,
   Sparkles,
-  CreditCard,
-  Info,
-  AppleIcon
+  CreditCard
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -33,33 +30,9 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { isIOS, isAndroid } = useIsMobile();
-  
-  // State to track initial plan selection from URL
-  const [initialPlan, setInitialPlan] = useState<"monthly" | "yearly" | undefined>(undefined);
-  
-  // Check if there's a subscription parameter in the URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const subscribePlan = params.get('subscribe');
-    
-    if (subscribePlan && (subscribePlan === 'monthly' || subscribePlan === 'yearly')) {
-      // Set initial plan and open subscription dialog
-      setInitialPlan(subscribePlan as "monthly" | "yearly");
-      setSubscriptionDialogOpen(true);
-      
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
   
   // Check if user has premium subscription
   const isPremium = user?.subscriptionStatus === "active";
-  
-  // Determine subscription platform
-  const subscriptionPlatform = user?.subscriptionPlatform || "web";
-  const isAppleSubscription = subscriptionPlatform === "apple";
-  const isStripeSubscription = subscriptionPlatform === "stripe";
   
   // Format the subscription end date if available
   const formatSubscriptionEndDate = () => {
@@ -76,7 +49,7 @@ export default function SettingsPage() {
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscription/cancel");
+      const res = await apiRequest("POST", "/api/cancel-subscription");
       return res.json();
     },
     onSuccess: () => {
@@ -162,87 +135,43 @@ export default function SettingsPage() {
             <Separator className="my-6" />
             
             {/* Subscription Section */}
-            <div className="flex flex-col gap-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold">Subscription</h2>
-                    {isPremium && (
-                      <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
-                        Premium
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {isPremium 
-                      ? `Premium access until ${formatSubscriptionEndDate()}` 
-                      : "Upgrade to unlock premium features and themes"}
-                  </p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">Subscription</h2>
+                  {isPremium && (
+                    <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
+                      Premium
+                    </Badge>
+                  )}
                 </div>
-                {isPremium ? (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => cancelSubscriptionMutation.mutate()}
-                    disabled={cancelSubscriptionMutation.isPending || isAppleSubscription}
-                    title={isAppleSubscription ? "Apple subscriptions must be canceled through your Apple account settings" : 
-                           "Cancel your subscription but maintain premium access until the end of your billing period"}
-                  >
-                    {cancelSubscriptionMutation.isPending ? (
-                      <span className="animate-spin mr-2">●</span>
-                    ) : (
-                      <CreditCard className="h-4 w-4 mr-2" />
-                    )}
-                    {isAppleSubscription ? "Manage in Apple Settings" : "Cancel Subscription"}
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => setSubscriptionDialogOpen(true)}
-                    className="bg-gradient-to-r from-primary/80 to-primary"
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Upgrade to Premium
-                  </Button>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {isPremium 
+                    ? `Premium access until ${formatSubscriptionEndDate()}` 
+                    : "Upgrade to unlock premium features and themes"}
+                </p>
               </div>
-              
-              {/* Platform-specific subscription info */}
-              {isPremium && (
-                <div className="p-3 bg-muted rounded-lg flex items-start gap-3">
-                  <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    {isAppleSubscription ? (
-                      <>
-                        <div className="flex items-center gap-1 font-medium mb-1">
-                          <AppleIcon className="h-4 w-4" /> 
-                          Subscribed through Apple
-                        </div>
-                        <p className="text-muted-foreground">
-                          To manage or cancel your subscription, open the App Store app, tap your profile icon, and select "Subscriptions". Apple subscriptions cannot be canceled through our app.
-                        </p>
-                      </>
-                    ) : isStripeSubscription ? (
-                      <>
-                        <div className="flex items-center gap-1 font-medium mb-1">
-                          <CreditCard className="h-4 w-4" /> 
-                          Subscribed through Web
-                        </div>
-                        <p className="text-muted-foreground">
-                          Your subscription is managed through our payment provider. You can cancel anytime from here.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1 font-medium mb-1">
-                          <Info className="h-4 w-4" /> 
-                          Subscription Details
-                        </div>
-                        <p className="text-muted-foreground">
-                          Your subscription is managed through our payment provider. You can cancel anytime from here.
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
+              {isPremium ? (
+                <Button 
+                  variant="outline" 
+                  onClick={() => cancelSubscriptionMutation.mutate()}
+                  disabled={cancelSubscriptionMutation.isPending}
+                >
+                  {cancelSubscriptionMutation.isPending ? (
+                    <span className="animate-spin mr-2">●</span>
+                  ) : (
+                    <CreditCard className="h-4 w-4 mr-2" />
+                  )}
+                  Cancel Subscription
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => setSubscriptionDialogOpen(true)}
+                  className="bg-gradient-to-r from-primary/80 to-primary"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Upgrade to Premium
+                </Button>
               )}
             </div>
             
@@ -313,7 +242,6 @@ export default function SettingsPage() {
       <SubscriptionDialog 
         open={subscriptionDialogOpen} 
         onOpenChange={setSubscriptionDialogOpen}
-        initialPlan={initialPlan}
       />
     </div>
   );
