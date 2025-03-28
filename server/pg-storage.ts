@@ -118,13 +118,38 @@ export class PgStorage implements IStorage {
   async createUser(user: InsertUser): Promise<User> {
     try {
       // Handle preferences - convert to string if provided
-      const preferencesString = user.preferences ? JSON.stringify(user.preferences) : null;
+      let preferencesString = null;
+      if (user.preferences) {
+        try {
+          preferencesString = JSON.stringify(user.preferences);
+        } catch (err) {
+          console.error('Failed to stringify preferences:', err);
+          // Continue without preferences rather than failing
+        }
+      }
+      
+      // Set subscription status based on preferences
+      let subscriptionStatus = 'free';
+      if (user.preferences?.subscriptionPlan === 'monthly' || user.preferences?.subscriptionPlan === 'yearly') {
+        // For registration during onboarding, we'll set it to pending
+        // The actual subscription will be activated later through payment flow
+        subscriptionStatus = 'pending';
+      }
+      
+      // Log what we're trying to insert
+      console.log('Inserting user with values:', {
+        username: user.username,
+        password: '******', // Don't log actual password
+        preferences: preferencesString ? '[JSON string]' : null,
+        subscriptionStatus,
+        currentStreak: 0
+      });
       
       const [newUser] = await db.insert(schema.users).values({
         username: user.username,
         password: user.password,
         preferences: preferencesString,
-        subscriptionStatus: 'free',
+        subscriptionStatus: subscriptionStatus,
         currentStreak: 0
       } as any).returning();
       

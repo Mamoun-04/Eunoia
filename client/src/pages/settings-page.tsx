@@ -165,8 +165,8 @@ export default function SettingsPage() {
                   <Button 
                     variant="outline" 
                     onClick={() => cancelSubscriptionMutation.mutate()}
-                    disabled={cancelSubscriptionMutation.isPending || isAppleSubscription}
-                    title={isAppleSubscription ? "Apple subscriptions can only be cancelled through your Apple account settings" : ""}
+                    disabled={cancelSubscriptionMutation.isPending}
+                    title={isAppleSubscription ? "This will mark your subscription as canceled, but you'll need to also cancel through your Apple account settings" : ""}
                   >
                     {cancelSubscriptionMutation.isPending ? (
                       <span className="animate-spin mr-2">●</span>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                           Subscription Details
                         </div>
                         <p className="text-muted-foreground">
-                          To manage your subscription, please contact customer support.
+                          Your subscription is managed through our payment provider. You can cancel anytime from here.
                         </p>
                       </>
                     )}
