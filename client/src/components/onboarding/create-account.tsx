@@ -74,14 +74,45 @@ export default function CreateAccount() {
       // Check if user selected a premium plan and handle subscription
       if (data.subscriptionPlan === 'monthly' || data.subscriptionPlan === 'yearly') {
         try {
-          // Redirect to payment page after short delay to allow login to complete
-          setTimeout(() => {
-            window.location.href = `/settings?subscribe=${data.subscriptionPlan}`;
-          }, 1000);
+          // Make the subscription API call directly
+          const subscriptionResponse = await fetch('/api/subscription', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              plan: data.subscriptionPlan,
+              platform: 'web'
+            })
+          });
+          
+          const subscriptionData = await subscriptionResponse.json();
+          
+          // If there's a checkout URL from Stripe, redirect to it
+          if (subscriptionData.data?.checkoutUrl) {
+            window.location.href = subscriptionData.data.checkoutUrl;
+          } else {
+            // If something went wrong or no checkout URL (shouldn't happen), redirect to settings
+            toast({
+              title: "Couldn't set up premium",
+              description: "Please try again from the settings page",
+              variant: "destructive"
+            });
+            setTimeout(() => {
+              setLocation("/home");
+            }, 1500);
+          }
         } catch (subscriptionError) {
           console.error("Failed to start subscription process:", subscriptionError);
           // Still navigate to home if subscription fails, user can subscribe later
-          setLocation("/home");
+          toast({
+            title: "Subscription setup failed",
+            description: "You can upgrade to premium later from settings",
+            variant: "destructive"
+          });
+          setTimeout(() => {
+            setLocation("/home");
+          }, 1500);
         }
       } else {
         // Regular free account, just go to home

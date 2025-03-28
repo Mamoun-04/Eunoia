@@ -170,10 +170,10 @@ async function createStripeSubscription(
     }
     
     // Create checkout session
-    // Use the actual host from the server
-    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:5000';
-    const successUrl = `${baseUrl}/subscription/success?plan=${plan}`;
-    const cancelUrl = `${baseUrl}/subscription/cancel`;
+    // Get the base URL from the request headers or a configured environment variable
+    // Use a relative URL which will work regardless of the environment
+    const successUrl = `/subscription/success?plan=${plan}`;
+    const cancelUrl = `/subscription/cancel`;
     
     const checkoutUrl = await stripeHandler.createCheckoutSession(
       customerId,

@@ -38,6 +38,14 @@ export async function createCheckoutSession(
     // Create or get the price for the selected plan
     const priceId = await getPriceIdForPlan(plan);
     
+    // Get domain from environment or use a default for local development
+    // In a real production app, this should be configured properly
+    const domain = process.env.APP_DOMAIN || 'http://localhost:5000';
+    
+    // Ensure the URLs are absolute
+    const fullSuccessUrl = successUrl.startsWith('http') ? successUrl : `${domain}${successUrl}`;
+    const fullCancelUrl = cancelUrl.startsWith('http') ? cancelUrl : `${domain}${cancelUrl}`;
+    
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -49,8 +57,8 @@ export async function createCheckoutSession(
         },
       ],
       mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url: fullSuccessUrl,
+      cancel_url: fullCancelUrl,
       metadata: {
         plan,
       },
