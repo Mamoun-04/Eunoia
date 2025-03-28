@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +34,24 @@ export default function SettingsPage() {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const { toast } = useToast();
   const { isIOS, isAndroid } = useIsMobile();
+  
+  // State to track initial plan selection from URL
+  const [initialPlan, setInitialPlan] = useState<"monthly" | "yearly" | undefined>(undefined);
+  
+  // Check if there's a subscription parameter in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const subscribePlan = params.get('subscribe');
+    
+    if (subscribePlan && (subscribePlan === 'monthly' || subscribePlan === 'yearly')) {
+      // Set initial plan and open subscription dialog
+      setInitialPlan(subscribePlan as "monthly" | "yearly");
+      setSubscriptionDialogOpen(true);
+      
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
   
   // Check if user has premium subscription
   const isPremium = user?.subscriptionStatus === "active";
@@ -295,6 +313,7 @@ export default function SettingsPage() {
       <SubscriptionDialog 
         open={subscriptionDialogOpen} 
         onOpenChange={setSubscriptionDialogOpen}
+        initialPlan={initialPlan}
       />
     </div>
   );

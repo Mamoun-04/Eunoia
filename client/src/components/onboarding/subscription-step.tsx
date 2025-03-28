@@ -75,7 +75,10 @@ export default function SubscriptionStep() {
       ? (isYearly ? 'yearly' : 'monthly') 
       : 'free';
     
+    // Store selection in onboarding data
     updateData({ subscriptionPlan: planToSave });
+    
+    // Continue to account creation
     setStep(6);
   };
 

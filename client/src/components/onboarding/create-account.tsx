@@ -51,7 +51,8 @@ export default function CreateAccount() {
     setUsernameError(null);
     
     try {
-      await registerMutation.mutateAsync({
+      // First, register the user
+      const response = await registerMutation.mutateAsync({
         username: values.username,
         password: values.password,
         preferences: {
@@ -70,7 +71,22 @@ export default function CreateAccount() {
         description: "Welcome to Eunoia"
       });
 
-      setLocation("/home");
+      // Check if user selected a premium plan and handle subscription
+      if (data.subscriptionPlan === 'monthly' || data.subscriptionPlan === 'yearly') {
+        try {
+          // Redirect to payment page after short delay to allow login to complete
+          setTimeout(() => {
+            window.location.href = `/settings?subscribe=${data.subscriptionPlan}`;
+          }, 1000);
+        } catch (subscriptionError) {
+          console.error("Failed to start subscription process:", subscriptionError);
+          // Still navigate to home if subscription fails, user can subscribe later
+          setLocation("/home");
+        }
+      } else {
+        // Regular free account, just go to home
+        setLocation("/home");
+      }
     } catch (error: any) {
       // Check if the error is specifically for username already exists
       if (error.message?.includes("Username already exists") || 

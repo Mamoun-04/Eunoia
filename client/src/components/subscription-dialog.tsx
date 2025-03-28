@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,12 +20,27 @@ import { Check, Sparkles, Calendar, Image, FileText, Info } from "lucide-react";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialPlan?: "monthly" | "yearly";
 };
 
-export function SubscriptionDialog({ open, onOpenChange }: Props) {
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
+export function SubscriptionDialog({ open, onOpenChange, initialPlan }: Props) {
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(initialPlan || "monthly");
   const { toast } = useToast();
   const { isIOS, isAndroid } = useIsMobile();
+  
+  // Check URL parameters for subscription plan on mount
+  useEffect(() => {
+    if (open) {
+      const params = new URLSearchParams(window.location.search);
+      const subscribePlan = params.get('subscribe');
+      
+      if (subscribePlan === 'monthly' || subscribePlan === 'yearly') {
+        setSelectedPlan(subscribePlan);
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [open]);
   
   // Determine if user is on a mobile platform
   const isMobilePlatform = isIOS || isAndroid;
