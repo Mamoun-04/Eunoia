@@ -26,13 +26,14 @@ export default function OnboardingPage() {
   // Only redirect to home if the user is logged in and we're not in the subscription step
   useEffect(() => {
     if (user) {
-      // After account creation (step 5), move to subscription step
       if (step === 5) {
         setStep(6);
       } else if (step > 6) {
-        // Only redirect to home after completing all steps
         setLocation("/home");
       }
+    } else if (step > 1 && !user) {
+      // If no user and beyond welcome screen, go back to start
+      setStep(1);
     }
   }, [user, step, setStep, setLocation]);
 
