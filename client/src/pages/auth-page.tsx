@@ -61,13 +61,21 @@ export default function AuthPage() {
                     onSuccess: () => setLocation("/home")
                   });
                 }} />
-                {/* Removed registration button */}
+                <div className="mt-3 text-center">
+                  <Button 
+                    variant="link" 
+                    className="text-[#0000CC]"
+                    onClick={() => setMode("register")}
+                  >
+                    Need an account? Register here
+                  </Button>
+                </div>
               </>
             ) : (
               <>
                 <RegisterForm onSubmit={(data) => {
                   registerMutation.mutate(data, {
-                    onSuccess: () => setLocation("/onboarding")
+                    onSuccess: () => setLocation("/home")
                   });
                 }} />
                 <div className="mt-3 text-center">
@@ -81,17 +89,6 @@ export default function AuthPage() {
                 </div>
               </>
             )}
-
-            <div className="mt-6 text-center">
-              <Button 
-                variant="ghost" 
-                className="text-[#0000CC] hover:bg-[#0000CC]/10 flex items-center justify-center gap-2"
-                onClick={() => setLocation("/")}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to welcome screen
-              </Button>
-            </div>
           </div>
         </Card>
       </div>

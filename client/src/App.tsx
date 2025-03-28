@@ -34,8 +34,8 @@ function Router() {
       );
     }
     
-    // If user is logged in, show HomePage, otherwise show WelcomeScreen
-    return user ? <HomePage /> : <WelcomeScreen />;
+    // If user is logged in, show HomePage, otherwise show AuthPage
+    return user ? <HomePage /> : <AuthPage />;
   };
 
   return (
@@ -46,7 +46,6 @@ function Router() {
       <ProtectedRoute path="/library" component={LibraryPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/onboarding" component={OnboardingPage} />
       <Route component={NotFound} />
     </Switch>
   );
