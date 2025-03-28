@@ -1,10 +1,27 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
+import { eq } from "drizzle-orm";
+import * as schema from "@shared/schema";
+import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
+import { z } from "zod";
+import { applePayments, stripePayments, isSubscriptionActive } from "./payment-utils";
+
+// Database access
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
+
+// Create a PostgreSQL connection pool
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Create a Drizzle ORM instance with our schema
+const db = drizzle(pool, { schema });
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -22,8 +39,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB
   }
 });
-import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
-import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -161,26 +176,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock subscription endpoint
+  // Set up Stripe and Apple IAP subscription endpoints
   app.post("/api/subscribe", requireAuth, async (req, res) => {
-    const { plan } = req.body;
-    if (!plan || !["monthly", "yearly"].includes(plan)) {
+    const { plan, platform } = req.body;
+    if (!plan || !["monthly", "yearly", "lifetime"].includes(plan)) {
       return res.status(400).json({ message: "Invalid subscription plan" });
+    }
+    
+    // Get platform (default to web/stripe)
+    const paymentPlatform = platform || 'web';
+    
+    if (paymentPlatform !== 'web' && paymentPlatform !== 'test' && paymentPlatform !== 'apple') {
+      return res.status(400).json({ message: "Invalid platform. Use 'web' for website payments or 'apple' for iOS app." });
     }
 
     try {
-      // Set subscription end date
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
+      // Import payment utils dynamically
+      const { stripePayments, applePayments, isSubscriptionActive } = await import('./payment-utils');
       
-      // Get user for current preferences
+      // Get user 
       const user = await storage.getUser(req.user!.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
       // Update user preferences with subscription plan
-      let userPreferences = {};
+      let userPreferences: Record<string, any> = {};
       if (user.preferences) {
         try {
           userPreferences = JSON.parse(user.preferences);
@@ -195,26 +216,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionPlan: plan
       };
       
-      // Update user in database
-      await storage.updateUser(req.user!.id, {
-        subscriptionStatus: "active",
-        subscriptionEndDate: endDate,
-        preferences: JSON.stringify(userPreferences)
-      });
-
-      res.json({ 
-        message: "Subscription activated",
-        plan: plan,
-        endDate: endDate
-      });
+      // For testing mode, create a mock subscription
+      if (paymentPlatform === 'test') {
+        // Set subscription end date based on plan
+        const endDate = new Date();
+        if (plan === 'monthly') {
+          endDate.setMonth(endDate.getMonth() + 1);
+        } else if (plan === 'yearly') {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          // For lifetime, set a far future date
+          endDate.setFullYear(endDate.getFullYear() + 100);
+        }
+        
+        // Update user in database
+        await storage.updateUser(req.user!.id, {
+          subscriptionStatus: "active",
+          subscriptionPlan: plan,
+          subscriptionEndDate: endDate,
+          paymentProcessor: 'test',
+          preferences: JSON.stringify(userPreferences)
+        });
+        
+        return res.json({ success: true, plan });
+      }
+      
+      // For web platform, create Stripe payment
+      if (paymentPlatform === 'web') {
+        // Get or create Stripe customer
+        const email = userPreferences.email || `user_${req.user!.id}@example.com`; // Fallback email
+        const customer = await stripePayments.getOrCreateCustomer(req.user!.id, email);
+        
+        // Create subscription or payment
+        const paymentResult = await stripePayments.createSubscription(customer.id, plan);
+        
+        // Update user record
+        if (paymentResult.type === 'subscription' && paymentResult.subscription) {
+          // For subscription (monthly/yearly)
+          await storage.updateUser(req.user!.id, {
+            stripeCustomerId: customer.id,
+            stripeSubscriptionId: paymentResult.subscription.id,
+            subscriptionStatus: "pending", // Will be updated to active when webhook confirms payment
+            subscriptionPlan: plan,
+            subscriptionEndDate: paymentResult.endDate,
+            paymentProcessor: 'stripe',
+            preferences: JSON.stringify(userPreferences)
+          });
+          
+          // Return client secret for frontend to complete payment
+          return res.json({
+            success: true,
+            requiresAction: true,
+            clientSecret: (paymentResult.subscription.latest_invoice as any).payment_intent.client_secret,
+            subscriptionId: paymentResult.subscription.id
+          });
+        } else if (paymentResult.type === 'payment_intent' && paymentResult.paymentIntent) {
+          // For one-time payment (lifetime)
+          await storage.updateUser(req.user!.id, {
+            stripeCustomerId: customer.id,
+            subscriptionStatus: "pending", // Will be updated to active when webhook confirms payment
+            subscriptionPlan: plan,
+            paymentProcessor: 'stripe',
+            preferences: JSON.stringify(userPreferences)
+          });
+          
+          // Return client secret for frontend to complete payment
+          return res.json({
+            success: true,
+            requiresAction: true,
+            clientSecret: paymentResult.paymentIntent.client_secret,
+            paymentIntentId: paymentResult.paymentIntent.id
+          });
+        } else {
+          return res.status(500).json({ message: "Failed to create payment" });
+        }
+      }
+      
+      // For Apple platform, verify the receipt
+      if (paymentPlatform === 'apple') {
+        const { receiptData } = req.body;
+        
+        if (!receiptData) {
+          return res.status(400).json({ message: "Receipt data is required for Apple IAP verification" });
+        }
+        
+        try {
+          // Initialize IAP validation
+          await import('./payment-utils').then(module => module.setupIAP());
+          
+          // Verify the receipt
+          const verificationResult = await applePayments.verifyReceipt(receiptData);
+          
+          // Check if active
+          const isActive = isSubscriptionActive(verificationResult.endDate, verificationResult.planType);
+          
+          if (!isActive) {
+            return res.status(400).json({ message: "Subscription is not active" });
+          }
+          
+          // Calculate end date based on the plan
+          let endDate: Date | null = verificationResult.endDate;
+          if (verificationResult.planType === 'lifetime') {
+            // For lifetime subscription, set far future date
+            endDate = new Date();
+            endDate.setFullYear(endDate.getFullYear() + 100);
+          }
+          
+          // Update user record
+          await storage.updateUser(req.user!.id, {
+            subscriptionStatus: "active",
+            subscriptionPlan: verificationResult.planType,
+            subscriptionEndDate: endDate,
+            paymentProcessor: 'apple',
+            appleOriginalTransactionId: verificationResult.originalTransactionId,
+            preferences: JSON.stringify(userPreferences)
+          });
+          
+          return res.json({
+            success: true,
+            plan: verificationResult.planType,
+            endDate: endDate
+          });
+        } catch (error) {
+          console.error('Apple IAP verification error:', error);
+          return res.status(400).json({ message: "Invalid receipt data" });
+        }
+      }
+      
+      // If we reach here, something went wrong
+      return res.status(400).json({ message: "Invalid payment platform" });
     } catch (error) {
       res.status(500).json({ message: "Failed to process subscription" });
     }
   });
   
-  // Mock cancel subscription endpoint
+  // Real cancel subscription endpoint
   app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
     try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // If Stripe subscription, cancel it in Stripe
+      if (user.paymentProcessor === 'stripe' && user.stripeSubscriptionId) {
+        const { stripePayments } = await import('./payment-utils');
+        await stripePayments.cancelSubscription(user.stripeSubscriptionId);
+      }
+      
       // Set subscription status to "canceled" but keep the end date
       // This allows users to continue using premium features until their subscription period ends
       await storage.updateUser(req.user!.id, {
@@ -223,7 +372,300 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ message: "Subscription cancelled successfully" });
     } catch (error) {
+      console.error('Error cancelling subscription:', error);
       res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+  
+  // Apple App Store notification URL for handling IAP events
+  app.post("/api/apple/webhook", async (req, res) => {
+    try {
+      const notification = req.body;
+      console.log('Received Apple notification:', JSON.stringify(notification));
+      
+      // Extract notification type and data
+      const notificationType = notification.notificationType;
+      const subtype = notification.subtype;
+      const notificationData = notification.data;
+      
+      if (!notificationType || !notificationData) {
+        return res.status(400).json({ message: "Invalid notification format" });
+      }
+      
+      // Process based on the notification type
+      switch (notificationType) {
+        case 'SUBSCRIBED': // Initial subscription
+        case 'DID_RENEW': // Subscription was renewed
+          if (notificationData.signedTransactionInfo) {
+            // Process successful subscription renewal
+            const originalTransactionId = notificationData.signedTransactionInfo.originalTransactionId;
+            if (!originalTransactionId) {
+              console.error('Missing originalTransactionId in Apple notification');
+              return res.status(400).json({ message: "Missing transaction ID" });
+            }
+            
+            try {
+              // Get user by Apple original transaction ID
+              console.log(`Looking for user with Apple transaction ID: ${originalTransactionId}`);
+              const result = await db.select()
+                .from(schema.users)
+                .where(eq(schema.users.appleOriginalTransactionId, originalTransactionId))
+                .limit(1);
+                
+              if (result.length === 0) {
+                console.error('No user found with Apple transaction ID:', originalTransactionId);
+                return res.status(404).json({ message: "User not found" });
+              }
+              
+              const user = result[0];
+              console.log(`Found user ${user.id} with Apple transaction ID ${originalTransactionId}`);
+              
+              // Calculate new subscription end date
+              // This information should be in the notification, but we'll calculate a default as fallback
+              let endDate = new Date();
+              if (user.subscriptionPlan === 'monthly') {
+                endDate.setMonth(endDate.getMonth() + 1); // Add 1 month
+              } else if (user.subscriptionPlan === 'yearly') {
+                endDate.setFullYear(endDate.getFullYear() + 1); // Add 1 year
+              } else if (user.subscriptionPlan === 'lifetime') {
+                endDate.setFullYear(endDate.getFullYear() + 100); // Far future for lifetime plans
+              }
+              
+              // Update user subscription status to active
+              await storage.updateUser(user.id, {
+                subscriptionStatus: "active",
+                subscriptionEndDate: endDate,
+                paymentProcessor: 'apple'
+              });
+              
+              console.log(`Activated subscription for user ${user.id} via Apple IAP`);
+            } catch (err) {
+              console.error('Error processing Apple subscription event:', err);
+              return res.status(500).json({ message: "Database error" });
+            }
+          }
+          break;
+          
+        case 'DID_CHANGE_RENEWAL_STATUS':
+          if (subtype === 'AUTO_RENEW_DISABLED') {
+            // User turned off auto-renewal
+            const originalTransactionId = notificationData.signedRenewalInfo?.originalTransactionId;
+            if (originalTransactionId) {
+              try {
+                // Get user by Apple original transaction ID
+                const result = await db.select()
+                  .from(schema.users)
+                  .where(eq(schema.users.appleOriginalTransactionId, originalTransactionId))
+                  .limit(1);
+                  
+                if (result.length === 0) {
+                  console.error('No user found with Apple transaction ID:', originalTransactionId);
+                  return res.status(404).json({ message: "User not found" });
+                }
+                
+                const user = result[0];
+                
+                // Mark subscription as canceled but don't change end date
+                await storage.updateUser(user.id, {
+                  subscriptionStatus: "canceled"
+                });
+                
+                console.log(`Marked subscription as canceled for user ${user.id} via Apple IAP`);
+              } catch (err) {
+                console.error('Error processing Apple cancellation event:', err);
+                return res.status(500).json({ message: "Database error" });
+              }
+            }
+          }
+          break;
+          
+        case 'EXPIRED':
+          // Subscription expired
+          if (notificationData.signedTransactionInfo) {
+            const originalTransactionId = notificationData.signedTransactionInfo.originalTransactionId;
+            if (originalTransactionId) {
+              try {
+                // Get user by Apple original transaction ID
+                const result = await db.select()
+                  .from(schema.users)
+                  .where(eq(schema.users.appleOriginalTransactionId, originalTransactionId))
+                  .limit(1);
+                  
+                if (result.length === 0) {
+                  console.error('No user found with Apple transaction ID:', originalTransactionId);
+                  return res.status(404).json({ message: "User not found" });
+                }
+                
+                const user = result[0];
+                
+                // Mark subscription as expired
+                await storage.updateUser(user.id, {
+                  subscriptionStatus: "expired",
+                  subscriptionEndDate: new Date() // Set to current date
+                });
+                
+                console.log(`Marked subscription as expired for user ${user.id} via Apple IAP`);
+              } catch (err) {
+                console.error('Error processing Apple expiration event:', err);
+                return res.status(500).json({ message: "Database error" });
+              }
+            }
+          }
+          break;
+      }
+      
+      // Apple expects a 200 response
+      res.status(200).json({ received: true });
+    } catch (error) {
+      console.error('Apple webhook error:', error);
+      res.status(400).json({ message: "Error processing notification" });
+    }
+  });
+  
+  // Stripe webhook endpoint to handle subscription events
+  app.post("/api/stripe/webhook", async (req, res) => {
+    const signature = req.headers['stripe-signature'];
+    
+    if (!signature) {
+      return res.status(400).json({ message: "Missing stripe-signature header" });
+    }
+    
+    try {
+      const { default: Stripe } = await import('stripe');
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key';
+      const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy_secret';
+      const stripe = new Stripe(stripeSecretKey);
+      
+      // Verify webhook signature
+      const event = stripe.webhooks.constructEvent(
+        req.body.toString(),
+        signature,
+        stripeWebhookSecret
+      );
+      
+      console.log(`Received Stripe webhook event: ${event.type}`);
+      
+      // Handle the event based on its type
+      if (event.type === 'checkout.session.completed') {
+        // Payment is successful and checkout session completed
+        const session = event.data.object as any;
+        
+        // Check if we have a customer ID
+        if (!session.customer) {
+          console.error('No customer ID in checkout session');
+          return res.status(400).json({ message: "Invalid checkout session" });
+        }
+        
+        console.log(`Looking for user with Stripe customer ID: ${session.customer}`);
+        
+        try {
+          // Get user by Stripe customer ID
+          const result = await db.select()
+            .from(schema.users)
+            .where(eq(schema.users.stripeCustomerId, session.customer))
+            .limit(1);
+            
+          if (result.length === 0) {
+            console.error('No user found with Stripe customer ID:', session.customer);
+            return res.status(404).json({ message: "User not found" });
+          }
+          
+          const user = result[0];
+          console.log(`Found user ${user.id} with Stripe customer ID ${session.customer}`);
+          
+          // Update user subscription status to active
+          await storage.updateUser(user.id, {
+            subscriptionStatus: "active"
+          });
+          
+          console.log(`Activated subscription for user ${user.id} via checkout.session.completed`);
+        } catch (err) {
+          console.error('Error finding user by Stripe customer ID:', err);
+          return res.status(500).json({ message: "Database error" });
+        }
+      } else if (event.type === 'invoice.payment_succeeded') {
+        // Subscription payment succeeded
+        const invoice = event.data.object as any;
+        
+        if (!invoice.subscription) {
+          console.error('No subscription ID in invoice');
+          return res.status(400).json({ message: "Invalid invoice" });
+        }
+        
+        console.log(`Looking for user with Stripe subscription ID: ${invoice.subscription}`);
+        
+        try {
+          // Get user by Stripe subscription ID
+          const result = await db.select()
+            .from(schema.users)
+            .where(eq(schema.users.stripeSubscriptionId, invoice.subscription))
+            .limit(1);
+            
+          if (result.length === 0) {
+            console.error('No user found with Stripe subscription ID:', invoice.subscription);
+            return res.status(404).json({ message: "User not found" });
+          }
+          
+          const user = result[0];
+          console.log(`Found user ${user.id} with Stripe subscription ID ${invoice.subscription}`);
+          
+          // Update user subscription status to active
+          await storage.updateUser(user.id, {
+            subscriptionStatus: "active"
+          });
+          
+          console.log(`Activated subscription for user ${user.id} via invoice.payment_succeeded`);
+        } catch (err) {
+          console.error('Error finding user by Stripe subscription ID:', err);
+          return res.status(500).json({ message: "Database error" });
+        }
+      } else if (event.type === 'payment_intent.succeeded') {
+        // One-time payment succeeded (lifetime plan)
+        const paymentIntent = event.data.object as any;
+        
+        if (!paymentIntent.customer) {
+          console.error('No customer ID in payment intent');
+          return res.status(400).json({ message: "Invalid payment intent" });
+        }
+        
+        console.log(`Looking for user with Stripe customer ID: ${paymentIntent.customer}`);
+        
+        try {
+          // Get user by Stripe customer ID
+          const result = await db.select()
+            .from(schema.users)
+            .where(eq(schema.users.stripeCustomerId, paymentIntent.customer))
+            .limit(1);
+            
+          if (result.length === 0) {
+            console.error('No user found with Stripe customer ID:', paymentIntent.customer);
+            return res.status(404).json({ message: "User not found" });
+          }
+          
+          const user = result[0];
+          console.log(`Found user ${user.id} with Stripe customer ID ${paymentIntent.customer}`);
+          
+          // Set a far future date for lifetime subscription
+          const endDate = new Date();
+          endDate.setFullYear(endDate.getFullYear() + 100);
+          
+          // Update user subscription status to active
+          await storage.updateUser(user.id, {
+            subscriptionStatus: "active",
+            subscriptionEndDate: endDate
+          });
+          
+          console.log(`Activated lifetime subscription for user ${user.id}`);
+        } catch (err) {
+          console.error('Error finding user by Stripe customer ID:', err);
+          return res.status(500).json({ message: "Database error" });
+        }
+      }
+      
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Stripe webhook error:', error);
+      res.status(400).json({ message: "Webhook error" });
     }
   });
 

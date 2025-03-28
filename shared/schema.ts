@@ -14,7 +14,12 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
+  subscriptionPlan: text("subscription_plan").default("free").notNull(),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  paymentProcessor: text("payment_processor"), // "stripe" or "apple"
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  appleOriginalTransactionId: text("apple_original_transaction_id"),
   preferences: text("preferences"), // Stored as JSON string
   currentStreak: integer("current_streak").default(0),
   lastActivityDate: timestamp("last_activity_date"),
@@ -39,7 +44,7 @@ export const userPreferencesSchema = z.object({
   goal: z.string().optional(),
   customGoal: z.string().optional(),
   interests: z.array(z.string()).default([]),
-  subscriptionPlan: z.enum(["free", "monthly", "yearly"]).default("free"),
+  subscriptionPlan: z.enum(["free", "monthly", "yearly", "lifetime"]).default("free"),
   theme: z.enum(["light", "dark"]).default("light"),
 });
 
@@ -105,14 +110,20 @@ export type InsertSavedLesson = z.infer<typeof insertSavedLessonSchema>;
 
 export const subscriptionPlans = {
   monthly: {
-    price: 3.99,
+    price: 4.99,
     name: "Monthly Plan",
     interval: "month",
   },
   yearly: {
-    price: 34.99,
+    price: 39.99,
     name: "Yearly Plan",
     interval: "year",
-    monthlyPrice: 2.92,
+    monthlyPrice: 3.33,
+  },
+  lifetime: {
+    price: 100.00,
+    name: "Lifetime Access",
+    interval: "one-time",
+    limitedTimeOffer: true,
   },
 } as const;

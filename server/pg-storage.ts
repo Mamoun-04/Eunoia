@@ -46,7 +46,12 @@ export class PgStorage implements IStorage {
           username TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL,
           subscription_status TEXT NOT NULL DEFAULT 'free',
+          subscription_plan TEXT NOT NULL DEFAULT 'free',
           subscription_end_date TIMESTAMP,
+          payment_processor TEXT,
+          stripe_customer_id TEXT,
+          stripe_subscription_id TEXT,
+          apple_original_transaction_id TEXT,
           preferences TEXT,
           current_streak INTEGER DEFAULT 0,
           last_activity_date TIMESTAMP
@@ -101,6 +106,15 @@ export class PgStorage implements IStorage {
       throw error;
     }
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    try {
+      return await db.select().from(schema.users);
+    } catch (error) {
+      console.error('Error getting all users:', error);
+      throw error;
+    }
+  }
 
   async createUser(user: InsertUser): Promise<User> {
     try {
@@ -112,6 +126,7 @@ export class PgStorage implements IStorage {
         password: user.password,
         preferences: preferencesString,
         subscriptionStatus: 'free',
+        subscriptionPlan: 'free',
         currentStreak: 0
       } as any).returning();
       

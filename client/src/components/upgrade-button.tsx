@@ -1,74 +1,59 @@
-import { useState } from "react";
-import { Button, ButtonProps } from "@/components/ui/button";
-import { SubscriptionDialog } from "@/components/subscription-dialog";
-import { useAuth } from "@/hooks/use-auth";
-import { Sparkles } from "lucide-react";
+import React, { useState } from 'react';
+import { Button, ButtonProps } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
+import { SubscriptionDialog } from './subscription-dialog';
+import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 
-interface UpgradeButtonProps extends Omit<ButtonProps, 'variant'> {
+interface UpgradeButtonProps extends ButtonProps {
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'premium';
   showIcon?: boolean;
-  buttonText?: string;
-  variant?: "default" | "outline" | "ghost" | "link" | "gradient";
+  className?: string;
 }
 
-export function UpgradeButton({
+export function UpgradeButton({ 
+  size = 'default',
+  variant = 'premium',
   showIcon = true,
-  buttonText = "Upgrade to Premium",
-  variant = "default",
   className,
+  children,
   ...props
 }: UpgradeButtonProps) {
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
-  const { user } = useAuth();
+  const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Check if user already has premium
-  const isPremium = user?.subscriptionStatus === "active";
-  
-  // If user is already premium, don't show the button
-  if (isPremium) {
+  // Check user's subscription status
+  const { data: userData } = useQuery({
+    queryKey: ['/api/user'],
+    staleTime: 60000,
+    refetchOnWindowFocus: true
+  });
+
+  // Don't render the button for premium users
+  if (userData?.subscriptionStatus === 'active') {
     return null;
   }
-  
-  // For gradient variant, use the default variant with custom gradient class
-  let buttonVariant: ButtonProps['variant'] = 'default';
-  let buttonStyle = '';
-  
-  if (variant === "gradient") {
-    buttonVariant = "default";
-    buttonStyle = "bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/90 text-white";
-  } else {
-    buttonVariant = variant as ButtonProps['variant'];
-  }
-  
+
   return (
     <>
       <Button
-        variant={buttonVariant}
-        onClick={() => setShowSubscriptionDialog(true)}
-        className={`${buttonStyle} ${className || ''}`}
+        size={size}
+        variant={variant}
+        onClick={() => setDialogOpen(true)}
+        className={cn(
+          variant === 'premium' && 'bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white border-0',
+          className
+        )}
         {...props}
       >
-        {showIcon && <Sparkles className="h-4 w-4 mr-2" />}
-        {buttonText}
+        {showIcon && <Sparkles className="mr-2 h-4 w-4" />}
+        {children || 'Upgrade to Premium'}
       </Button>
       
-      <SubscriptionDialog
-        open={showSubscriptionDialog}
-        onOpenChange={setShowSubscriptionDialog}
+      <SubscriptionDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
       />
     </>
-  );
-}
-
-export function PremiumBadge() {
-  const { user } = useAuth();
-  const isPremium = user?.subscriptionStatus === "active";
-  
-  if (!isPremium) return null;
-  
-  return (
-    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary gap-1">
-      <Sparkles className="h-3 w-3" />
-      Premium
-    </div>
   );
 }
