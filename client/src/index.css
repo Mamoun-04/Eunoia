@@ -6,6 +6,7 @@
 :root {
   /* Base theme colors - Light theme by default */
   --primary-color: #0000CC;
+  --primary-rgb: 0, 0, 204; /* RGB values of primary color for rgba() usage */
   --background-color: #ffffff;
   --text-color: #000000;
   
@@ -24,6 +25,7 @@
 /* Dark theme */
 .dark {
   --primary-color: #6666FF;
+  --primary-rgb: 102, 102, 255; /* RGB values of primary color for rgba() usage */
   --background-color: #121212;
   --text-color: #ffffff;
   
@@ -524,6 +526,48 @@
   50% {
     transform: scale(1) rotate(180deg);
     opacity: 0.8;
+  }
+}
+
+/* Journey animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
