@@ -78,6 +78,21 @@ export default function SubscriptionStep() {
     // Store selection in onboarding data
     updateData({ subscriptionPlan: planToSave });
     
+    // Update the user's subscription plan preference in database
+    try {
+      await fetch('/api/user/preferences', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          subscriptionPlan: planToSave
+        })
+      });
+    } catch (error) {
+      console.error('Failed to update subscription plan preference:', error);
+    }
+    
     // If premium plan is selected, initiate payment process immediately
     if (selectedPlan === 'premium') {
       try {

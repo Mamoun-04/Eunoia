@@ -280,6 +280,45 @@ User message: ${message}`;
     }
   });
   
+  // Update user preferences
+  app.patch("/api/user/preferences", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Parse existing preferences
+      let preferences = {};
+      try {
+        preferences = user.preferences ? JSON.parse(user.preferences) : {};
+      } catch (e) {
+        console.error("Error parsing existing preferences:", e);
+      }
+      
+      // Merge with new preferences
+      const updatedPreferences = {
+        ...preferences,
+        ...req.body
+      };
+      
+      // Update user with new preferences
+      await storage.updateUser(userId, {
+        preferences: JSON.stringify(updatedPreferences)
+      });
+      
+      res.status(200).json({ 
+        message: "Preferences updated successfully",
+        preferences: updatedPreferences
+      });
+    } catch (error) {
+      console.error("Error updating user preferences:", error);
+      res.status(500).json({ message: "Failed to update preferences" });
+    }
+  });
+  
   app.get("/api/saved-lessons", requireAuth, async (req, res) => {
     try {
       const savedLessons = await storage.getSavedLessons(req.user!.id);

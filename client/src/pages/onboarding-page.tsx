@@ -42,12 +42,17 @@ export default function OnboardingPage() {
     }
   }, [setStep]);
   
-  // Redirect to home if already logged in
+  // Redirect to home if already logged in, but allow subscription step for newly created accounts
   useEffect(() => {
-    if (user) {
+    // Get URL parameters to check if we're in a specific flow
+    const params = new URLSearchParams(window.location.search);
+    const isCheckingSubscription = params.has('step') && params.get('step') === '6';
+    
+    // Only redirect to home if user is authenticated AND we're not in the subscription step
+    if (user && !isCheckingSubscription && step !== 6) {
       setLocation("/home");
     }
-  }, [user, setLocation]);
+  }, [user, setLocation, step]);
 
   // If step is 0 or 1, auto-advance to step 2 (profile setup)
   useEffect(() => {
