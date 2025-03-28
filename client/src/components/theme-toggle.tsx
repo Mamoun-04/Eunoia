@@ -15,14 +15,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 // Theme icon mapping
-const themeIcons = {
+const themeIcons: Record<ThemeType, React.ReactNode> = {
   light: <Sun className="h-5 w-5" />,
   dark: <Moon className="h-5 w-5" />,
   serenity: <Palette className="h-5 w-5 text-blue-400" />,
-  midnight: <Moon className="h-5 w-5 text-violet-400" />,
-  olive: <Palette className="h-5 w-5 text-green-600" />,
+  sage: <Palette className="h-5 w-5 text-green-600" />,
+  lavender: <Palette className="h-5 w-5 text-purple-400" />,
   rose: <Palette className="h-5 w-5 text-pink-400" />,
-  ocean: <Palette className="h-5 w-5 text-teal-500" />
+  amber: <Palette className="h-5 w-5 text-amber-500" />
 };
 
 export function ThemeToggle() {

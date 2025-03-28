@@ -14,20 +14,20 @@ export type ThemeType =
   | "light"
   | "dark"
   | "serenity"
-  | "midnight"
-  | "olive"
+  | "sage"
+  | "lavender"
   | "rose"
-  | "ocean";
+  | "amber";
 
 // Categorize themes as free or premium
 export const themeCategories = {
   free: ["light", "dark"] as ThemeType[],
   premium: [
     "serenity", 
-    "midnight", 
-    "olive", 
+    "sage", 
+    "lavender", 
     "rose", 
-    "ocean"
+    "amber"
   ] as ThemeType[],
 };
 
@@ -48,25 +48,25 @@ export const themeColors = {
     background: "#ECEFF1",
     text: "#37474F",
   },
-  midnight: {
-    primary: "#7E57C2",
-    background: "#1A1A2E",
-    text: "#E0E0E0",
+  sage: {
+    primary: "#6B9080",
+    background: "#EAF4F4",
+    text: "#344E41",
   },
-  olive: {
-    primary: "#7CB342",
-    background: "#333C33",
-    text: "#E8F5E9",
+  lavender: {
+    primary: "#9C80D7",
+    background: "#F7F4FC",
+    text: "#4A3D68",
   },
   rose: {
     primary: "#EC407A",
     background: "#FFF1F2",
     text: "#4A2932",
   },
-  ocean: {
-    primary: "#26A69A",
-    background: "#0A2E36",
-    text: "#E0F2F1",
+  amber: {
+    primary: "#F59E0B",
+    background: "#FFFBEB",
+    text: "#713F12",
   },
 };
 
@@ -146,10 +146,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.remove(
       "dark",
       "theme-serenity",
-      "theme-midnight",
-      "theme-olive",
+      "theme-sage",
+      "theme-lavender",
       "theme-rose",
-      "theme-ocean"
+      "theme-amber"
     );
 
     if (currentTheme === "dark") {
