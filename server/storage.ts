@@ -1,6 +1,7 @@
 import { User, InsertUser, Entry, InsertEntry, SavedLesson, InsertSavedLesson, UserPreferences } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { pgStorage as pgDb } from "./pg-storage";
 const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
@@ -369,4 +370,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Export the PG storage instead of memory storage for persistence
+export const storage = pgDb;

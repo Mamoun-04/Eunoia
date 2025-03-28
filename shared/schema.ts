@@ -45,13 +45,15 @@ export const userPreferencesSchema = z.object({
 
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 
-// Extend the insert user schema to include preferences
+// Extend the insert user schema to include preferences and validation
 export const insertUserSchema = createInsertSchema(users)
   .pick({
     username: true,
     password: true,
   })
   .extend({
+    username: z.string().min(4, "Username must be at least 4 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     preferences: userPreferencesSchema.optional(),
   });
 

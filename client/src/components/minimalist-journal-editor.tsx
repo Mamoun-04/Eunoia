@@ -41,6 +41,7 @@ export function MinimalistJournalEditor({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Derived state
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
@@ -90,11 +91,7 @@ export function MinimalistJournalEditor({
       reader.readAsDataURL(file);
     } catch (error) {
       console.error("Image selection error:", error);
-      toast({
-        title: "Image selection failed",
-        description: "There was an error selecting your image. Please try again.",
-        variant: "destructive"
-      });
+      setErrorMessage("Image selection failed: There was an error selecting your image. Please try again.");
       
       // Reset the file input
       if (fileInputRef.current) {
@@ -111,13 +108,8 @@ export function MinimalistJournalEditor({
     setContent(newContent);
     
     // If they're trying to type beyond the limit, warn them
-    if (newContent.trim().split(/\s+/).length > WORD_LIMIT) {
-      toast({
-        title: `Word limit (${WORD_LIMIT}) reached`,
-        description: "You've reached your word limit for this entry.",
-        variant: "destructive"
-      });
-    }
+    // We use inline error messages now instead of toast
+    // The handleKeyDown function prevents typing beyond the limit anyway
   };
   
   // Handle image upload to server
@@ -145,11 +137,7 @@ export function MinimalistJournalEditor({
       return data.url;
     } catch (error) {
       console.error("Image upload error:", error);
-      toast({
-        title: "Image upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive"
-      });
+      setErrorMessage(error instanceof Error ? `Image upload failed: ${error.message}` : "Failed to upload image");
       return null;
     } finally {
       setIsUploading(false);
@@ -163,31 +151,19 @@ export function MinimalistJournalEditor({
       
       // Validate title
       if (!title.trim()) {
-        toast({
-          title: "Title is required",
-          description: "Please provide a title for your entry",
-          variant: "destructive"
-        });
+        setErrorMessage("Title is required. Please provide a title for your entry.");
         return;
       }
       
       // Validate content
       if (!content.trim()) {
-        toast({
-          title: "Content is required",
-          description: "Please write something in your journal entry",
-          variant: "destructive"
-        });
+        setErrorMessage("Content is required. Please write something in your journal entry.");
         return;
       }
       
       // Check word count limit
       if (wordCount > WORD_LIMIT) {
-        toast({
-          title: `Word limit exceeded`,
-          description: `Please reduce your entry to ${WORD_LIMIT} words or less`,
-          variant: "destructive"
-        });
+        setErrorMessage(`Word limit exceeded. Please reduce your entry to ${WORD_LIMIT} words or less.`);
         return;
       }
       
@@ -214,17 +190,11 @@ export function MinimalistJournalEditor({
       if (existingEntry) {
         // Update existing entry
         await apiRequest("PATCH", `/api/entries/${existingEntry.id}`, entryData);
-        toast({
-          title: "Entry updated",
-          description: "Your journal entry has been updated",
-        });
+        // Success is handled by closing the editor - no need for toast
       } else {
         // Create new entry
         await apiRequest("POST", "/api/entries", entryData);
-        toast({
-          title: "Entry saved",
-          description: "Your journal entry has been saved",
-        });
+        // Success is handled by closing the editor - no need for toast
       }
       
       // Refresh entries list
@@ -247,37 +217,36 @@ export function MinimalistJournalEditor({
         return;
       }
       
-      toast({
-        title: "Failed to save entry",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
+      // Show error as an alert in the editor instead of toast
+      setErrorMessage(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsSaving(false);
     }
   };
   
-  // Show premium feature modal for non-premium users
+  // State for premium feature notification
+  const [premiumFeatureAlert, setPremiumFeatureAlert] = useState<{
+    feature: string;
+    message: string;
+    visible: boolean;
+  }>({
+    feature: "",
+    message: "",
+    visible: false
+  });
+  
+  // Show premium feature alert for non-premium users
   const showPremiumFeatureModal = (feature: string, message?: string) => {
-    toast({
-      title: `Premium Feature: ${feature}`,
-      description: message || "Upgrade to Premium to access this feature",
-      action: (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="gap-1"
-          onClick={() => {
-            // Open the subscription dialog by triggering the state change in the parent
-            document.dispatchEvent(new CustomEvent('open-subscription-dialog'));
-            // Don't close the editor
-          }}
-        >
-          <Sparkles className="h-4 w-4" />
-          Upgrade
-        </Button>
-      ),
+    setPremiumFeatureAlert({
+      feature,
+      message: message || "Upgrade to Premium to access this feature",
+      visible: true
     });
+    
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+      setPremiumFeatureAlert(prev => ({...prev, visible: false}));
+    }, 8000);
   };
   
   // Disable typing when over word limit
@@ -302,6 +271,13 @@ export function MinimalistJournalEditor({
     }
   };
   
+  // Clear error message when user makes changes
+  useEffect(() => {
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
+  }, [title, content, mood, category, imageUrl, errorMessage]);
+
   return (
     <div className="space-y-3">
       {/* Sticky top bar with progress and actions */}
@@ -352,6 +328,37 @@ export function MinimalistJournalEditor({
           }`}
         />
       </div>
+      
+      {/* Error message */}
+      {errorMessage && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm mb-2">
+          {errorMessage}
+        </div>
+      )}
+      
+      {/* Premium feature alert */}
+      {premiumFeatureAlert.visible && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
+          <div className="flex items-start gap-2">
+            <div className="flex-grow">
+              <h4 className="text-blue-600 font-medium">Premium Feature: {premiumFeatureAlert.feature}</h4>
+              <p className="text-sm text-blue-800">{premiumFeatureAlert.message}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1 bg-white border-blue-300 text-blue-600 hover:bg-blue-50"
+              onClick={() => {
+                // Open the subscription dialog by triggering the state change in the parent
+                document.dispatchEvent(new CustomEvent('open-subscription-dialog'));
+              }}
+            >
+              <Sparkles className="h-4 w-4" />
+              Upgrade
+            </Button>
+          </div>
+        </div>
+      )}
       
       {/* Title input */}
       <div>

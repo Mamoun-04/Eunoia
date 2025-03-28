@@ -121,33 +121,62 @@ export default function AuthPage() {
 }
 
 function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const { loginMutation } = useAuth();
+  
   const form = useForm({
     resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
   });
 
+  const handleSubmit = async (data: any) => {
+    setLoginError(null); // Clear previous errors
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      if (error instanceof Error) {
+        setLoginError(error.message);
+      } else {
+        setLoginError("Login failed. Please try again.");
+      }
+    }
+  };
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div>
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <div className="space-y-2">
         <Input
           {...form.register("username")}
           placeholder="Username"
-          className="w-full"
+          className={`w-full ${form.formState.errors.username ? "border-red-500" : ""}`}
         />
+        {form.formState.errors.username && (
+          <p className="text-red-500 text-sm">{form.formState.errors.username.message as string}</p>
+        )}
       </div>
-      <div>
+      <div className="space-y-2">
         <Input
           {...form.register("password")}
           type="password"
           placeholder="Password"
-          className="w-full"
+          className={`w-full ${form.formState.errors.password ? "border-red-500" : ""}`}
         />
+        {form.formState.errors.password && (
+          <p className="text-red-500 text-sm">{form.formState.errors.password.message as string}</p>
+        )}
       </div>
+      
+      {loginError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+          {loginError}
+        </div>
+      )}
+      
       <Button
         type="submit"
         className="w-full"
-        disabled={form.formState.isSubmitting}
+        disabled={form.formState.isSubmitting || loginMutation.isPending}
       >
-        {form.formState.isSubmitting ? (
+        {(form.formState.isSubmitting || loginMutation.isPending) ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           "Login"
@@ -158,33 +187,66 @@ function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
 }
 
 function RegisterForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const { registerMutation } = useAuth();
+  
   const form = useForm({
     resolver: zodResolver(insertUserSchema),
+    defaultValues: {
+      username: "",
+      password: ""
+    }
   });
 
+  const handleSubmit = async (data: any) => {
+    setRegisterError(null); // Clear previous errors
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      if (error instanceof Error) {
+        setRegisterError(error.message);
+      } else {
+        setRegisterError("Registration failed. Please try again.");
+      }
+    }
+  };
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div>
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <div className="space-y-2">
         <Input
           {...form.register("username")}
-          placeholder="Choose a username"
-          className="w-full"
+          placeholder="Choose a username (min 4 characters)"
+          className={`w-full ${form.formState.errors.username ? "border-red-500" : ""}`}
         />
+        {form.formState.errors.username && (
+          <p className="text-red-500 text-sm">{form.formState.errors.username.message as string}</p>
+        )}
       </div>
-      <div>
+      <div className="space-y-2">
         <Input
           {...form.register("password")}
           type="password"
-          placeholder="Choose a password"
-          className="w-full"
+          placeholder="Choose a password (min 8 characters)"
+          className={`w-full ${form.formState.errors.password ? "border-red-500" : ""}`}
         />
+        {form.formState.errors.password && (
+          <p className="text-red-500 text-sm">{form.formState.errors.password.message as string}</p>
+        )}
       </div>
+      
+      {registerError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+          {registerError}
+        </div>
+      )}
+      
       <Button
         type="submit"
         className="w-full"
-        disabled={form.formState.isSubmitting}
+        disabled={form.formState.isSubmitting || registerMutation.isPending}
       >
-        {form.formState.isSubmitting ? (
+        {(form.formState.isSubmitting || registerMutation.isPending) ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           "Create Account"
