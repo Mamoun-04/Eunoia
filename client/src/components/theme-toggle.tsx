@@ -22,10 +22,7 @@ const themeIcons: Record<ThemeType, React.ReactNode> = {
   sage: <Palette className="h-5 w-5 text-green-600" />,
   lavender: <Palette className="h-5 w-5 text-purple-400" />,
   rose: <Palette className="h-5 w-5 text-pink-400" />,
-  amber: <Palette className="h-5 w-5 text-amber-500" />,
-  midnight: <Palette className="h-5 w-5 text-blue-600" />,
-  forest: <Palette className="h-5 w-5 text-emerald-600" />,
-  nebula: <Palette className="h-5 w-5 text-violet-500" />
+  amber: <Palette className="h-5 w-5 text-amber-500" />
 };
 
 export function ThemeToggle() {
