@@ -69,7 +69,7 @@ export default function SubscriptionStep() {
     premium: false,
   });
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Map 'premium' selection to the appropriate plan type based on toggle
     const planToSave = selectedPlan === 'premium' 
       ? (isYearly ? 'yearly' : 'monthly') 
@@ -78,8 +78,40 @@ export default function SubscriptionStep() {
     // Store selection in onboarding data
     updateData({ subscriptionPlan: planToSave });
     
-    // Continue to account creation
-    setStep(6);
+    // If premium plan is selected, initiate payment process immediately
+    if (selectedPlan === 'premium') {
+      try {
+        const subscriptionResponse = await fetch('/api/subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            plan: planToSave,
+            platform: 'web'
+          })
+        });
+        
+        const subscriptionData = await subscriptionResponse.json();
+        
+        // If there's a checkout URL from Stripe, redirect to it
+        if (subscriptionData.data?.checkoutUrl) {
+          window.location.href = subscriptionData.data.checkoutUrl;
+          return; // Stop execution here as we're redirecting
+        } else {
+          console.error('No checkout URL received from subscription API');
+          // Redirect to home page if we can't get a checkout URL
+          window.location.href = '/home';
+        }
+      } catch (error) {
+        console.error('Failed to start subscription process:', error);
+        // Redirect to home if payment setup fails
+        window.location.href = '/home';
+      }
+    } else {
+      // For free plan, just go to home
+      window.location.href = '/home';
+    }
   };
 
   return (

@@ -23,6 +23,25 @@ export default function OnboardingPage() {
 
   const { user } = useAuth();
   
+  // Check for step parameter in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stepParam = params.get('step');
+    
+    if (stepParam) {
+      // Convert to number and set current step
+      const stepNumber = parseInt(stepParam, 10);
+      if (!isNaN(stepNumber) && stepNumber >= 0 && stepNumber <= 6) {
+        setStep(stepNumber);
+        
+        // Remove the step parameter from URL
+        params.delete('step');
+        const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [setStep]);
+  
   // Redirect to home if already logged in
   useEffect(() => {
     if (user) {
@@ -98,9 +117,9 @@ export default function OnboardingPage() {
                 case 4:
                   return <InterestSelection />;
                 case 5:
-                  return <SubscriptionStep />;
-                case 6:
                   return <CreateAccount />;
+                case 6:
+                  return <SubscriptionStep />;
                 default:
                   return <WelcomeScreen />;
               }
