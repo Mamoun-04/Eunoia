@@ -17,7 +17,10 @@ export type ThemeType =
   | "sage"
   | "lavender"
   | "rose"
-  | "amber";
+  | "amber"
+  | "midnight"
+  | "forest"
+  | "nebula";
 
 // Categorize themes as free or premium
 export const themeCategories = {
@@ -27,7 +30,10 @@ export const themeCategories = {
     "sage", 
     "lavender", 
     "rose", 
-    "amber"
+    "amber",
+    "midnight",
+    "forest",
+    "nebula"
   ] as ThemeType[],
 };
 
@@ -67,6 +73,21 @@ export const themeColors = {
     primary: "#F59E0B",
     background: "#FFFBEB",
     text: "#713F12",
+  },
+  midnight: {
+    primary: "#3B82F6",
+    background: "#0F172A",
+    text: "#E2E8F0",
+  },
+  forest: {
+    primary: "#059669",
+    background: "#14261D",
+    text: "#D1FAE5",
+  },
+  nebula: {
+    primary: "#673AB7",
+    background: "#13111C",
+    text: "#D1C4E9",
   },
 };
 
@@ -149,7 +170,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       "theme-sage",
       "theme-lavender",
       "theme-rose",
-      "theme-amber"
+      "theme-amber",
+      "theme-midnight",
+      "theme-forest",
+      "theme-nebula"
     );
 
     if (currentTheme === "dark") {

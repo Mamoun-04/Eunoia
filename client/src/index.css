@@ -433,6 +433,50 @@
   background-color: #13111C;
 }
 
+/* Midnight theme - Deep blue night */
+.theme-midnight {
+  --primary-color: #3B82F6;
+  --background-color: #0F172A;
+  --text-color: #E2E8F0;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(15, 23, 42, 0.95);
+  --card-border: rgba(59, 130, 246, 0.15);
+  --input-bg: rgba(15, 23, 42, 0.9);
+  --input-border: rgba(59, 130, 246, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(15, 23, 42, 0.95);
+  --tooltip-bg: rgba(15, 23, 42, 0.9);
+  --tooltip-text: #E2E8F0;
+}
+
+.theme-midnight body {
+  background-color: #0F172A;
+}
+
+/* Forest theme - Deep green tones */
+.theme-forest {
+  --primary-color: #059669;
+  --background-color: #14261D;
+  --text-color: #D1FAE5;
+  
+  /* UI elements consistent styling */
+  --card-bg: rgba(20, 38, 29, 0.95);
+  --card-border: rgba(5, 150, 105, 0.15);
+  --input-bg: rgba(20, 38, 29, 0.9);
+  --input-border: rgba(5, 150, 105, 0.2);
+  --button-bg: var(--primary-color);
+  --button-text: white;
+  --dropdown-bg: rgba(20, 38, 29, 0.95);
+  --tooltip-bg: rgba(20, 38, 29, 0.9);
+  --tooltip-text: #D1FAE5;
+}
+
+.theme-forest body {
+  background-color: #14261D;
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
