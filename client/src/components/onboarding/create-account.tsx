@@ -28,7 +28,7 @@ const createAccountSchema = insertUserSchema.extend({
 type CreateAccountFormValues = z.infer<typeof createAccountSchema>;
 
 export default function CreateAccount() {
-  const { data, setStep, updateData } = useOnboarding();
+  const { data, setStep } = useOnboarding();
   const { registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -62,7 +62,6 @@ export default function CreateAccount() {
 
   const onSubmit = async (values: CreateAccountFormValues) => {
     try {
-      // Don't set loading state manually - use isPending from the mutation
       await registerMutation.mutateAsync({
         username: values.username,
         password: values.password,
@@ -83,28 +82,13 @@ export default function CreateAccount() {
         description: "Now let's select your subscription plan"
       });
 
-      // Update the onboarding data with the user's info
-      updateData({ 
-        userId: Date.now(), // Placeholder, will be replaced by actual ID from auth context
-      });
-
       // Move to subscription step
       setStep(6);
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      
-      // More specific error handling
-      let errorMessage = "Failed to create account. Please try again.";
-      
-      // Check for username taken error
-      if (error.message && error.message.includes("username")) {
-        errorMessage = "Username already taken. Please choose another.";
-      }
-      
+    } catch (error) {
       toast({
         variant: "destructive",
-        title: "Registration Error",
-        description: errorMessage
+        title: "Error",
+        description: "Failed to create account. Please try again."
       });
     }
   };

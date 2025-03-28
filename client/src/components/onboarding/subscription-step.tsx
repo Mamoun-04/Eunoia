@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { useOnboarding } from "@/hooks/use-onboarding";
-import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
@@ -18,8 +17,7 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { toast } from "@/hooks/use-toast";
 
 // Initialize Stripe with the publishable key
-// Get the Stripe publishable key from environment variables
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51PExm5OX3dFAFDCYL4WHhMV3Ovs98EDr54S7ZHCfWlOkEGF7lA2vTQSkkFO94iKPBNx3W9QFILNIk8cEcv1GYHel00JbUEctdw';
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51PExm5OX3dFAFDCYL4WHhMV3Ovs98EDr54S7ZHCfWlOkEGF7lA2vTQSkkFO94iKPBNx3W9QFILNIk8cEcv1GYHel00JbUEctdw';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const plans = {
@@ -87,18 +85,11 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { data } = useOnboarding();
-  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!stripe || !elements) {
-      setErrorMessage("Stripe is not initialized properly. Please refresh the page.");
-      return;
-    }
-
-    if (!user) {
-      setErrorMessage("You must be logged in to complete this action.");
       return;
     }
 
@@ -106,54 +97,37 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
     setErrorMessage(null);
 
     try {
-      // First confirm the payment with Stripe
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.origin + '/payment-success',
+      // Create the subscription
+      const response = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        redirect: 'if_required',
+        body: JSON.stringify({
+          priceId: priceId,
+          userId: 1, // We'll use a placeholder user ID for now, this would normally come from authentication
+        }),
       });
 
-      if (error) {
-        throw new Error(error.message || "Payment failed");
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
 
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Now create the subscription in the backend
-        const subscriptionResponse = await fetch('/api/subscribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            plan: billingType,
-            paymentIntentId: paymentIntent.id,
-            userId: user.id
-          }),
-        });
-
-        if (!subscriptionResponse.ok) {
-          const errorData = await subscriptionResponse.json();
-          throw new Error(errorData.message || "Subscription failed");
-        }
-
+      const result = await response.json();
+      
+      if (result.error) {
+        setErrorMessage(result.error.message);
+      } else {
         toast({
           title: 'Subscription created!',
           description: `You're now subscribed to the ${billingType === 'yearly' ? 'yearly' : 'monthly'} plan.`,
         });
         onSuccess();
-      } else {
-        // The payment requires additional actions
-        toast({
-          title: 'Payment processing',
-          description: 'Your payment is being processed. Please wait...',
-        });
-        // Keep the loading state until the user is redirected
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Payment failed:', error);
-      setErrorMessage(error.message || 'Payment failed. Please try again.');
+      setErrorMessage('Payment failed. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
