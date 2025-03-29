@@ -103,7 +103,9 @@ export default function GoalSetting() {
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
-                  <RadioGroupItem value={option.id} id={option.id} />
+                  <div className="flex h-4 items-center">
+                    <RadioGroupItem value={option.id} id={option.id} />
+                  </div>
                   <Label htmlFor={option.id} className="flex-1 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <span className="flex items-center justify-center w-8 h-8">{option.icon}</span>
