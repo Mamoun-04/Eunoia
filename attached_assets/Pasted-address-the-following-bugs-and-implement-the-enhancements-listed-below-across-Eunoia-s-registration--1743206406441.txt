@@ -1,0 +1,61 @@
+address the following bugs and implement the enhancements listed below across Eunoia’s registration, onboarding, subscription flow, and landing screen. All features must be mobile-responsive and include smooth, modern animations.
+
+---
+
+## 🔐 Registration Improvements
+
+- Require users to **enter their password twice** during signup.
+- Show an **inline error** if the passwords do not match in real-time.
+- If the **username is already taken**, display a clear inline validation message without requiring form submission.
+- Ensure form validations are smooth and user-friendly.
+
+---
+
+## 🎬 Onboarding Flow (Post-Registration)
+
+This flow should be **triggered immediately after a user successfully creates an account**, before entering the home page.
+
+### Page 1 – Welcome to Eunoia
+- Headline: **“Welcome to Eunoia”**
+- Tagline: *“Writing the story of you”*
+- Include a brief mission statement about mindfulness, intentional journaling, and personal growth.
+- Use modern fade/slide animations.
+- Full-screen layout with inviting visuals and soft motion.
+
+### Page 2 – Benefits & Goal Commitment
+- List 2–3 engaging benefits of journaling (e.g., clarity, emotional balance, focus).
+- Prompt the user to **commit to a journaling goal** via a friendly UI (e.g., goal selector, animated cards, or slider).
+- Use interactive or scroll-triggered animations to keep it lively.
+- Ensure layout looks clean on small mobile devices.
+
+### Page 3 – Subscription Plans
+- Clearly display **Free vs Premium** plan comparison.
+- Include an **FAQ section** below the plans to address common questions.
+- Add two main CTA buttons:
+  - **Continue with Free** → direct to the home screen.
+  - **Upgrade to Premium** → redirect to Stripe Checkout.
+    - After successful payment, route to the home screen.
+- Use visual transitions and animated toggles between plan tiers.
+
+---
+
+## 💳 Subscription Flow Fixes
+
+- Fix the bug where clicking “Subscribe” upgrades the user without payment.
+- Implement proper Stripe Checkout integration:
+  - Clicking “Subscribe” should redirect the user to the Stripe Checkout page.
+  - Upgrade should **only happen after confirmed payment**.
+- Add clear loading states and error handling for network/payment issues.
+
+---
+
+## 🚀 Landing Page Upgrade (After Splash Screen)
+
+- Redesign the first screen after the splash to be **more modern, animated, and visually engaging**.
+- Suggestions:
+  - Subtle hero animation or gradient motion background.
+  - Clean typography with soft transitions for taglines and CTA buttons.
+  - Add a brief inspirational quote or phrase about journaling.
+  - Ensure performance and fast load on mobile devices.
+
+---
