@@ -164,28 +164,58 @@ export default function BenefitsGoalsScreen({ onNext }: BenefitsGoalsScreenProps
                   `}
                 >
                   <div 
-                    className={`cursor-pointer flex flex-col h-full`}
+                    className={`cursor-pointer flex flex-col h-full relative overflow-hidden`}
                     onClick={() => handleGoalToggle(goal.id)}
                   >
-                    <div className="flex items-center p-4 border-b">
-                      <div className="mr-3">
+                    {selectedGoals.includes(goal.id) && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute inset-0 bg-primary/5 z-0"
+                      />
+                    )}
+                    
+                    <div className="flex items-center p-4 border-b relative z-10">
+                      <motion.div 
+                        className="mr-3"
+                        animate={{ 
+                          rotate: selectedGoals.includes(goal.id) ? [0, 10, -10, 0] : 0 
+                        }}
+                        transition={{ 
+                          duration: 0.5, 
+                          type: "spring",
+                          stiffness: 300,
+                          repeat: selectedGoals.includes(goal.id) ? 0 : undefined,
+                        }}
+                      >
                         {goal.icon}
-                      </div>
+                      </motion.div>
+                      
                       <Label
                         htmlFor={goal.id}
                         className="font-medium text-base cursor-pointer flex-grow"
                       >
                         {goal.label}
                       </Label>
-                      <Checkbox
-                        id={goal.id}
-                        checked={selectedGoals.includes(goal.id)}
-                        onCheckedChange={() => handleGoalToggle(goal.id)}
-                        className="mr-1"
-                      />
+                      
+                      <motion.div
+                        whileTap={{ scale: 0.9 }}
+                        className="z-20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGoalToggle(goal.id);
+                        }}
+                      >
+                        <Checkbox
+                          id={goal.id}
+                          checked={selectedGoals.includes(goal.id)}
+                          onCheckedChange={() => handleGoalToggle(goal.id)}
+                          className="mr-1"
+                        />
+                      </motion.div>
                     </div>
                     
-                    <div className="p-4 text-sm text-gray-600 flex-grow">
+                    <div className="p-4 text-sm text-gray-600 flex-grow relative z-10">
                       {goal.description}
                     </div>
                   </div>
@@ -240,15 +270,32 @@ export default function BenefitsGoalsScreen({ onNext }: BenefitsGoalsScreenProps
                     `}
                   >
                     <div
-                      className="p-4 cursor-pointer"
+                      className="p-4 cursor-pointer relative overflow-hidden"
                       onClick={() => setJournalingFrequency(option.value)}
                     >
-                      <div className="flex items-center mb-2">
-                        <RadioGroupItem 
-                          value={option.value} 
-                          id={option.value}
-                          className="mr-3"
+                      {journalingFrequency === option.value && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="absolute inset-0 bg-primary/5 z-0"
                         />
+                      )}
+                      
+                      <div className="flex items-center mb-2 relative z-10">
+                        <motion.div
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setJournalingFrequency(option.value);
+                          }}
+                          className="mr-3"
+                        >
+                          <RadioGroupItem 
+                            value={option.value} 
+                            id={option.value}
+                          />
+                        </motion.div>
+                        
                         <Label 
                           htmlFor={option.value}
                           className="font-medium cursor-pointer"
@@ -256,7 +303,21 @@ export default function BenefitsGoalsScreen({ onNext }: BenefitsGoalsScreenProps
                           {option.label}
                         </Label>
                       </div>
-                      <p className="text-sm text-gray-600 ml-6">{option.description}</p>
+                      
+                      <motion.p 
+                        className="text-sm text-gray-600 ml-6 relative z-10"
+                        animate={{ 
+                          x: journalingFrequency === option.value ? [0, 3, 0] : 0 
+                        }}
+                        transition={{ 
+                          duration: 0.5,
+                          type: "spring",
+                          stiffness: 300,
+                          repeat: journalingFrequency === option.value ? 0 : undefined
+                        }}
+                      >
+                        {option.description}
+                      </motion.p>
                     </div>
                   </motion.div>
                 ))}
@@ -266,20 +327,46 @@ export default function BenefitsGoalsScreen({ onNext }: BenefitsGoalsScreenProps
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-12 flex justify-center"
         >
-          <Button 
-            size="lg"
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className="bg-[#0000CC] hover:bg-[#0000AA] text-white py-6 px-10 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-300 group"
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400 }}
           >
-            Continue
-            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
+            <Button 
+              size="lg"
+              onClick={handleNext}
+              disabled={isNextDisabled}
+              className={`
+                bg-[#0000CC] hover:bg-[#0000AA] text-white 
+                py-6 px-10 rounded-xl text-lg 
+                shadow-lg hover:shadow-xl 
+                transition-all duration-300 
+                group
+                ${isNextDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:translate-y-[-2px]'}
+              `}
+            >
+              <span className="flex items-center">
+                Continue
+                <motion.div
+                  animate={{ x: isNextDisabled ? 0 : [0, 5, 0] }}
+                  transition={{ 
+                    repeat: isNextDisabled ? undefined : Infinity, 
+                    duration: 1.5,
+                    repeatType: "loop",
+                    ease: "easeInOut"
+                  }}
+                  className="ml-2"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </motion.div>
+              </span>
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     </div>
