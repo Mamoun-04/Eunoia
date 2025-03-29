@@ -91,18 +91,21 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
       });
       const userData = await userResponse.json();
       
+      const priceId = billingPeriod === 'monthly' ? 
+        import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
+        import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
+
       const response = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: billingPeriod === 'monthly' ? 
-            import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
-            import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
+          priceId,
+          userId: userData.id,
+          items: [{ price: priceId }],
           plan: selectedPlan,
-          billingPeriod,
-          userId: userData.id
+          billingPeriod
         }),
         credentials: 'include'
       });
