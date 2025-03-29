@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
+import { setupSubscriptionRoutes } from "./subscription";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
@@ -27,6 +28,7 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+  setupSubscriptionRoutes(app);
 
   // Middleware to check authentication
   const requireAuth = (req: any, res: any, next: any) => {
