@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useContext, useState } from "react";
 
-type OnboardingContextType = {
+export type OnboardingContextType = {
   data: OnboardingData;
   updateData: (newData: Partial<OnboardingData>) => void;
   resetData: () => void;
@@ -8,9 +8,16 @@ type OnboardingContextType = {
 
 export type OnboardingData = {
   step: number;
+  // Goals & preferences
   selectedGoals: string[];
+  customGoal?: string;
   journalingFrequency: string;
+  
+  // Subscription related
   subscriptionPlan: "free" | "premium";
+  billingPeriod?: "monthly" | "yearly";
+  
+  // For backward compatibility - will be removed
   subscriptionStatus?: "monthly" | "yearly";
 };
 
