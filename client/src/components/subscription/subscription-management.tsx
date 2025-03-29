@@ -278,4 +278,4 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
       </Dialog>
     </>
   );
-};
+}

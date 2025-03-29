@@ -78,6 +78,10 @@ export function useSubscription() {
     },
     onSuccess: (data) => {
       if (data.url) {
+        // Refresh user data before redirecting
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+        
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {

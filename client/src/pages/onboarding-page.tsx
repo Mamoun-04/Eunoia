@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function OnboardingPage() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function OnboardingPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Parse URL query parameters from current location
   const searchParams = new URLSearchParams(window.location.search);
@@ -50,6 +52,10 @@ export default function OnboardingPage() {
               subscriptionPlan: 'premium' 
             });
             
+            // Force refresh user data to reflect new subscription status
+            queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
+            
             // Redirect to home after a short delay
             setTimeout(() => {
               setLocation('/home');
@@ -70,7 +76,7 @@ export default function OnboardingPage() {
           setIsProcessingPayment(false);
         });
     }
-  }, [isSuccessfulCheckout, sessionId, paymentSuccess, setLocation, toast, updateData]);
+  }, [isSuccessfulCheckout, sessionId, paymentSuccess, setLocation, toast, updateData, queryClient]);
   
   // Force light theme for onboarding
   useEffect(() => {

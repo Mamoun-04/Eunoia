@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQueryClient } from "@tanstack/react-query";
 
 const paymentPlans = [
   {
@@ -45,6 +46,7 @@ export default function PaymentPage() {
   const { data, updateData } = useOnboarding();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState(data?.billingPeriod === "yearly" ? "yearly" : "monthly");
@@ -154,6 +156,10 @@ export default function PaymentPage() {
         subscriptionPlan: "premium",
         billingPeriod: billingPeriod as "monthly" | "yearly"
       });
+
+      // Force refresh user data to reflect new subscription status
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
 
       // Show success state
       setPaymentSuccess(true);

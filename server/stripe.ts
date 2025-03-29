@@ -51,18 +51,24 @@ export function setupStripeRoutes(app: express.Express) {
       }
 
       // Create or get customer
-      let customer = await stripe.customers.list({ email: user.username + '@example.com', limit: 1 });
+      const customerList = await stripe.customers.list({ email: user.username + '@example.com', limit: 1 });
       
-      if (!customer.data.length) {
-        customer = await stripe.customers.create({
+      let customerId: string;
+      
+      if (!customerList.data.length) {
+        // Create a new customer if one doesn't exist
+        const newCustomer = await stripe.customers.create({
           email: user.username + '@example.com',
           metadata: { userId: userId.toString() }
         });
+        customerId = newCustomer.id;
+      } else {
+        customerId = customerList.data[0].id;
       }
 
       // Create subscription with proper items array
       const subscription = await stripe.subscriptions.create({
-        customer: customer.data?.[0]?.id || customer.id,
+        customer: customerId,
         items: [{ price: priceId }],
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
