@@ -417,29 +417,32 @@ async function handleCheckoutSessionCompleted(session: any) {
     
     console.log(`Processing completed checkout session for user ${userId}`);
     
-    // Retrieve the subscription to get additional details
+    // Always update user to premium status on successful checkout
+    let subscriptionStatus = 'monthly'; // Default to monthly
+    let subscriptionEndDate = new Date();
+    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // Default to 1 month
+    
+    // If there's a subscription, get the specific details
     if (session.subscription) {
       console.log(`Retrieving subscription details for ID: ${session.subscription}`);
       
       const subscription = await stripe.subscriptions.retrieve(session.subscription);
-      const subscriptionStatus = subscription.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly';
-      const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+      subscriptionStatus = subscription.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly';
+      subscriptionEndDate = new Date(subscription.current_period_end * 1000);
       
       console.log(`Subscription type: ${subscriptionStatus}, ends at: ${subscriptionEndDate.toISOString()}`);
-      
-      // Update the user's subscription details
-      const updatedUser = await storage.updateUser(userId, {
-        subscriptionStatus,
-        subscriptionEndDate,
-        stripeSubscriptionId: subscription.id,
-        subscriptionActive: true,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end
-      });
-      
-      console.log(`User subscription successfully updated: ${updatedUser.subscriptionStatus}, active until: ${updatedUser.subscriptionEndDate?.toISOString()}`);
-    } else {
-      console.warn(`No subscription found in session ${session.id}`);
     }
+    
+    // Update the user's subscription details
+    const updatedUser = await storage.updateUser(userId, {
+      subscriptionStatus,
+      subscriptionEndDate,
+      stripeSubscriptionId: session.subscription || null,
+      subscriptionActive: true,
+      cancelAtPeriodEnd: false
+    });
+    
+    console.log(`User subscription successfully updated: ${updatedUser.subscriptionStatus}, active until: ${updatedUser.subscriptionEndDate?.toISOString()}`);
   } catch (error: any) {
     console.error('Error processing checkout session:', error.message);
   }
