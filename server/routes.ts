@@ -349,6 +349,22 @@ User message: ${message}`;
     }
   });
   
+  // Check username availability endpoint
+  app.get("/api/check-username", async (req, res) => {
+    try {
+      const username = req.query.username as string;
+      if (!username || username.length < 4) {
+        return res.status(400).json({ message: "Username must be at least 4 characters" });
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      return res.json({ exists: !!existingUser });
+    } catch (error) {
+      console.error("Error checking username:", error);
+      return res.status(500).json({ message: "Failed to check username availability" });
+    }
+  });
+  
   // Get user streak data
   app.get("/api/streak", requireAuth, async (req, res) => {
     try {

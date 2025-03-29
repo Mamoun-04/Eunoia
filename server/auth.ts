@@ -90,4 +90,16 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
   });
+
+  // Endpoint to check if username exists
+  app.get("/api/check-username", async (req, res) => {
+    const { username } = req.query;
+    
+    if (!username || typeof username !== 'string') {
+      return res.status(400).json({ error: "Username parameter is required" });
+    }
+    
+    const existingUser = await storage.getUserByUsername(username);
+    return res.json({ exists: !!existingUser });
+  });
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { EyeIcon, EyeOffIcon, Camera } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const createAccountSchema = insertUserSchema.extend({
@@ -36,6 +36,8 @@ export default function CreateAccount() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameExists, setUsernameExists] = useState(false);
   
   const form = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountSchema),
@@ -44,8 +46,35 @@ export default function CreateAccount() {
       password: "",
       confirmPassword: "",
       terms: false
-    }
+    },
+    mode: "onChange" // Enable real-time validation
   });
+  
+  // Get username value for real-time validation
+  const username = form.watch("username");
+  
+  // Check if username exists when username field changes
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (username.length >= 4) {
+        setIsCheckingUsername(true);
+        try {
+          const response = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+          const data = await response.json();
+          setUsernameExists(data.exists);
+        } catch (error) {
+          console.error("Error checking username:", error);
+        } finally {
+          setIsCheckingUsername(false);
+        }
+      } else {
+        setUsernameExists(false);
+      }
+    };
+    
+    const timer = setTimeout(checkUsername, 500); // Debounce for 500ms
+    return () => clearTimeout(timer);
+  }, [username]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -61,6 +90,11 @@ export default function CreateAccount() {
   };
 
   const onSubmit = async (values: CreateAccountFormValues) => {
+    // Don't submit if username exists
+    if (usernameExists || isCheckingUsername) {
+      return;
+    }
+    
     try {
       await registerMutation.mutateAsync({
         username: values.username,
@@ -135,9 +169,29 @@ export default function CreateAccount() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter username" {...field} />
+                      <div className="relative">
+                        <Input 
+                          placeholder="Enter username (min 4 characters)" 
+                          className={usernameExists ? "border-red-500 pr-10" : ""}
+                          {...field} 
+                        />
+                        {isCheckingUsername && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
+                    {isCheckingUsername && username.length >= 4 && (
+                      <p className="text-xs text-muted-foreground">Checking username availability...</p>
+                    )}
+                    {usernameExists && !isCheckingUsername && (
+                      <p className="text-xs text-red-500">This username is already taken</p>
+                    )}
+                    {!usernameExists && !isCheckingUsername && username.length >= 4 && (
+                      <p className="text-xs text-green-500">Username is available</p>
+                    )}
                   </FormItem>
                 )}
               />
@@ -224,7 +278,7 @@ export default function CreateAccount() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={registerMutation.isPending}
+                disabled={registerMutation.isPending || usernameExists || isCheckingUsername}
               >
                 {registerMutation.isPending ? "Creating account..." : "Create account"}
               </Button>
