@@ -4,7 +4,10 @@ import { storage } from './storage';
 import { subscriptionPlans } from '@shared/schema';
 
 // Initialize Stripe with the secret test key
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_51PExm5OX3dFAFDCYLW3LYZyHk9Vs7fgPbEeAOkXuCR6QJGCfI83B965uVOeX0WLtAIwCEDGP6LKxXPfQR1UwjZp800C4jJz6Xk';
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+if (!STRIPE_SECRET_KEY) {
+  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2025-02-24.acacia',
 });
