@@ -81,8 +81,39 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
     }
   };
 
-  const handleNext = () => {
-    onNext();
+  const handleNext = async () => {
+    try {
+      const response = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: billingPeriod === 'monthly' ? 
+            import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
+            import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
+          plan: selectedPlan,
+          billingPeriod
+        }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to process subscription');
+      }
+
+      // If successful, proceed to next step
+      onNext();
+    } catch (error: any) {
+      console.error('Subscription error:', error);
+      toast({
+        variant: "destructive",
+        title: "Subscription Error",
+        description: error.message || "There was a problem processing your subscription"
+      });
+    }
   };
 
   const annualSavings = ((4.99 * 12) - 49.99).toFixed(2);
