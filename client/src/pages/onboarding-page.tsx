@@ -47,8 +47,20 @@ export default function OnboardingPage() {
             // Mark onboarding as complete and update subscription
             updateData({ 
               onboardingComplete: true, 
-              subscriptionPlan: 'premium' 
+              subscriptionPlan: 'premium',
+              subscriptionStatus: 'active'  // Add this line to properly set subscription status
             });
+            
+            // Force refresh user data to sync subscription status
+            await fetch('/api/user', { credentials: 'include' })
+              .then(res => res.json())
+              .then(userData => {
+                // Update global user state if needed
+                if (userData) {
+                  console.log('User data refreshed after subscription:', userData);
+                }
+              })
+              .catch(err => console.error('Error refreshing user data:', err));
             
             // Redirect to home after a short delay
             setTimeout(() => {
