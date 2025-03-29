@@ -48,7 +48,7 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/payment" component={PaymentPage} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/onboarding" component={OnboardingPage} />
+      <ProtectedRoute path="/onboarding" component={OnboardingPage} />
       <Route path="/welcome" component={WelcomeScreen} />
       <Route component={NotFound} />
     </Switch>

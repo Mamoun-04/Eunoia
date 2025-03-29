@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
+      // The redirect happens in the component
     },
     // Remove toast notification - we'll handle errors in the component
   });

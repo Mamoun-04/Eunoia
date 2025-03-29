@@ -76,7 +76,10 @@ export default function AuthPage() {
               <>
                 <RegisterForm onSubmit={(data) => {
                   registerMutation.mutate(data, {
-                    onSuccess: () => setLocation("/onboarding")
+                    onSuccess: () => {
+                      console.log("Registration successful, redirecting to onboarding");
+                      setTimeout(() => setLocation("/onboarding"), 100);
+                    }
                   });
                 }} />
                 <div className="mt-3 text-center">
