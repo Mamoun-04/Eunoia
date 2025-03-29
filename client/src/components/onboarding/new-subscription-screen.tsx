@@ -85,25 +85,21 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
 
   const handleNext = async () => {
     try {
-      // First get current user data
-      const userResponse = await fetch('/api/user', {
-        credentials: 'include'
-      });
-      const userData = await userResponse.json();
+      // If user selected free plan, just proceed to next step
+      if (selectedPlan === 'free') {
+        onNext();
+        return;
+      }
       
-      const priceId = billingPeriod === 'monthly' ? 
-        import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
-        import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
-
-      const response = await fetch('/api/create-subscription', {
+      // For premium plans, create checkout session with Stripe
+      console.log(`Creating checkout session for ${billingPeriod} subscription`);
+      
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId,
-          userId: userData.id,
-          items: [{ price: priceId }],
           plan: selectedPlan,
           billingPeriod
         }),
@@ -116,7 +112,14 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         throw new Error(data.error || 'Failed to process subscription');
       }
 
-      // If successful, proceed to next step
+      // For premium plans, we need to redirect to Stripe's checkout page
+      if (selectedPlan === 'premium' && data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url);
+        window.location.href = data.url;
+        return; // Don't proceed to next step, as we're redirecting to Stripe
+      }
+      
+      // For free plan, proceed to next step
       onNext();
     } catch (error: any) {
       console.error('Subscription error:', error);

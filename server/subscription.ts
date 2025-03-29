@@ -86,6 +86,19 @@ export function setupSubscriptionRoutes(app: express.Express) {
       // Type assertion to handle the dynamic access
       const priceId = PRICES.premium[billingPeriod as 'monthly' | 'yearly'];
       
+      console.log('Creating Stripe checkout session with price ID:', priceId);
+      
+      // Log the request headers
+      console.log('Request headers:', {
+        origin: req.headers.origin,
+        referer: req.headers.referer,
+        host: req.headers.host
+      });
+      
+      const origin = req.headers.origin || 
+                    `https://${req.headers.host}` || 
+                    'https://eunoia.replit.app';
+                    
       // Create a Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -96,10 +109,9 @@ export function setupSubscriptionRoutes(app: express.Express) {
           },
         ],
         mode: 'subscription',
-        success_url: `${req.headers.origin}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin}/subscribe/canceled`,
+        success_url: `${origin}/onboarding?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/onboarding`,
         client_reference_id: userId.toString(),
-        customer_email: user.username + '@example.com', // Placeholder for real email
         metadata: {
           userId: userId.toString(),
           plan,
