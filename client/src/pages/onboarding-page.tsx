@@ -40,11 +40,16 @@ export default function OnboardingPage() {
   const handleNext = () => {
     // If last step
     if (data.step === 2) {
+      // Mark onboarding as complete
+      updateData({ onboardingComplete: true });
+      
       // If premium subscription selected, go to payment page
       if (data.subscriptionPlan === 'premium') {
+        // Store the redirect destination so we can redirect to home after payment
+        updateData({ paymentRedirect: '/home' });
         setLocation('/payment');
       } else {
-        // Otherwise go to home
+        // For free users, go directly to home
         setLocation('/home');
       }
       return;
@@ -78,15 +83,13 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f8f7f2] flex flex-col">
       {/* Top Bar */}
       <div className="p-4 flex justify-between items-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full"
-          onClick={handleBack}
-        >
-          {data.step === 0 ? (
-            <X className="h-5 w-5 text-gray-500" />
-          ) : (
+        {data.step > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={handleBack}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -101,8 +104,9 @@ export default function OnboardingPage() {
             >
               <path d="m15 18-6-6 6-6" />
             </svg>
-          )}
-        </Button>
+          </Button>
+        )}
+        {data.step === 0 && <div className="w-10"></div>}
         
         <div className="w-full max-w-[200px] mx-4">
           <Progress value={progressPercentage} className="h-2" />

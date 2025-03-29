@@ -223,44 +223,45 @@ export default function BenefitsGoalsScreen({ onNext }: BenefitsGoalsScreenProps
               How often do you plan to journal?
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {frequencyOptions.map((option, index) => (
-                <motion.div
-                  key={option.value}
-                  variants={itemVariants}
-                  custom={index}
-                  whileHover={{ y: -3 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className={`
-                    border rounded-xl overflow-hidden
-                    ${journalingFrequency === option.value ? 
-                      'bg-primary/5 border-primary shadow-md' : 
-                      'bg-white hover:border-primary/30 hover:shadow-sm'}
-                  `}
-                >
-                  <div
-                    className="p-4 cursor-pointer"
-                    onClick={() => setJournalingFrequency(option.value)}
+            <RadioGroup value={journalingFrequency} onValueChange={setJournalingFrequency}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {frequencyOptions.map((option, index) => (
+                  <motion.div
+                    key={option.value}
+                    variants={itemVariants}
+                    custom={index}
+                    whileHover={{ y: -3 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className={`
+                      border rounded-xl overflow-hidden
+                      ${journalingFrequency === option.value ? 
+                        'bg-primary/5 border-primary shadow-md' : 
+                        'bg-white hover:border-primary/30 hover:shadow-sm'}
+                    `}
                   >
-                    <div className="flex items-center mb-2">
-                      <RadioGroupItem 
-                        value={option.value} 
-                        id={option.value}
-                        className="mr-3"
-                        checked={journalingFrequency === option.value}
-                      />
-                      <Label 
-                        htmlFor={option.value}
-                        className="font-medium cursor-pointer"
-                      >
-                        {option.label}
-                      </Label>
+                    <div
+                      className="p-4 cursor-pointer"
+                      onClick={() => setJournalingFrequency(option.value)}
+                    >
+                      <div className="flex items-center mb-2">
+                        <RadioGroupItem 
+                          value={option.value} 
+                          id={option.value}
+                          className="mr-3"
+                        />
+                        <Label 
+                          htmlFor={option.value}
+                          className="font-medium cursor-pointer"
+                        >
+                          {option.label}
+                        </Label>
+                      </div>
+                      <p className="text-sm text-gray-600 ml-6">{option.description}</p>
                     </div>
-                    <p className="text-sm text-gray-600 ml-6">{option.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            </RadioGroup>
           </motion.div>
         </motion.div>
 

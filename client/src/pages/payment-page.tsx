@@ -155,9 +155,10 @@ export default function PaymentPage() {
         // Show success state
         setPaymentSuccess(true);
         
-        // Redirect to home after a delay
+        // Redirect to the specified redirect URL or home after a delay
         setTimeout(() => {
-          setLocation("/home");
+          // Use the redirect URL from onboarding data if present, otherwise go to home
+          setLocation(data.paymentRedirect || "/home");
         }, 2000);
       }, 1500);
     } catch (error) {
