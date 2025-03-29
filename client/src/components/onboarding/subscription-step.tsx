@@ -97,6 +97,12 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
     setErrorMessage(null);
 
     try {
+      // First confirm the payment with Stripe
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        throw submitError;
+      }
+
       // Create the subscription
       const response = await fetch('/api/create-subscription', {
         method: 'POST',
@@ -105,7 +111,6 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
         },
         body: JSON.stringify({
           priceId: priceId,
-          userId: 1, // We'll use a placeholder user ID for now, this would normally come from authentication
         }),
       });
 
@@ -118,15 +123,28 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
       if (result.error) {
         setErrorMessage(result.error.message);
       } else {
+        // Confirm the payment with Stripe
+        const { error: confirmError } = await stripe.confirmPayment({
+          elements,
+          clientSecret: result.clientSecret,
+          confirmParams: {
+            return_url: window.location.origin + '/subscription/success',
+          },
+        });
+
+        if (confirmError) {
+          throw confirmError;
+        }
+
         toast({
           title: 'Subscription created!',
           description: `You're now subscribed to the ${billingType === 'yearly' ? 'yearly' : 'monthly'} plan.`,
         });
         onSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment failed:', error);
-      setErrorMessage('Payment failed. Please try again.');
+      setErrorMessage(error.message || 'Payment failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
