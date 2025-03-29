@@ -42,32 +42,30 @@ export function setupStripeRoutes(app: express.Express) {
   // Create a subscription
   app.post('/api/create-subscription', async (req: Request, res: Response) => {
     try {
-      const { paymentMethodId, customerId, priceId, userId } = req.body;
+      const { priceId, userId, plan } = req.body;
       
-      let customer;
-      
-      // If no customer ID is provided, create a new customer
-      if (!customerId) {
-        const user = await storage.getUser(userId);
-        if (!user) {
-          return res.status(404).json({ error: 'User not found' });
-        }
-        
-        customer = await stripe.customers.create({
-          payment_method: paymentMethodId,
-          email: user.username + '@example.com', // Replace with actual email when available
-          invoice_settings: {
-            default_payment_method: paymentMethodId,
-          },
-        });
-      } else {
-        customer = { id: customerId };
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
       }
 
-      // Create the subscription
+      // Create or get customer
+      let customer = await stripe.customers.list({ email: user.username + '@example.com', limit: 1 });
+      
+      if (!customer.data.length) {
+        customer = await stripe.customers.create({
+          email: user.username + '@example.com',
+          metadata: { userId: userId.toString() }
+        });
+      }
+
+      // Create subscription with proper items array
       const subscription = await stripe.subscriptions.create({
-        customer: customer.id,
+        customer: customer.data?.[0]?.id || customer.id,
         items: [{ price: priceId }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
       });
 
