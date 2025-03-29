@@ -127,46 +127,47 @@ export default function PaymentPage() {
     setIsProcessing(true);
     
     try {
-      // In a real app, this would integrate with Stripe or Apple Pay
-      // For now, we'll simulate a successful payment after a short delay
-      setTimeout(async () => {
-        // Update subscription data
-        updateData({
-          subscriptionPlan: "premium",
-          billingPeriod: billingPeriod as "monthly" | "yearly"
-        });
-        
-        // API call to update subscription on the server
-        try {
-          await fetch("/api/subscribe", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ 
-              plan: billingPeriod,
-              paymentMethod: paymentMethod 
-            }),
-          });
-        } catch (error) {
-          console.error("Error setting subscription:", error);
-        }
-        
-        // Show success state
-        setPaymentSuccess(true);
-        
-        // Redirect to the specified redirect URL or home after a delay
-        setTimeout(() => {
-          // Use the redirect URL from onboarding data if present, otherwise go to home
-          setLocation(data.paymentRedirect || "/home");
-        }, 2000);
-      }, 1500);
-    } catch (error) {
+      // Create a subscription with Stripe
+      const response = await fetch("/api/create-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId: billingPeriod === 'monthly' ? 
+            import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
+            import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+
+      // Handle the subscription
+      const { subscription } = result;
+      
+      // Update subscription data locally
+      updateData({
+        subscriptionPlan: "premium",
+        billingPeriod: billingPeriod as "monthly" | "yearly"
+      });
+
+      // Show success state
+      setPaymentSuccess(true);
+      
+      // Redirect after success
+      setTimeout(() => {
+        setLocation(data.paymentRedirect || "/home");
+      }, 2000);
+    } catch (error: any) {
       console.error("Payment error:", error);
       toast({
         variant: "destructive",
         title: "Payment Error",
-        description: "There was a problem processing your payment. Please try again."
+        description: error.message || "There was a problem processing your payment. Please try again."
       });
       setIsProcessing(false);
     }
