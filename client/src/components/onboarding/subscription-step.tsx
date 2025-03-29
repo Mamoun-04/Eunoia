@@ -16,8 +16,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { toast } from "@/hooks/use-toast";
 
-// Initialize Stripe with the publishable key
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_51PExm5OX3dFAFDCYL4WHhMV3Ovs98EDr54S7ZHCfWlOkEGF7lA2vTQSkkFO94iKPBNx3W9QFILNIk8cEcv1GYHel00JbUEctdw';
+// Initialize Stripe with the publishable test key
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51PExm5OX3dFAFDCYL4WHhMV3Ovs98EDr54S7ZHCfWlOkEGF7lA2vTQSkkFO94iKPBNx3W9QFILNIk8cEcv1GYHel00JbUEctdw';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const plans = {
@@ -172,7 +172,7 @@ function CheckoutForm({ priceId, amount, onSuccess, onCancel, billingType }: {
 }
 
 export default function SubscriptionStep() {
-  const { data, updateData, setStep } = useOnboarding();
+  const { data, updateData } = useOnboarding();
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium'>(
     (data.subscriptionPlan as 'free' | 'premium') || "free",
   );
@@ -225,7 +225,11 @@ export default function SubscriptionStep() {
 
   const handleContinue = () => {
     if (selectedPlan === 'free') {
-      updateData({ subscriptionPlan: selectedPlan, subscriptionStatus: 'free' });
+      updateData({ 
+        subscriptionPlan: selectedPlan, 
+        // Use undefined instead of 'free' to align with type definition
+        subscriptionStatus: undefined 
+      });
       // Direct user to main app after selecting free plan
       setLocation('/home');
     } else {

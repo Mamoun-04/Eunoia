@@ -17,7 +17,8 @@ import {
   CalendarDays, 
   Sparkles, 
   CreditCard, 
-  Smartphone 
+  Smartphone,
+  ArrowRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -107,22 +108,41 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         transition={{ delay: 0.2 }}
       >
         {selectedPlan === 'premium' && (
-          <Tabs 
-            defaultValue="monthly" 
-            value={billingPeriod}
-            onValueChange={(value) => handleBillingPeriodChange(value as BillingPeriod)}
-            className="w-full"
+          <motion.div
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
-              <TabsTrigger value="yearly">
-                Yearly
-                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                  Save {Math.round(100 - (39.99 / (4.99 * 12)) * 100)}%
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+            <Tabs 
+              defaultValue="monthly" 
+              value={billingPeriod}
+              onValueChange={(value) => handleBillingPeriodChange(value as BillingPeriod)}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 p-1 bg-blue-50 dark:bg-blue-900/20">
+                <TabsTrigger 
+                  value="monthly"
+                  className={`${billingPeriod === 'monthly' ? 'bg-white shadow-md dark:bg-slate-800' : ''} transition-all duration-300`}
+                >
+                  Monthly
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="yearly"
+                  className={`${billingPeriod === 'yearly' ? 'bg-white shadow-md dark:bg-slate-800' : ''} transition-all duration-300`}
+                >
+                  Yearly
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                      Save {Math.round(100 - (39.99 / (4.99 * 12)) * 100)}%
+                    </Badge>
+                  </motion.div>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </motion.div>
         )}
       </motion.div>
 
@@ -133,11 +153,15 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto"
       >
         {/* Free Plan */}
-        <motion.div variants={itemVariants}>
+        <motion.div 
+          variants={itemVariants}
+          whileHover={{ y: -5 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
           <Card 
             className={`h-full flex flex-col ${
               selectedPlan === 'free' 
-                ? 'ring-2 ring-primary border-primary shadow-lg' 
+                ? 'ring-2 ring-primary border-primary shadow-lg bg-gradient-to-br from-white to-blue-50' 
                 : 'border-border hover:border-primary/50 hover:shadow-md transition-all duration-300'
             }`}
           >
@@ -147,12 +171,21 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                   <CardTitle className="text-2xl font-serif">Free Plan</CardTitle>
                   <CardDescription className="text-base mt-1">Get started with basic journaling</CardDescription>
                 </div>
-                <Badge variant="outline" className="text-gray-500 py-1">Free</Badge>
+                <Badge 
+                  variant="outline" 
+                  className={`py-1 ${selectedPlan === 'free' ? 'bg-primary/10 text-primary' : 'text-gray-500'}`}
+                >
+                  Free Forever
+                </Badge>
               </div>
-              <div className="mt-4 pt-3 border-t">
+              <motion.div 
+                className="mt-4 pt-3 border-t"
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <span className="text-2xl font-bold">$0</span>
                 <span className="text-gray-500 ml-1">forever</span>
-              </div>
+              </motion.div>
             </CardHeader>
             
             <CardContent className="flex-grow space-y-5 pb-6">
@@ -201,24 +234,58 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         </motion.div>
 
         {/* Premium Plan */}
-        <motion.div variants={itemVariants} animate={selectedPlan === 'premium' ? pulseAnimation : {}}>
+        <motion.div 
+          variants={itemVariants} 
+          animate={selectedPlan === 'premium' ? pulseAnimation : {}}
+          whileHover={{ y: -5 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
           <Card 
             className={`h-full flex flex-col relative overflow-hidden ${
               selectedPlan === 'premium' 
-                ? 'ring-2 ring-primary border-primary shadow-xl' 
+                ? 'ring-2 ring-[#FFD700] border-[#FFD700] shadow-xl bg-gradient-to-br from-white to-yellow-50' 
                 : 'border-border hover:border-primary/50 hover:shadow-md transition-all duration-300'
             }`}
           >
-            <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
+            {selectedPlan === 'premium' && (
+              <motion.div 
+                className="absolute inset-0 bg-[#FFD700]/5 z-0"
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.15, 0.1],
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              />
+            )}
+            
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-3 py-1 text-xs font-medium rounded-bl-md">
               RECOMMENDED
             </div>
             
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 relative z-10">
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-2xl font-serif flex items-center">
                     Premium Plan
-                    <Sparkles className="h-5 w-5 ml-2 text-yellow-500" />
+                    <motion.div
+                      animate={{
+                        rotate: [0, 15, -15, 0],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Sparkles className="h-5 w-5 ml-2 text-yellow-500" />
+                    </motion.div>
                   </CardTitle>
                   <CardDescription className="text-base mt-1">Unlimited journaling experience</CardDescription>
                 </div>
@@ -231,9 +298,15 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                   </div>
                 ) : (
                   <div>
-                    <span className="text-2xl font-bold">$39.99</span>
-                    <span className="text-gray-500 ml-1">/year</span>
-                    <div className="text-green-600 text-sm mt-1">Save ${annualSavings} per year</div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <span className="text-2xl font-bold">$39.99</span>
+                      <span className="text-gray-500 ml-1">/year</span>
+                      <div className="text-green-600 text-sm mt-1 font-medium">Save ${annualSavings} per year</div>
+                    </motion.div>
                   </div>
                 )}
               </div>
@@ -295,13 +368,39 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         transition={{ duration: 0.5, delay: 0.6 }}
         className="flex justify-center mt-10"
       >
-        <Button 
-          size="lg" 
-          onClick={handleNext}
-          className="px-10 py-6 text-lg shadow-md hover:shadow-lg transition-all"
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400 }}
         >
-          {selectedPlan === 'free' ? 'Continue with Free Plan' : 'Continue to Payment'}
-        </Button>
+          <Button 
+            size="lg" 
+            onClick={handleNext}
+            className={`
+              px-10 py-6 text-lg font-medium rounded-xl
+              ${selectedPlan === 'premium' 
+                ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white' 
+                : 'bg-gradient-to-r from-blue-500 to-primary hover:from-blue-600 hover:to-primary/90 text-white'}
+              shadow-lg hover:shadow-xl transition-all duration-300
+            `}
+          >
+            {selectedPlan === 'free' 
+              ? 'Continue with Free Plan' 
+              : (
+                <span className="flex items-center">
+                  Continue to Payment
+                  <motion.div
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="ml-2"
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </motion.div>
+                </span>
+              )
+            }
+          </Button>
+        </motion.div>
       </motion.div>
 
       {selectedPlan === 'premium' && (
