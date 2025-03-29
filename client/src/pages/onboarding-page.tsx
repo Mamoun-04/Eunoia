@@ -1,166 +1,166 @@
-import { useEffect, lazy, Suspense } from "react";
-import { useLocation } from "wouter";
-import { useOnboarding } from "@/hooks/use-onboarding";
-import { useAuth } from "@/hooks/use-auth";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
-
-// Lazy load the components to improve performance
-const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
-const WelcomeScreen = lazy(() => import("@/components/onboarding/welcome-screen"));
-const ProfileSetup = lazy(() => import("@/components/onboarding/profile-setup"));
-const GoalSetting = lazy(() => import("@/components/onboarding/goal-setting"));
-const InterestSelection = lazy(() => import("@/components/onboarding/interest-selection"));
-const SubscriptionStep = lazy(() => import("@/components/onboarding/subscription-step"));
-const CreateAccount = lazy(() => import("@/components/onboarding/create-account"));
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
+import { useOnboarding } from '@/hooks/use-onboarding';
+import NewWelcomeScreen from '@/components/onboarding/new-welcome-screen';
+import BenefitsGoalsScreen from '@/components/onboarding/benefits-goals-screen';
+import NewSubscriptionScreen from '@/components/onboarding/new-subscription-screen';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 export default function OnboardingPage() {
-  const { step, setStep } = useOnboarding();
-  const [location, setLocation] = useLocation();
-
   const { user } = useAuth();
+  const { data, updateData, resetData } = useOnboarding();
+  const [, setLocation] = useLocation();
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   
-  // Only redirect to home if the user is logged in and we're not in the subscription step
+  // Force light theme for onboarding
   useEffect(() => {
-    if (user) {
-      if (step === 5) {
-        setStep(6);
-      } else if (step > 6) {
-        setLocation("/home");
+    document.documentElement.classList.add('light');
+    return () => document.documentElement.classList.remove('light');
+  }, []);
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!user) {
+      setLocation('/auth');
+    }
+  }, [user, setLocation]);
+
+  // Initialize or retrieve step
+  useEffect(() => {
+    // If coming back to onboarding, ensure we start at step 0
+    if (data.step > 2) {
+      updateData({ step: 0 });
+    }
+  }, []);
+
+  const handleNext = () => {
+    // If last step
+    if (data.step === 2) {
+      // If premium subscription selected, go to payment page
+      if (data.subscriptionPlan === 'premium') {
+        setLocation('/payment');
+      } else {
+        // Otherwise go to home
+        setLocation('/home');
       }
-    } else if (step > 1 && !user) {
-      // If no user and beyond welcome screen, go back to start
-      setStep(1);
-    }
-  }, [user, step, setStep, setLocation]);
-
-  // If step is 0 or 1, auto-advance to step 2 (profile setup)
-  useEffect(() => {
-    if (step === 0) {
-      const timer = setTimeout(() => {
-        setStep(2); // Skip welcome screen, go directly to profile setup
-      }, 2000);
-      
-      return () => clearTimeout(timer);
+      return;
     }
     
-    // If somehow we end up on step 1 (welcome screen) in the onboarding flow,
-    // immediately advance to step 2 to prevent circular issues
-    if (step === 1) {
-      setStep(2);
-    }
-  }, [step, setStep]);
-
-  // Calculate progress percentage - adjusted for starting at step 2
-  const totalSteps = 5; // Steps 2-6: Profile, Goal, Interests, Subscription, Account creation
-  const actualStep = step > 1 ? step - 1 : 1; // Adjust for the welcome screen being skipped
-  const progressPercentage = ((actualStep - 1) / totalSteps) * 100;
-
-  // Loading fallback component
-  const StepSkeleton = () => (
-    <div className="space-y-4 w-full">
-      <Skeleton className="h-12 w-3/4 rounded-lg" />
-      <Skeleton className="h-40 w-full rounded-lg" />
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-full rounded-lg" />
-        <Skeleton className="h-10 w-full rounded-lg" />
-      </div>
-    </div>
-  );
-
-  // Render current step with animation
-  const renderStep = () => {
-    // Animation variants
-    const pageVariants = {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      exit: { opacity: 0, y: -20 }
-    };
-    
-    return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={pageVariants}
-          transition={{ duration: 0.3 }}
-          className="w-full"
-        >
-          <Suspense fallback={<StepSkeleton />}>
-            {(() => {
-              switch (step) {
-                case 0:
-                  return <SplashScreen />;
-                case 1:
-                  return <WelcomeScreen />;
-                case 2:
-                  return <ProfileSetup />;
-                case 3:
-                  return <GoalSetting />;
-                case 4:
-                  return <InterestSelection />;
-                case 5:
-                  return <CreateAccount />;
-                case 6:
-                  return <SubscriptionStep />;
-                default:
-                  return <WelcomeScreen />;
-              }
-            })()}
-          </Suspense>
-        </motion.div>
-      </AnimatePresence>
-    );
+    // Otherwise, move to next step
+    updateData({ step: data.step + 1 });
   };
 
-  // Only show navigation when not on splash screen
-  if (step === 0) {
-    return renderStep();
-  }
+  const handleBack = () => {
+    if (data.step === 0) {
+      setShowExitConfirm(true);
+    } else {
+      updateData({ step: data.step - 1 });
+    }
+  };
+
+  const handleExit = () => {
+    resetData();
+    setLocation('/home');
+  };
+
+  const handleCancelExit = () => {
+    setShowExitConfirm(false);
+  };
+
+  // Calculate progress percentage
+  const progressPercentage = ((data.step + 1) / 3) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white light">
-      {/* Header with progress */}
-      <header className="p-4 sm:p-6">
-        <div className="max-w-3xl mx-auto">
-          {step > 2 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mb-4"
-              onClick={() => setStep(step - 1)}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          )}
-          <Progress value={progressPercentage} className="h-2" />
-          <div className="text-right text-sm text-muted-foreground mt-1">
-            Step {actualStep} of {totalSteps}
-          </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-3xl mx-auto">
-          {renderStep()}
-        </div>
-      </main>
-      <footer className="p-4 text-center">
-        <Button 
-          variant="link" 
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => setLocation("/auth")}
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#f8f7f2] flex flex-col">
+      {/* Top Bar */}
+      <div className="p-4 flex justify-between items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          onClick={handleBack}
         >
-          Already have an account? Login here
+          {data.step === 0 ? (
+            <X className="h-5 w-5 text-gray-500" />
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 text-gray-500"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          )}
         </Button>
-      </footer>
+        
+        <div className="w-full max-w-[200px] mx-4">
+          <Progress value={progressPercentage} className="h-2" />
+        </div>
+        
+        <span className="text-sm font-medium text-gray-500">
+          {data.step + 1} of 3
+        </span>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-x-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={data.step}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="h-full"
+          >
+            {data.step === 0 && <NewWelcomeScreen onNext={handleNext} />}
+            {data.step === 1 && <BenefitsGoalsScreen onNext={handleNext} />}
+            {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Exit Confirmation Dialog */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
+          >
+            <h3 className="text-xl font-bold mb-2">Exit Setup?</h3>
+            <p className="text-gray-600 mb-6">
+              Your progress won't be saved. Are you sure you want to exit?
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={handleCancelExit}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleExit}
+              >
+                Exit Setup
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

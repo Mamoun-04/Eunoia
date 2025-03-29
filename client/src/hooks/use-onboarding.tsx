@@ -1,64 +1,46 @@
-import { createContext, useState, useContext, ReactNode } from "react";
-
-// Define types for our onboarding data
-type OnboardingData = {
-  name?: string;
-  profilePhoto?: string;
-  bio?: string;
-  goal?: string;
-  customGoal?: string;
-  interests: string[];
-  subscriptionPlan?: 'free' | 'premium';
-  subscriptionStatus?: 'free' | 'monthly' | 'yearly';
-  userId?: number;
-};
+import { ReactNode, createContext, useContext, useState } from "react";
 
 type OnboardingContextType = {
-  step: number;
-  setStep: (step: number) => void;
   data: OnboardingData;
   updateData: (newData: Partial<OnboardingData>) => void;
-  resetOnboarding: () => void;
+  resetData: () => void;
 };
 
-// Create the context
-const OnboardingContext = createContext<OnboardingContextType | null>(null);
+export type OnboardingData = {
+  step: number;
+  selectedGoals: string[];
+  journalingFrequency: string;
+  subscriptionPlan: "free" | "premium";
+  subscriptionStatus?: "monthly" | "yearly";
+};
 
-// Initial data state
 const initialData: OnboardingData = {
-  interests: [],
+  step: 0,
+  selectedGoals: [],
+  journalingFrequency: "daily",
+  subscriptionPlan: "free",
 };
 
-// Provider component
+export const OnboardingContext = createContext<OnboardingContextType | null>(null);
+
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>(initialData);
-
+  
   const updateData = (newData: Partial<OnboardingData>) => {
-    setData(currentData => ({ ...currentData, ...newData }));
+    setData((prevData) => ({ ...prevData, ...newData }));
   };
-
-  const resetOnboarding = () => {
-    setStep(1);
+  
+  const resetData = () => {
     setData(initialData);
   };
-
+  
   return (
-    <OnboardingContext.Provider
-      value={{
-        step,
-        setStep,
-        data,
-        updateData,
-        resetOnboarding
-      }}
-    >
+    <OnboardingContext.Provider value={{ data, updateData, resetData }}>
       {children}
     </OnboardingContext.Provider>
   );
 }
 
-// Hook for using the onboarding context
 export function useOnboarding() {
   const context = useContext(OnboardingContext);
   

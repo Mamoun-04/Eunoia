@@ -11,6 +11,7 @@ import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
+import PaymentPage from "@/pages/payment-page";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
@@ -45,6 +46,7 @@ function Router() {
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/library" component={LibraryPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
+      <ProtectedRoute path="/payment" component={PaymentPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/onboarding" component={OnboardingPage} />
       <Route path="/welcome" component={WelcomeScreen} />
