@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import express, { Request, Response } from 'express';
 import { storage } from './storage';
+import { User } from '@shared/schema';
 
 // Initialize Stripe with the secret key
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
@@ -147,22 +148,44 @@ export function setupSubscriptionRoutes(app: express.Express) {
         return res.status(400).json({ error: 'Invalid user reference' });
       }
       
-      // Update the user's subscription status based on the session's metadata
-      const subscriptionStatus = session.metadata?.billingPeriod;
-      if (!subscriptionStatus) {
-        return res.status(400).json({ error: 'Missing subscription details' });
+      // Log the session details
+      console.log(`Processing checkout for session ${session_id}`);
+      console.log(`User ID: ${userId}`);
+      console.log(`Payment status: ${session.payment_status}`);
+      console.log(`Session metadata:`, session.metadata);
+      
+      // Get billing period from session metadata
+      const billingPeriod = session.metadata?.billingPeriod;
+      if (!billingPeriod || !['monthly', 'yearly'].includes(billingPeriod)) {
+        console.error(`Invalid billing period in metadata: ${billingPeriod}`);
+        return res.status(400).json({ error: 'Invalid subscription details' });
       }
+      
+      // Determine subscription status
+      const subscriptionStatus = billingPeriod; // Should be 'monthly' or 'yearly'
       
       // Retrieve the subscription details to get the end date
       const subscriptionId = session.subscription as string;
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+      console.log(`Retrieving subscription details for ID: ${subscriptionId}`);
       
-      // Update the user's subscription status in the database
-      await storage.updateUser(userId, {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      
+      // Calculate end date based on billing period
+      const currentPeriodEnd = subscription.current_period_end * 1000;
+      const subscriptionEndDate = new Date(currentPeriodEnd);
+      
+      console.log(`Subscription end date: ${subscriptionEndDate.toISOString()}`);
+      console.log(`Setting user subscription status to: ${subscriptionStatus}`);
+      
+      // Update user's subscription details
+      const updatedUser = await storage.updateUser(userId, {
         subscriptionStatus,
         subscriptionEndDate,
+        stripeSubscriptionId: subscriptionId,
+        subscriptionActive: true
       });
+      
+      console.log(`User subscription updated successfully: ${updatedUser.subscriptionStatus}`);
       
       res.status(200).json({ success: true });
     } catch (error: any) {
@@ -185,14 +208,63 @@ export function setupSubscriptionRoutes(app: express.Express) {
         return res.status(404).json({ error: 'User not found' });
       }
       
-      // In a real implementation, this would cancel the subscription in Stripe
-      // For now, we'll just update the user's subscription status
+      console.log(`Processing subscription cancellation for user ${userId}`);
+      
+      // Check if user has a Stripe subscription
+      if (user.stripeSubscriptionId) {
+        try {
+          console.log(`Canceling Stripe subscription ${user.stripeSubscriptionId}`);
+          
+          // Update subscription in Stripe to cancel at period end
+          const subscription = await stripe.subscriptions.update(
+            user.stripeSubscriptionId,
+            { cancel_at_period_end: true }
+          );
+          
+          console.log('Subscription set to cancel at period end');
+          
+          // Keep subscription status but mark as canceled at period end
+          await storage.updateUser(userId, {
+            cancelAtPeriodEnd: true,
+            // Keep the subscription active until the end date
+            subscriptionEndDate: new Date(subscription.current_period_end * 1000)
+          });
+          
+          return res.status(200).json({ 
+            success: true,
+            message: 'Your subscription will be canceled at the end of the current billing period.',
+            endDate: new Date(subscription.current_period_end * 1000).toISOString()
+          });
+        } catch (stripeError: any) {
+          console.error('Error canceling Stripe subscription:', stripeError);
+          // Fallback to manual cancellation if Stripe operation fails
+        }
+      }
+      
+      // Handle cases where there's no Stripe subscription or Stripe cancellation failed
+      console.log('Manually canceling subscription for user');
+      
+      // if user has a valid subscription end date that is in the future, keep it
+      // otherwise set it to null and immediately cancel
+      const currentDate = new Date();
+      const hasValidEndDate = user.subscriptionEndDate && user.subscriptionEndDate > currentDate;
+      
       await storage.updateUser(userId, {
-        subscriptionStatus: 'free',
-        subscriptionEndDate: null,
+        // Only switch to free if there's no valid end date
+        subscriptionStatus: hasValidEndDate ? user.subscriptionStatus : 'free',
+        // Keep the end date if it's valid, otherwise set to null
+        subscriptionEndDate: hasValidEndDate ? user.subscriptionEndDate : null,
+        cancelAtPeriodEnd: hasValidEndDate,
+        subscriptionActive: hasValidEndDate
       });
       
-      res.status(200).json({ success: true });
+      return res.status(200).json({ 
+        success: true,
+        message: hasValidEndDate 
+          ? 'Your subscription will be canceled at the end of the current billing period.' 
+          : 'Your subscription has been canceled.',
+        endDate: hasValidEndDate ? user.subscriptionEndDate?.toISOString() : null
+      });
     } catch (error: any) {
       console.error('Error canceling subscription:', error);
       res.status(500).json({ error: error.message });
@@ -207,11 +279,13 @@ export function setupSubscriptionRoutes(app: express.Express) {
       }
       
       const userId = (req.user as any).id;
-      const { productId } = req.body;
+      const { productId, receiptData } = req.body;
       
       if (!productId) {
         return res.status(400).json({ error: 'Missing product ID' });
       }
+      
+      console.log(`Processing iOS purchase for user ${userId}, product ${productId}`);
       
       const user = await storage.getUser(userId);
       if (!user) {
@@ -219,7 +293,12 @@ export function setupSubscriptionRoutes(app: express.Express) {
       }
       
       // In a real implementation, this would verify the purchase with Apple's servers
-      // For now, we'll just update the user's subscription status based on the product ID
+      // using the receipt data to validate the transaction
+      if (receiptData) {
+        console.log('Received receipt data, would verify with Apple in production');
+      }
+      
+      // Determine subscription type from product ID
       const subscriptionStatus = productId.includes('monthly') ? 'monthly' : 'yearly';
       
       // Calculate the end date (1 month or 1 year from now)
@@ -228,13 +307,23 @@ export function setupSubscriptionRoutes(app: express.Express) {
         ? new Date(now.setMonth(now.getMonth() + 1)) 
         : new Date(now.setFullYear(now.getFullYear() + 1));
       
-      // Update the user's subscription status in the database
-      await storage.updateUser(userId, {
+      console.log(`Setting subscription to ${subscriptionStatus} until ${subscriptionEndDate.toISOString()}`);
+      
+      // Update the user's subscription in the database
+      const updatedUser = await storage.updateUser(userId, {
         subscriptionStatus,
         subscriptionEndDate,
+        subscriptionActive: true,
+        cancelAtPeriodEnd: false
       });
       
-      res.status(200).json({ success: true });
+      console.log(`iOS subscription activated for user ${userId}`);
+      
+      res.status(200).json({ 
+        success: true,
+        plan: subscriptionStatus,
+        expiresAt: subscriptionEndDate.toISOString()
+      });
     } catch (error: any) {
       console.error('Error processing iOS purchase:', error);
       res.status(500).json({ error: error.message });
@@ -326,19 +415,30 @@ async function handleCheckoutSessionCompleted(session: any) {
       return;
     }
     
+    console.log(`Processing completed checkout session for user ${userId}`);
+    
     // Retrieve the subscription to get additional details
     if (session.subscription) {
+      console.log(`Retrieving subscription details for ID: ${session.subscription}`);
+      
       const subscription = await stripe.subscriptions.retrieve(session.subscription);
       const subscriptionStatus = subscription.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly';
       const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
       
-      // Update the user's subscription status
-      await storage.updateUser(userId, {
+      console.log(`Subscription type: ${subscriptionStatus}, ends at: ${subscriptionEndDate.toISOString()}`);
+      
+      // Update the user's subscription details
+      const updatedUser = await storage.updateUser(userId, {
         subscriptionStatus,
         subscriptionEndDate,
+        stripeSubscriptionId: subscription.id,
+        subscriptionActive: true,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end
       });
       
-      console.log(`Subscription ${subscriptionStatus} activated for user ${userId}`);
+      console.log(`User subscription successfully updated: ${updatedUser.subscriptionStatus}, active until: ${updatedUser.subscriptionEndDate?.toISOString()}`);
+    } else {
+      console.warn(`No subscription found in session ${session.id}`);
     }
   } catch (error: any) {
     console.error('Error processing checkout session:', error.message);
@@ -349,25 +449,60 @@ async function handleSubscriptionUpdated(subscription: any) {
   try {
     // Extract metadata to identify the user
     const metadata = subscription.metadata || {};
-    const userId = parseInt(metadata.userId || '0');
+    let userId = parseInt(metadata.userId || '0');
     
+    // If metadata doesn't have the userId, try to find the user by subscription ID
     if (!userId) {
-      console.error('Could not determine user for subscription:', subscription.id);
-      return;
+      console.log(`No userId in metadata, looking up by subscription ID: ${subscription.id}`);
+      
+      try {
+        // Find the user with this subscription ID
+        const allUsers = await storage.getAllUsers();
+        const userWithSubscription = allUsers.find((user: User) => 
+          user.stripeSubscriptionId === subscription.id
+        );
+        
+        if (userWithSubscription) {
+          userId = userWithSubscription.id;
+          console.log(`Found user ${userId} with matching subscription ID`);
+        } else {
+          console.error(`Could not find user for subscription: ${subscription.id}`);
+          return;
+        }
+      } catch (error) {
+        const lookupError = error as Error;
+        console.error(`Error looking up user by subscription ID: ${lookupError.message}`);
+        return;
+      }
     }
     
-    // Determine new subscription status
+    // Determine updated subscription details
     const subscriptionStatus = subscription.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly';
     const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
     const cancelAtPeriodEnd = subscription.cancel_at_period_end;
     
+    console.log(`Updating subscription for user ${userId}:`);
+    console.log(`- Type: ${subscriptionStatus}`);
+    console.log(`- End date: ${subscriptionEndDate.toISOString()}`);
+    console.log(`- Cancel at period end: ${cancelAtPeriodEnd}`);
+    
+    // Only mark as free after subscription period ends
+    const currentDate = new Date();
+    const isExpired = subscriptionEndDate < currentDate;
+    
     // Update the user's subscription
-    await storage.updateUser(userId, {
-      subscriptionStatus: cancelAtPeriodEnd ? 'free' : subscriptionStatus,
-      subscriptionEndDate: cancelAtPeriodEnd ? null : subscriptionEndDate,
+    const updatedUser = await storage.updateUser(userId, {
+      // Only change to free if it's expired AND canceled
+      subscriptionStatus: (cancelAtPeriodEnd && isExpired) ? 'free' : subscriptionStatus,
+      // Keep the end date regardless of cancellation status
+      subscriptionEndDate: cancelAtPeriodEnd ? subscriptionEndDate : subscriptionEndDate,
+      // Track cancellation status
+      cancelAtPeriodEnd: cancelAtPeriodEnd,
+      // Subscription is active if not expired
+      subscriptionActive: !isExpired
     });
     
-    console.log(`Subscription updated for user ${userId}: ${subscriptionStatus}, cancel at period end: ${cancelAtPeriodEnd}`);
+    console.log(`Subscription updated for user ${userId}: ${updatedUser.subscriptionStatus}`);
   } catch (error: any) {
     console.error('Error updating subscription:', error.message);
   }
@@ -377,20 +512,43 @@ async function handleSubscriptionDeleted(subscription: any) {
   try {
     // Extract metadata to identify the user
     const metadata = subscription.metadata || {};
-    const userId = parseInt(metadata.userId || '0');
+    let userId = parseInt(metadata.userId || '0');
     
+    // If metadata doesn't have the userId, try to find the user by subscription ID
     if (!userId) {
-      console.error('Could not determine user for deleted subscription:', subscription.id);
-      return;
+      console.log(`No userId in metadata, looking up by subscription ID: ${subscription.id}`);
+      
+      try {
+        // Find the user with this subscription ID
+        const allUsers = await storage.getAllUsers();
+        const userWithSubscription = allUsers.find((user: User) => 
+          user.stripeSubscriptionId === subscription.id
+        );
+        
+        if (userWithSubscription) {
+          userId = userWithSubscription.id;
+          console.log(`Found user ${userId} with matching subscription ID`);
+        } else {
+          console.error(`Could not find user for deleted subscription: ${subscription.id}`);
+          return;
+        }
+      } catch (error) {
+        const lookupError = error as Error;
+        console.error(`Error looking up user by subscription ID: ${lookupError.message}`);
+        return;
+      }
     }
     
     // Update the user's subscription status to free
-    await storage.updateUser(userId, {
+    const updatedUser = await storage.updateUser(userId, {
       subscriptionStatus: 'free',
       subscriptionEndDate: null,
+      stripeSubscriptionId: null,
+      subscriptionActive: false,
+      cancelAtPeriodEnd: false
     });
     
-    console.log(`Subscription deleted for user ${userId}`);
+    console.log(`Subscription deleted for user ${userId}, status set to: ${updatedUser.subscriptionStatus}`);
   } catch (error: any) {
     console.error('Error handling subscription deletion:', error.message);
   }

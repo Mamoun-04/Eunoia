@@ -35,6 +35,10 @@ export class PgStorage implements IStorage {
       console.error('Failed to initialize database tables:', err);
     });
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(schema.users);
+  }
 
   // Initialize database tables if they don't exist
   private async initializeDatabase() {

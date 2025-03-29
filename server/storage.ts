@@ -5,6 +5,7 @@ import { pgStorage as pgDb } from "./pg-storage";
 const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
+  getAllUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
@@ -58,6 +59,10 @@ export class MemStorage implements IStorage {
     });
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
@@ -82,6 +87,10 @@ export class MemStorage implements IStorage {
       id,
       subscriptionStatus: "free",
       subscriptionEndDate: null,
+      subscriptionActive: false,
+      stripeSubscriptionId: null,
+      stripeCustomerId: null,
+      cancelAtPeriodEnd: false,
       preferences: preferencesString,
       currentStreak: 0,
       lastActivityDate: null

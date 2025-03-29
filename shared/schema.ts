@@ -15,6 +15,10 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   subscriptionStatus: text("subscription_status").default("free").notNull(),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  subscriptionActive: boolean("subscription_active").default(false),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
   preferences: text("preferences"), // Stored as JSON string
   currentStreak: integer("current_streak").default(0),
   lastActivityDate: timestamp("last_activity_date"),
