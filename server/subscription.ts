@@ -359,7 +359,7 @@ export function setupSubscriptionRoutes(app: express.Express) {
   });
   
   // Stripe webhook for handling subscription events
-  app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+  app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
     const sig = req.headers['stripe-signature'] as string;
     
     let event;
@@ -417,10 +417,17 @@ async function handleCheckoutSessionCompleted(session: any) {
     
     console.log(`Processing completed checkout session for user ${userId}`);
     
-    // Always update user to premium status on successful checkout
-    let subscriptionStatus = 'monthly'; // Default to monthly
+    // Get subscription details from metadata
+    const billingPeriod = session.metadata?.billingPeriod || 'monthly';
+    const subscriptionStatus = billingPeriod;
+    
+    // Calculate end date
     let subscriptionEndDate = new Date();
-    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // Default to 1 month
+    if (billingPeriod === 'yearly') {
+      subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+    } else {
+      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+    }
     
     // If there's a subscription, get the specific details
     if (session.subscription) {
