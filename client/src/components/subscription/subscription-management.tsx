@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSubscription } from '@/hooks/use-subscription';
+import { useSubscription, SubscriptionStatus } from '@/hooks/use-subscription';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
@@ -87,101 +87,106 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
     );
   }
   
-  // Premium subscription UI
-  if (status.plan === 'premium' && status.isActive) {
-    return (
-      <>
-        <Card className="overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-400 to-yellow-300 h-3"></div>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center">
-                  <ShieldCheck className="h-5 w-5 mr-2 text-yellow-500" />
-                  Premium Subscription
-                </CardTitle>
-                <CardDescription>
-                  Your premium features are active
-                </CardDescription>
-              </div>
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                Active
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>Billing Period</span>
+  // Ensure status exists and is correctly structured
+  if (status && typeof status === 'object' && 'plan' in status && 'isActive' in status) {
+    // Premium subscription UI
+    if (status.plan === 'premium' && status.isActive) {
+      // Create a typed status to avoid TypeScript errors
+      const typedStatus = status as SubscriptionStatus;
+      
+      return (
+        <>
+          <Card className="overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-400 to-yellow-300 h-3"></div>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <ShieldCheck className="h-5 w-5 mr-2 text-yellow-500" />
+                    Premium Subscription
+                  </CardTitle>
+                  <CardDescription>
+                    Your premium features are active
+                  </CardDescription>
                 </div>
-                <span className="font-medium capitalize">{status.billingPeriod || 'N/A'}</span>
+                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                  Active
+                </div>
               </div>
-              
-              {status.expiresAt && (
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>Next Billing Date</span>
+                    <span>Billing Period</span>
                   </div>
-                  <span className="font-medium">
-                    {formatDate(status.expiresAt)}
-                  </span>
+                  <span className="font-medium capitalize">{typedStatus.billingPeriod || 'N/A'}</span>
                 </div>
-              )}
-              
+                
+                {typedStatus.expiresAt && (
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Next Billing Date</span>
+                    </div>
+                    <span className="font-medium">
+                      {formatDate(typedStatus.expiresAt)}
+                    </span>
+                  </div>
+                )}
+                
+                {iOS ? (
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center">
+                      <Smartphone className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Managed By</span>
+                    </div>
+                    <span className="font-medium">App Store</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center">
+                      <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Managed By</span>
+                    </div>
+                    <span className="font-medium">Stripe</span>
+                  </div>
+                )}
+                
+                {typedStatus.cancelAtPeriodEnd && (
+                  <div className="flex items-center p-3 bg-amber-50 rounded-md border border-amber-200 text-amber-800 text-sm mt-2">
+                    <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span>Your subscription will not renew after the current period ends.</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2">
               {iOS ? (
-                <div className="flex justify-between items-center text-sm">
-                  <div className="flex items-center">
-                    <Smartphone className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>Managed By</span>
-                  </div>
-                  <span className="font-medium">App Store</span>
-                </div>
-              ) : (
-                <div className="flex justify-between items-center text-sm">
-                  <div className="flex items-center">
-                    <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>Managed By</span>
-                  </div>
-                  <span className="font-medium">Stripe</span>
-                </div>
+                <Button variant="outline" className="w-full" onClick={() => {
+                  // This would typically open the App Store subscription management
+                  window.location.href = 'https://apps.apple.com/account/subscriptions';
+                }}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage in App Store
+                </Button>
+              ) : typedStatus.cancelAtPeriodEnd === false && (
+                <Button variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel Subscription
+                </Button>
               )}
-              
-              {status.cancelAtPeriodEnd && (
-                <div className="flex items-center p-3 bg-amber-50 rounded-md border border-amber-200 text-amber-800 text-sm mt-2">
-                  <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span>Your subscription will not renew after the current period ends.</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2">
-            {iOS ? (
-              <Button variant="outline" className="w-full" onClick={() => {
-                // This would typically open the App Store subscription management
-                window.location.href = 'https://apps.apple.com/account/subscriptions';
-              }}>
-                <Settings className="h-4 w-4 mr-2" />
-                Manage in App Store
-              </Button>
-            ) : !status.cancelAtPeriodEnd && (
-              <Button variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel Subscription
-              </Button>
-            )}
-            <p className="text-xs text-gray-500 text-center mt-2">
-              {iOS 
-                ? 'You can manage your subscription through the App Store.' 
-                : status.cancelAtPeriodEnd
-                  ? 'Your subscription will remain active until the end of your billing period.'
-                  : 'Your subscription will automatically renew. You can cancel anytime.'
-              }
-            </p>
-          </CardFooter>
-        </Card>
+              <p className="text-xs text-gray-500 text-center mt-2">
+                {iOS 
+                  ? 'You can manage your subscription through the App Store.' 
+                  : typedStatus.cancelAtPeriodEnd
+                    ? 'Your subscription will remain active until the end of your billing period.'
+                    : 'Your subscription will automatically renew. You can cancel anytime.'
+                }
+              </p>
+            </CardFooter>
+          </Card>
         
         {/* Upgrade dialog */}
         <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>

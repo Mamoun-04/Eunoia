@@ -105,38 +105,41 @@ export const StripeSubscription: React.FC<StripeSubscriptionProps> = ({ onComple
     );
   }
   
-  // If user already has an active premium subscription
-  if (status?.plan === 'premium' && status?.isActive) {
-    return (
-      <div className="flex flex-col items-center justify-center p-10 text-center max-w-md mx-auto">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        >
-          <CheckCircle2 className="h-14 w-14 text-green-500" />
-        </motion.div>
-        <h3 className="mt-4 text-2xl font-medium">Premium Active</h3>
-        <p className="mt-2 text-gray-600">
-          You already have an active premium subscription
-          {status.expiresAt && ` until ${new Date(status.expiresAt).toLocaleDateString()}`}.
-        </p>
-        
-        <div className="mt-6 space-y-2 w-full">
-          <p className="text-sm text-gray-500 mb-4">
-            Your subscription will automatically renew. You can manage your subscription from the account settings.
+  // Ensure status exists and handle correctly
+  if (status && typeof status === 'object' && 'plan' in status && 'isActive' in status) {
+    // If user already has an active premium subscription
+    if (status.plan === 'premium' && status.isActive) {
+      return (
+        <div className="flex flex-col items-center justify-center p-10 text-center max-w-md mx-auto">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          >
+            <CheckCircle2 className="h-14 w-14 text-green-500" />
+          </motion.div>
+          <h3 className="mt-4 text-2xl font-medium">Premium Active</h3>
+          <p className="mt-2 text-gray-600">
+            You already have an active premium subscription
+            {'expiresAt' in status && typeof status.expiresAt === 'string' && ` until ${new Date(status.expiresAt).toLocaleDateString()}`}.
           </p>
           
-          <Button 
-            variant="default" 
-            className="w-full" 
-            onClick={onComplete}
-          >
-            Continue to Eunoia
-          </Button>
+          <div className="mt-6 space-y-2 w-full">
+            <p className="text-sm text-gray-500 mb-4">
+              Your subscription will automatically renew. You can manage your subscription from the account settings.
+            </p>
+            
+            <Button 
+              variant="default" 
+              className="w-full" 
+              onClick={onComplete}
+            >
+              Continue to Eunoia
+            </Button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   // Show subscription options

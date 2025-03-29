@@ -94,38 +94,41 @@ export const IOSSubscription: React.FC<IOSSubscriptionProps> = ({ onComplete }) 
     );
   }
   
-  // If user already has an active premium subscription
-  if (status?.plan === 'premium' && status?.isActive) {
-    return (
-      <div className="flex flex-col items-center justify-center p-10 text-center max-w-md mx-auto">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        >
-          <CheckCircle2 className="h-14 w-14 text-green-500" />
-        </motion.div>
-        <h3 className="mt-4 text-2xl font-medium">Premium Active</h3>
-        <p className="mt-2 text-gray-600">
-          You have an active premium subscription through App Store
-          {status.expiresAt && ` until ${new Date(status.expiresAt).toLocaleDateString()}`}.
-        </p>
-        
-        <div className="mt-6 space-y-2 w-full">
-          <p className="text-sm text-gray-500 mb-4">
-            To manage your subscription, please visit the App Store &gt; Account &gt; Subscriptions
+  // Ensure status exists and handle correctly
+  if (status && typeof status === 'object' && 'plan' in status && 'isActive' in status) {
+    // If user already has an active premium subscription
+    if (status.plan === 'premium' && status.isActive) {
+      return (
+        <div className="flex flex-col items-center justify-center p-10 text-center max-w-md mx-auto">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          >
+            <CheckCircle2 className="h-14 w-14 text-green-500" />
+          </motion.div>
+          <h3 className="mt-4 text-2xl font-medium">Premium Active</h3>
+          <p className="mt-2 text-gray-600">
+            You have an active premium subscription through App Store
+            {'expiresAt' in status && typeof status.expiresAt === 'string' && ` until ${new Date(status.expiresAt).toLocaleDateString()}`}.
           </p>
           
-          <Button 
-            variant="default" 
-            className="w-full" 
-            onClick={onComplete}
-          >
-            Continue to Eunoia
-          </Button>
+          <div className="mt-6 space-y-2 w-full">
+            <p className="text-sm text-gray-500 mb-4">
+              To manage your subscription, please visit the App Store &gt; Account &gt; Subscriptions
+            </p>
+            
+            <Button 
+              variant="default" 
+              className="w-full" 
+              onClick={onComplete}
+            >
+              Continue to Eunoia
+            </Button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
   
   // Show subscription options

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOnboarding } from '@/hooks/use-onboarding';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -63,6 +64,7 @@ type BillingPeriod = 'monthly' | 'yearly';
 
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { data, updateData } = useOnboarding();
+  const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium'>(data.subscriptionPlan || 'free');
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 

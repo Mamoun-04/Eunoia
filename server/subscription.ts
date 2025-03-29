@@ -12,10 +12,13 @@ const stripe = new Stripe(STRIPE_SECRET_KEY, {
 });
 
 // Define price IDs for subscription plans
+// Stripe test mode price IDs - these should be created in your Stripe dashboard
+// and then set in environment variables
 const PRICES = {
   premium: {
-    monthly: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_monthly',
-    yearly: process.env.STRIPE_YEARLY_PRICE_ID || 'price_yearly',
+    // Using fallback test price IDs that should be replaced with actual IDs from Stripe dashboard
+    monthly: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1ObXvEFGCOiwOKmXxxxxxxxxM', // Test price ID for $4.99/month
+    yearly: process.env.STRIPE_YEARLY_PRICE_ID || 'price_1ObXvtFGCOiwOKmXxxxxxxxxY',  // Test price ID for $49.99/year
   },
 };
 
@@ -59,18 +62,23 @@ export function setupSubscriptionRoutes(app: express.Express) {
   app.post('/api/create-checkout-session', async (req: Request, res: Response) => {
     try {
       if (!req.user) {
+        console.error('Authentication required but user not found in session');
         return res.status(401).json({ error: 'Authentication required' });
       }
       
       const userId = (req.user as any).id;
+      console.log(`Processing subscription request for user ID: ${userId}`);
+      
       const { plan, billingPeriod } = req.body;
       
       if (plan !== 'premium' || !['monthly', 'yearly'].includes(billingPeriod)) {
         return res.status(400).json({ error: 'Invalid subscription parameters' });
       }
       
+      // Check if user exists in database
       const user = await storage.getUser(userId);
       if (!user) {
+        console.error(`User with ID ${userId} not found in database`);
         return res.status(404).json({ error: 'User not found' });
       }
       

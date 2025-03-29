@@ -53,27 +53,40 @@ export function useSubscription() {
     error: checkoutError
   } = useMutation({
     mutationFn: async (data: { plan: SubscriptionPlan, billingPeriod: BillingPeriod }) => {
+      console.log('Creating checkout session with data:', data);
+      
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
+        credentials: 'include', // Important for maintaining session cookies
       });
+      
+      console.log('Checkout session response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Checkout session creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create checkout session');
       }
       
       const result = await response.json();
+      console.log('Checkout session created, redirecting to:', result.url);
       return result;
     },
     onSuccess: (data) => {
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        console.error('No redirect URL returned from checkout session creation');
+        setError(new Error('No redirect URL returned from checkout session creation') as SubscriptionError);
+      }
     },
     onError: (err) => {
+      console.error('Error in checkout session mutation:', err);
       setError(err as SubscriptionError);
     }
   });
@@ -81,8 +94,10 @@ export function useSubscription() {
   // Create checkout session
   const createCheckoutSession = async (plan: SubscriptionPlan, billingPeriod: BillingPeriod) => {
     try {
+      console.log(`Creating checkout session for plan: ${plan}, billing period: ${billingPeriod}`);
       createCheckoutSessionMutation({ plan, billingPeriod });
     } catch (err: any) {
+      console.error('Error creating checkout session:', err);
       setError(err);
     }
   };
