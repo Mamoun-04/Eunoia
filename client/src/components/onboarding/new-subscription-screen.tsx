@@ -85,6 +85,12 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
 
   const handleNext = async () => {
     try {
+      // First get current user data
+      const userResponse = await fetch('/api/user', {
+        credentials: 'include'
+      });
+      const userData = await userResponse.json();
+      
       const response = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: {
@@ -95,7 +101,8 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
             import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID :
             import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
           plan: selectedPlan,
-          billingPeriod
+          billingPeriod,
+          userId: userData.id
         }),
         credentials: 'include'
       });
