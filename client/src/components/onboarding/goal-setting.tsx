@@ -1,13 +1,9 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Brain, HeartHandshake, Heart, Sparkles, PenSquare, Leaf, Coffee } from "lucide-react";
+import { Brain, HeartHandshake, Coffee, PenSquare } from "lucide-react";
+import { useOnboarding } from "@/hooks/use-onboarding";
 
 const goalOptions = [
   { 
@@ -61,43 +57,33 @@ export default function GoalSetting() {
       </div>
 
       <div className="max-w-3xl mx-auto space-y-4">
-        <RadioGroup
-          value={selectedGoal}
-          onValueChange={setSelectedGoal}
-          className="space-y-3"
-        >
-          {goalOptions.map((option) => (
-            <div key={option.id} className="space-y-3">
-              <Label
-                htmlFor={option.id}
-                className="flex items-center space-x-3 cursor-pointer"
-              >
-                <RadioGroupItem value={option.id} id={option.id} />
-                <Card className={`w-full cursor-pointer transition-all duration-200 ${
-                  selectedGoal === option.id ? 'border-primary bg-primary/5' : ''
-                }`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2">
-                      {option.icon}
-                      <span className="font-medium">{option.text}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
-                  </CardContent>
-                </Card>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-
-        <div className="flex justify-center pt-6">
-          <Button
-            onClick={handleContinue}
-            disabled={!selectedGoal}
-            className="w-full sm:w-auto px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        {goalOptions.map((option) => (
+          <Card 
+            key={option.id}
+            className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+              selectedGoal === option.id ? 'border-primary bg-primary/5' : ''
+            }`}
+            onClick={() => setSelectedGoal(option.id)}
           >
-            Continue your journey
-          </Button>
-        </div>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                {option.icon}
+                <span className="font-medium">{option.text}</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex justify-center pt-6">
+        <Button
+          onClick={handleContinue}
+          disabled={!selectedGoal}
+          className="w-full sm:w-auto px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          Continue your journey
+        </Button>
       </div>
     </motion.div>
   );
