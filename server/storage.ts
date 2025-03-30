@@ -27,12 +27,7 @@ export interface IStorage {
   updateUserStreak(userId: number): Promise<number>;
   getUserStreak(userId: number): Promise<number>;
   
-  // Free user limit methods
-  canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }>;
-  canAddImage(userId: number): Promise<{ allowed: boolean; reason?: string }>;
-  getEntryContentLimit(userId: number): Promise<number>;
-  getUserDailyEntryCount(userId: number): Promise<number>;
-  getUserDailyImageCount(userId: number): Promise<number>;
+  // All users have full access - no limits needed
   
   sessionStore: session.Store;
 }
@@ -80,8 +75,6 @@ export class MemStorage implements IStorage {
       username: insertUser.username,
       password: insertUser.password,
       id,
-      subscriptionStatus: "free",
-      subscriptionEndDate: null,
       preferences: preferencesString,
       currentStreak: 0,
       lastActivityDate: null
@@ -158,42 +151,13 @@ export class MemStorage implements IStorage {
     this.users.delete(id);
   }
 
-  // Free user limit implementation methods
+  // All features are now available to everyone - no restrictions
   async canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }> {
     const user = await this.getUser(userId);
     if (!user) {
       return { allowed: false, reason: "User not found" };
     }
-
-    // Parse user preferences to get subscription plan
-    let userPreferences: Partial<UserPreferences> = { 
-      subscriptionPlan: "free", 
-      interests: [], 
-      theme: "light" 
-    };
-    
-    if (user.preferences) {
-      try {
-        userPreferences = JSON.parse(user.preferences) as UserPreferences;
-      } catch (e) {
-        console.error("Error parsing user preferences:", e);
-      }
-    }
-
-    // Premium users can create unlimited entries
-    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
-      return { allowed: true };
-    }
-
-    // Free users are limited to 1 entry per day
-    const dailyEntryCount = await this.getUserDailyEntryCount(userId);
-    if (dailyEntryCount >= 1) {
-      return { 
-        allowed: false, 
-        reason: "Free users are limited to 1 entry per day. Upgrade to Premium for unlimited journaling."
-      };
-    }
-
+    // All users can create unlimited entries
     return { allowed: true };
   }
 
@@ -202,65 +166,17 @@ export class MemStorage implements IStorage {
     if (!user) {
       return { allowed: false, reason: "User not found" };
     }
-
-    // Parse user preferences to get subscription plan
-    let userPreferences: Partial<UserPreferences> = { 
-      subscriptionPlan: "free", 
-      interests: [], 
-      theme: "light" 
-    };
-    
-    if (user.preferences) {
-      try {
-        userPreferences = JSON.parse(user.preferences) as UserPreferences;
-      } catch (e) {
-        console.error("Error parsing user preferences:", e);
-      }
-    }
-
-    // Premium users can add unlimited images
-    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
-      return { allowed: true };
-    }
-
-    // Free users cannot upload images at all
-    return { 
-      allowed: false, 
-      reason: "Image uploads are a premium feature. Upgrade to Premium to add images to your entries."
-    };
+    // All users can add images
+    return { allowed: true };
   }
 
   async getEntryContentLimit(userId: number): Promise<number> {
-    const user = await this.getUser(userId);
-    if (!user) {
-      return 0;
-    }
-
-    // Parse user preferences to get subscription plan
-    let userPreferences: Partial<UserPreferences> = { 
-      subscriptionPlan: "free", 
-      interests: [], 
-      theme: "light" 
-    };
-    
-    if (user.preferences) {
-      try {
-        userPreferences = JSON.parse(user.preferences) as UserPreferences;
-      } catch (e) {
-        console.error("Error parsing user preferences:", e);
-      }
-    }
-
-    // Premium users are limited to 1000 words
-    if (userPreferences.subscriptionPlan === "monthly" || userPreferences.subscriptionPlan === "yearly") {
-      return 1000;
-    }
-
-    // Free users are limited to 250 words
-    return 250;
+    // All users have a high word limit (effectively unlimited)
+    return 10000;
   }
 
   async getUserDailyEntryCount(userId: number): Promise<number> {
+    // This is still tracked for informational purposes but no longer used for restrictions
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -274,6 +190,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserDailyImageCount(userId: number): Promise<number> {
+    // This is still tracked for informational purposes but no longer used for restrictions
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     

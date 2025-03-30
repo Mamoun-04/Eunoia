@@ -13,8 +13,6 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  subscriptionStatus: text("subscription_status").default("free").notNull(),
-  subscriptionEndDate: timestamp("subscription_end_date"),
   preferences: text("preferences"), // Stored as JSON string
   currentStreak: integer("current_streak").default(0),
   lastActivityDate: timestamp("last_activity_date"),
@@ -39,8 +37,8 @@ export const userPreferencesSchema = z.object({
   goal: z.string().optional(),
   customGoal: z.string().optional(),
   interests: z.array(z.string()).default([]),
-  subscriptionPlan: z.enum(["free", "monthly", "yearly"]).default("free"),
   theme: z.enum(["light", "dark"]).default("light"),
+  // No subscription plan needed - all features are available to all users
 });
 
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
@@ -103,16 +101,4 @@ export const insertSavedLessonSchema = createInsertSchema(savedLessons).pick({
 export type SavedLesson = typeof savedLessons.$inferSelect;
 export type InsertSavedLesson = z.infer<typeof insertSavedLessonSchema>;
 
-export const subscriptionPlans = {
-  monthly: {
-    price: 3.99,
-    name: "Monthly Plan",
-    interval: "month",
-  },
-  yearly: {
-    price: 34.99,
-    name: "Yearly Plan",
-    interval: "year",
-    monthlyPrice: 2.92,
-  },
-} as const;
+// All features are available to everyone - no subscription plans needed
