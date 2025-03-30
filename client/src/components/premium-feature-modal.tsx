@@ -61,7 +61,7 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
         <div className="flex flex-col gap-4 py-4">
           <div className="flex items-center gap-2 text-sm">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span>All premium features are now available to everyone for free!</span>
+            <span>All premium features are free for a limited time!</span>
           </div>
           
           <Separator />

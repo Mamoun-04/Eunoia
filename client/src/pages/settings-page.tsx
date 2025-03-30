@@ -104,7 +104,7 @@ export default function SettingsPage() {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  All premium features are now available for free
+                  All premium features are free for a limited time
                 </p>
               </div>
               <div className="rounded-full bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
