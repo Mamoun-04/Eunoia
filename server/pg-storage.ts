@@ -365,49 +365,11 @@ export class PgStorage implements IStorage {
 
   // Free user limit methods
   async canCreateEntry(userId: number): Promise<{ allowed: boolean; reason?: string }> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) throw new Error('User not found');
-      
-      // Premium users can create unlimited entries
-      if (user.subscriptionStatus === 'active') {
-        return { allowed: true };
-      }
-      
-      // Check daily entry count for free users
-      const dailyCount = await this.getUserDailyEntryCount(userId);
-      if (dailyCount >= 1) {
-        return {
-          allowed: false,
-          reason: "Free users can only create 1 entry per day. Upgrade to premium for unlimited entries."
-        };
-      }
-      
-      return { allowed: true };
-    } catch (error) {
-      console.error('Error checking if user can create entry:', error);
-      throw error;
-    }
+    return { allowed: true };
   }
 
   async canAddImage(userId: number): Promise<{ allowed: boolean; reason?: string }> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) throw new Error('User not found');
-      
-      // Only premium users can add images
-      if (user.subscriptionStatus !== 'active') {
-        return {
-          allowed: false,
-          reason: "Image uploads are a premium feature. Upgrade to add images to your entries."
-        };
-      }
-      
-      return { allowed: true };
-    } catch (error) {
-      console.error('Error checking if user can add image:', error);
-      throw error;
-    }
+    return { allowed: true };
   }
 
   async getEntryContentLimit(userId: number): Promise<number> {
