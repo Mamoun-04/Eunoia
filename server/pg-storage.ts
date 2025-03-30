@@ -111,7 +111,7 @@ export class PgStorage implements IStorage {
         username: user.username,
         password: user.password,
         preferences: preferencesString,
-        subscriptionStatus: 'free',
+        subscriptionStatus: 'active', // All users automatically get premium status
         currentStreak: 0
       } as any).returning();
       
@@ -377,8 +377,8 @@ export class PgStorage implements IStorage {
       const user = await this.getUser(userId);
       if (!user) throw new Error('User not found');
       
-      // Premium users have higher content limits
-      return user.subscriptionStatus === 'active' ? 1000 : 250;
+      // All users get premium content limits
+      return 1000;
     } catch (error) {
       console.error('Error getting entry content limit:', error);
       throw error;

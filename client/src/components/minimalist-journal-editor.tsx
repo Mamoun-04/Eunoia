@@ -28,9 +28,9 @@ export function MinimalistJournalEditor({
   const { refreshStreak } = useStreak();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Calculate word count limit based on user subscription
-  const isPremium = user?.subscriptionStatus === "active";
-  const WORD_LIMIT = isPremium ? 1000 : 250;
+  // All users get premium features
+  const isPremium = true;
+  const WORD_LIMIT = 1000;
   
   // Form state
   const [title, setTitle] = useState(existingEntry?.title || "");
@@ -67,17 +67,6 @@ export function MinimalistJournalEditor({
     if (!e.target.files || e.target.files.length === 0) return;
     
     try {
-      // Check if user can upload images (premium only)
-      if (!isPremium) {
-        // Show premium modal but don't close the editor
-        showPremiumFeatureModal("Image Upload");
-        // Reset the file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        return;
-      }
-      
       const file = e.target.files[0];
       setImageFile(file);
       
@@ -336,29 +325,7 @@ export function MinimalistJournalEditor({
         </div>
       )}
       
-      {/* Premium feature alert */}
-      {premiumFeatureAlert.visible && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
-          <div className="flex items-start gap-2">
-            <div className="flex-grow">
-              <h4 className="text-blue-600 font-medium">Premium Feature: {premiumFeatureAlert.feature}</h4>
-              <p className="text-sm text-blue-800">{premiumFeatureAlert.message}</p>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1 bg-white border-blue-300 text-blue-600 hover:bg-blue-50"
-              onClick={() => {
-                // Open the subscription dialog by triggering the state change in the parent
-                document.dispatchEvent(new CustomEvent('open-subscription-dialog'));
-              }}
-            >
-              <Sparkles className="h-4 w-4" />
-              Upgrade
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* No premium feature alerts needed as all features are available */}
       
       {/* Title input */}
       <div>
@@ -370,7 +337,7 @@ export function MinimalistJournalEditor({
         />
       </div>
       
-      {/* Image upload section (premium only) */}
+      {/* Image upload section (available to all users) */}
       <div className="space-y-2 mb-2">
         {imageUrl && (
           <div className="relative rounded-lg overflow-hidden border border-border/60 mb-4">
@@ -408,11 +375,6 @@ export function MinimalistJournalEditor({
               // Prevent the event from bubbling up and potentially closing dialogs
               e.stopPropagation();
               
-              if (!isPremium) {
-                showPremiumFeatureModal("Image Upload");
-                return;
-              }
-              
               if (fileInputRef.current) {
                 fileInputRef.current.click();
               }
@@ -421,7 +383,7 @@ export function MinimalistJournalEditor({
             <div className="flex flex-col items-center text-muted-foreground">
               <Image className="h-8 w-8 mb-2" />
               <span className="text-sm">
-                {isPremium ? "Add image" : "Image uploads (Premium only)"}
+                Add image
               </span>
             </div>
           </Button>

@@ -52,11 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(401).json({ message: "Unauthorized" });
         }
 
-        // Check if user can add an image (free user limit)
-        const canAddImage = await storage.canAddImage(req.user.id);
-        if (!canAddImage.allowed) {
-          return res.status(403).json({ message: canAddImage.reason });
-        }
+        // All users can add images without limits
 
         // Check if file was uploaded
         if (!req.file) {
@@ -74,11 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/entries", requireAuth, async (req, res) => {
     try {
-      // Check if user can create an entry (free user limit)
-      const canCreateEntry = await storage.canCreateEntry(req.user!.id);
-      if (!canCreateEntry.allowed) {
-        return res.status(403).json({ message: canCreateEntry.reason });
-      }
+      // All users can create entries without limits
 
       // Get content limit
       const contentLimit = await storage.getEntryContentLimit(req.user!.id);
@@ -89,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (wordCount > contentLimit) {
         return res.status(403).json({ 
-          message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+          message: `Entries are limited to ${contentLimit} words per entry.`
         });
       }
       
@@ -132,10 +124,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Count words in the new content
         const wordCount = req.body.content.trim().split(/\s+/).length;
         
-        // Enforce the limit for free users
+        // Enforce the word limit
         if (wordCount > contentLimit) {
           return res.status(403).json({ 
-            message: `Free users are limited to ${contentLimit} words per entry. Upgrade to Premium for unlimited content.`
+            message: `Entries are limited to ${contentLimit} words per entry.`
           });
         }
       }
@@ -161,70 +153,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock subscription endpoint
+  // Deprecated subscription endpoints (maintain for backwards compatibility)
   app.post("/api/subscribe", requireAuth, async (req, res) => {
-    const { plan } = req.body;
-    if (!plan || !["monthly", "yearly"].includes(plan)) {
-      return res.status(400).json({ message: "Invalid subscription plan" });
-    }
-
-    try {
-      // Set subscription end date
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + (plan === "yearly" ? 12 : 1));
-      
-      // Get user for current preferences
-      const user = await storage.getUser(req.user!.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      // Update user preferences with subscription plan
-      let userPreferences = {};
-      if (user.preferences) {
-        try {
-          userPreferences = JSON.parse(user.preferences);
-        } catch (e) {
-          console.error("Error parsing user preferences:", e);
-        }
-      }
-      
-      // Update preferences with the new subscription plan
-      userPreferences = {
-        ...userPreferences,
-        subscriptionPlan: plan
-      };
-      
-      // Update user in database
-      await storage.updateUser(req.user!.id, {
-        subscriptionStatus: "active",
-        subscriptionEndDate: endDate,
-        preferences: JSON.stringify(userPreferences)
-      });
-
-      res.json({ 
-        message: "Subscription activated",
-        plan: plan,
-        endDate: endDate
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to process subscription" });
-    }
+    // All users have access to all features by default
+    res.json({ 
+      message: "All premium features are now available to everyone for free!",
+      plan: "premium",
+      endDate: null
+    });
   });
   
-  // Mock cancel subscription endpoint
+  // Deprecated cancel subscription endpoint
   app.post("/api/cancel-subscription", requireAuth, async (req, res) => {
-    try {
-      // Set subscription status to "canceled" but keep the end date
-      // This allows users to continue using premium features until their subscription period ends
-      await storage.updateUser(req.user!.id, {
-        subscriptionStatus: "canceled"
-      });
-      
-      res.json({ message: "Subscription cancelled successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to cancel subscription" });
-    }
+    // No subscription to cancel as all features are free
+    res.json({ message: "All premium features are available for free!" });
   });
 
   // AI Chat endpoint
@@ -304,35 +246,25 @@ User message: ${message}`;
       const user = await storage.getUser(req.user!.id);
       
       // Create a sanitized user object without sensitive data
+      // Always set premium status for all users
       const userInfo: {
         id: number;
         username: string;
         subscriptionStatus: string;
         subscriptionEndDate: Date | null;
-        subscriptionPlan?: string;
+        subscriptionPlan: string;
         currentStreak: number;
         lastActivityDate: Date | null;
       } = {
         id: user!.id,
         username: user!.username,
-        subscriptionStatus: user!.subscriptionStatus,
-        subscriptionEndDate: user!.subscriptionEndDate,
+        // Always return premium status for all users
+        subscriptionStatus: "active",
+        subscriptionEndDate: null,
+        subscriptionPlan: "premium",
         currentStreak: user!.currentStreak || 0,
         lastActivityDate: user!.lastActivityDate
       };
-      
-      // Add subscription plan from preferences if available
-      if (user!.preferences) {
-        try {
-          const preferences = JSON.parse(user!.preferences);
-          userInfo.subscriptionPlan = preferences.subscriptionPlan || "free";
-        } catch (e) {
-          console.error("Error parsing user preferences:", e);
-          userInfo.subscriptionPlan = "free";
-        }
-      } else {
-        userInfo.subscriptionPlan = "free";
-      }
       
       res.json(userInfo);
     } catch (error) {

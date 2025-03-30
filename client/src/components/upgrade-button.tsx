@@ -17,54 +17,13 @@ export function UpgradeButton({
   className,
   ...props
 }: UpgradeButtonProps) {
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
-  const { user } = useAuth();
-  
-  // Check if user already has premium
-  const isPremium = user?.subscriptionStatus === "active";
-  
-  // If user is already premium, don't show the button
-  if (isPremium) {
-    return null;
-  }
-  
-  // For gradient variant, use the default variant with custom gradient class
-  let buttonVariant: ButtonProps['variant'] = 'default';
-  let buttonStyle = '';
-  
-  if (variant === "gradient") {
-    buttonVariant = "default";
-    buttonStyle = "bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/90 text-white";
-  } else {
-    buttonVariant = variant as ButtonProps['variant'];
-  }
-  
-  return (
-    <>
-      <Button
-        variant={buttonVariant}
-        onClick={() => setShowSubscriptionDialog(true)}
-        className={`${buttonStyle} ${className || ''}`}
-        {...props}
-      >
-        {showIcon && <Sparkles className="h-4 w-4 mr-2" />}
-        {buttonText}
-      </Button>
-      
-      <SubscriptionDialog
-        open={showSubscriptionDialog}
-        onOpenChange={setShowSubscriptionDialog}
-      />
-    </>
-  );
+  // All users now have premium features, so this component is obsolete
+  // Return null to not render anything
+  return null;
 }
 
 export function PremiumBadge() {
-  const { user } = useAuth();
-  const isPremium = user?.subscriptionStatus === "active";
-  
-  if (!isPremium) return null;
-  
+  // All users are premium by default now
   return (
     <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary gap-1">
       <Sparkles className="h-3 w-3" />

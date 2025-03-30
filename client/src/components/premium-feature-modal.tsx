@@ -23,53 +23,27 @@ type Props = {
 
 export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }: Props) {
   const { toast } = useToast();
-  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   
-  const subscriptionMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan: "monthly" });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Subscription activated",
-        description: "Thank you for subscribing to Eunoia Premium!",
-      });
-      onOpenChange(false);
-      if (onSubscribe) {
-        onSubscribe();
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error activating subscription",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Feature limits
-  const featureLimits = {
+  // Feature limits - renamed to feature descriptions since there are no limits now
+  const featureDescriptions = {
     image_upload: {
-      title: "Image Upload Limit Reached",
-      description: "Free accounts are limited to 1 image per day",
+      title: "Feature Information",
+      description: "You can upload unlimited images with your entries",
       icon: Image,
     },
     daily_entry: {
-      title: "Entry Limit Reached",
-      description: "Free accounts are limited to 3 entries per day",
+      title: "Feature Information",
+      description: "You can create unlimited entries per day",
       icon: Calendar,
     },
     word_limit: {
-      title: "Word Limit Reached",
-      description: "Free accounts are limited to 500 words per entry",
+      title: "Feature Information",
+      description: "Entries can be up to 1000 words each",
       icon: FileText,
     },
   };
   
-  const { title, description, icon: FeatureIcon } = featureLimits[feature];
+  const { title, description, icon: FeatureIcon } = featureDescriptions[feature];
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,26 +61,14 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
         <div className="flex flex-col gap-4 py-4">
           <div className="flex items-center gap-2 text-sm">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span>Upgrade to Premium for unlimited access to all features</span>
+            <span>All premium features are now available to everyone for free!</span>
           </div>
           
           <Separator />
           
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Maybe Later
-            </Button>
-            <Button 
-              onClick={() => subscriptionMutation.mutate()}
-              disabled={subscriptionMutation.isPending}
-              className="bg-gradient-to-r from-primary/80 to-primary"
-            >
-              {subscriptionMutation.isPending ? (
-                <span className="animate-spin mr-2">●</span>
-              ) : (
-                <Sparkles className="h-4 w-4 mr-2" />
-              )}
-              Upgrade Now
+          <div className="flex justify-end">
+            <Button onClick={() => onOpenChange(false)}>
+              Got it
             </Button>
           </div>
         </div>
