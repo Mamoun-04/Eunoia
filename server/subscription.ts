@@ -359,7 +359,7 @@ export function setupSubscriptionRoutes(app: express.Express) {
   });
   
   // Stripe webhook for handling subscription events
-  app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+  app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
     const sig = req.headers['stripe-signature'] as string;
     
     let event;
@@ -372,8 +372,18 @@ export function setupSubscriptionRoutes(app: express.Express) {
         console.warn('Missing STRIPE_WEBHOOK_SECRET, skipping signature verification');
         event = req.body;
       } else {
-        // Parse and verify the webhook payload
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        try {
+          // Parse and verify the webhook payload
+          event = stripe.webhooks.constructEvent(
+            req.body,
+            sig,
+            endpointSecret
+          );
+          console.log('Webhook verified successfully');
+        } catch (err) {
+          console.log(`Webhook signature verification failed:`, err);
+          return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
       }
       
       // Handle different event types
@@ -419,15 +429,26 @@ async function handleCheckoutSessionCompleted(session: any) {
     
     // Get subscription details from metadata
     const billingPeriod = session.metadata?.billingPeriod || 'monthly';
-    const subscriptionStatus = billingPeriod;
+    let subscriptionStatus = billingPeriod;
     
-    // Calculate end date
+    // Set end date based on subscription details
     let subscriptionEndDate = new Date();
     if (billingPeriod === 'yearly') {
       subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
     } else {
       subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
     }
+
+    // Update user immediately with premium status
+    await storage.updateUser(userId, {
+      subscriptionStatus,
+      subscriptionEndDate,
+      subscriptionActive: true,
+      stripeSubscriptionId: session.subscription || null,
+      cancelAtPeriodEnd: false
+    });
+
+    console.log(`Updated user ${userId} to ${subscriptionStatus} subscription until ${subscriptionEndDate}`);
     
     // If there's a subscription, get the specific details
     if (session.subscription) {
