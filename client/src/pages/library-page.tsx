@@ -2437,8 +2437,8 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"guided" | "saved">("guided");
   
-  // Check if user has premium subscription
-  const isPremium = user?.subscriptionStatus === "active";
+  // All users are premium by default now
+  const isPremium = true;
   
   // Fetch saved lessons
   const { data: savedLessons = [], isLoading: savedLessonsLoading } = useQuery<SavedLesson[]>({
@@ -2470,7 +2470,7 @@ export default function LibraryPage() {
   const preparedLessons = SAMPLE_LESSONS.map(lesson => ({
     ...lesson,
     isFeatured: lesson.id === featuredLesson.id,
-    isAccessible: isPremium || lesson.id === featuredLesson.id
+    isAccessible: true // All lessons are now accessible to all users
   }));
   
   // Filter lessons based on search query
@@ -2641,7 +2641,7 @@ export default function LibraryPage() {
                   <div>
                     <p className="font-medium text-amber-800 dark:text-amber-400">Featured lesson of the day</p>
                     <p className="text-amber-700 dark:text-amber-300/80">
-                      Each day, we feature one premium lesson that's free for everyone. Check back daily for new content!
+                      Each day, we highlight a special lesson to inspire your journaling practice. All lessons are free for everyone to enjoy!
                     </p>
                   </div>
                 </div>
@@ -2692,19 +2692,8 @@ export default function LibraryPage() {
                         lesson.isFeatured 
                           ? "p-6 cursor-pointer ring-2 ring-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:shadow-[0_0_18px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(251,191,36,0.15)] dark:hover:shadow-[0_0_18px_rgba(251,191,36,0.25)]" 
                           : "p-6 cursor-pointer hover:bg-accent/50"
-                      } ${
-                        !lesson.isAccessible 
-                          ? "opacity-80" 
-                          : ""
                       }`}
-                      onClick={() => {
-                        if (lesson.isAccessible) {
-                          setSelectedLesson(lesson);
-                        } else {
-                          // Could show premium feature modal here
-                          alert("This lesson is available only for premium users");
-                        }
-                      }}
+                      onClick={() => setSelectedLesson(lesson)}
                     >
                       {/* Badge for featured lessons */}
                       {lesson.isFeatured && (
@@ -2715,7 +2704,7 @@ export default function LibraryPage() {
                       )}
                       
                       {/* Apply blur effect for non-accessible lessons */}
-                      <div className={`${!lesson.isAccessible ? "blur-[3px]" : ""}`}>
+                      <div>
                         <Sparkles className={`h-8 w-8 mb-4 ${lesson.isFeatured ? "text-amber-500" : "text-primary"}`} />
                         <h3 className="text-xl font-semibold mb-2">
                           {lesson.title}
@@ -2729,31 +2718,14 @@ export default function LibraryPage() {
                             {lesson.questions.length * 2} min
                           </div>
                           <div>
-                            {lesson.isFeatured ? (
-                              <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full px-2 py-0.5">
-                                Free
-                              </span>
-                            ) : (
-                              <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
-                                {isPremium ? "Premium" : "Premium Only"}
-                              </span>
-                            )}
+                            <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full px-2 py-0.5">
+                              Free
+                            </span>
                           </div>
                         </div>
                       </div>
                       
-                      {/* Lock overlay for non-accessible lessons */}
-                      {!lesson.isAccessible && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
-                          <div className="bg-black/60 text-white text-sm font-medium rounded-full px-3 py-1.5 flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            Premium Only
-                          </div>
-                        </div>
-                      )}
+                      {/* No lock overlay anymore since all lessons are free */}
                     </Card>
                   ))}
                 </div>
