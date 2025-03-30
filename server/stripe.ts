@@ -118,11 +118,63 @@ export function setupStripeRoutes(app: express.Express) {
           const subscriptionType = session.metadata?.billingPeriod || 'monthly';
           console.log(`Setting user subscription status to: ${subscriptionType}`);
           
+          // Get the current user data to access preferences
+          const user = await storage.getUser(parseInt(userId));
+          if (!user) {
+            console.log(`User ${userId} not found for subscription update`);
+            return res.status(404).json({ error: 'User not found' });
+          }
+          
+          // Parse the current preferences or create new ones
+          let userPreferences = {};
+          if (user.preferences) {
+            try {
+              userPreferences = JSON.parse(user.preferences);
+            } catch (e) {
+              console.error(`Error parsing preferences for user ${userId}:`, e);
+            }
+          }
+          
+          // Update the preferences with subscription plan
+          userPreferences = {
+            ...userPreferences,
+            subscriptionPlan: subscriptionType
+          };
+          
           // Update the user's subscription details
           await storage.updateUser(parseInt(userId), {
             subscriptionStatus: subscriptionType,
-            subscriptionEndDate: subscriptionEndDate
+            subscriptionEndDate: subscriptionEndDate,
+            preferences: JSON.stringify(userPreferences)
           });
+          
+          // Also update the user's session data if they're the currently logged in user
+          if (req.user && (req.user as any).id === parseInt(userId)) {
+            (req.user as any).subscriptionStatus = subscriptionType;
+            (req.user as any).subscriptionEndDate = subscriptionEndDate;
+            
+            // Also update the preferences in the session
+            if ((req.user as any).preferences) {
+              try {
+                let sessionPreferences = JSON.parse((req.user as any).preferences);
+                sessionPreferences.subscriptionPlan = subscriptionType;
+                (req.user as any).preferences = JSON.stringify(sessionPreferences);
+              } catch (e) {
+                console.error('Error updating preferences in session:', e);
+              }
+            } else {
+              (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+            }
+            
+            // Save the session to persist the changes
+            req.session.save((err) => {
+              if (err) {
+                console.error('Error saving session:', err);
+              } else {
+                console.log('User session updated with new subscription data');
+              }
+            });
+          }
           
           console.log(`User subscription updated successfully: ${subscriptionType}`);
         }
@@ -203,10 +255,64 @@ export function setupStripeRoutes(app: express.Express) {
         ? 'monthly' 
         : 'yearly';
         
+      const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+      
+      // Get the current user data to access preferences
+      const user = await storage.getUser(userId);
+      if (!user) {
+        throw new Error(`User ${userId} not found for subscription update`);
+      }
+      
+      // Parse the current preferences or create new ones
+      let userPreferences = {};
+      if (user.preferences) {
+        try {
+          userPreferences = JSON.parse(user.preferences);
+        } catch (e) {
+          console.error(`Error parsing preferences for user ${userId}:`, e);
+        }
+      }
+      
+      // Update the preferences with subscription plan
+      userPreferences = {
+        ...userPreferences,
+        subscriptionPlan: subscriptionType
+      };
+      
+      // Update user in database
       await storage.updateUser(userId, {
         subscriptionStatus: subscriptionType,
-        subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+        subscriptionEndDate: subscriptionEndDate,
+        preferences: JSON.stringify(userPreferences)
       });
+      
+      // Update session data if this is the logged-in user
+      if (req.user && (req.user as any).id === userId) {
+        (req.user as any).subscriptionStatus = subscriptionType;
+        (req.user as any).subscriptionEndDate = subscriptionEndDate;
+        
+        // Also update the preferences in the session
+        if ((req.user as any).preferences) {
+          try {
+            let sessionPreferences = JSON.parse((req.user as any).preferences);
+            sessionPreferences.subscriptionPlan = subscriptionType;
+            (req.user as any).preferences = JSON.stringify(sessionPreferences);
+          } catch (e) {
+            console.error('Error updating preferences in session:', e);
+          }
+        } else {
+          (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+        }
+        
+        // Save session to persist the changes
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session in create-subscription:', err);
+          } else {
+            console.log('User session updated with new subscription data');
+          }
+        });
+      }
 
       res.status(200).json({ subscription });
     } catch (error: any) {
@@ -235,11 +341,64 @@ export function setupStripeRoutes(app: express.Express) {
       const subscriptionType = updatedSubscription.items.data[0].plan.interval === 'month' 
         ? 'monthly' 
         : 'yearly';
+      
+      const subscriptionEndDate = new Date(updatedSubscription.current_period_end * 1000);
+      
+      // Get the current user data to access preferences
+      const user = await storage.getUser(userId);
+      if (!user) {
+        throw new Error(`User ${userId} not found for subscription update`);
+      }
+      
+      // Parse the current preferences or create new ones
+      let userPreferences = {};
+      if (user.preferences) {
+        try {
+          userPreferences = JSON.parse(user.preferences);
+        } catch (e) {
+          console.error(`Error parsing preferences for user ${userId}:`, e);
+        }
+      }
+      
+      // Update the preferences with subscription plan
+      userPreferences = {
+        ...userPreferences,
+        subscriptionPlan: subscriptionType
+      };
         
       await storage.updateUser(userId, {
         subscriptionStatus: subscriptionType,
-        subscriptionEndDate: new Date(updatedSubscription.current_period_end * 1000),
+        subscriptionEndDate: subscriptionEndDate,
+        preferences: JSON.stringify(userPreferences)
       });
+      
+      // Update session data if this is the logged-in user
+      if (req.user && (req.user as any).id === userId) {
+        (req.user as any).subscriptionStatus = subscriptionType;
+        (req.user as any).subscriptionEndDate = subscriptionEndDate;
+        
+        // Also update the preferences in the session
+        if ((req.user as any).preferences) {
+          try {
+            let sessionPreferences = JSON.parse((req.user as any).preferences);
+            sessionPreferences.subscriptionPlan = subscriptionType;
+            (req.user as any).preferences = JSON.stringify(sessionPreferences);
+          } catch (e) {
+            console.error('Error updating preferences in session:', e);
+          }
+        } else {
+          (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+        }
+        
+        // Save session to persist the changes
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session in update-subscription:', err);
+          } else {
+            console.log('User session updated with new subscription data after plan change');
+          }
+        });
+      }
 
       res.status(200).json({ subscription: updatedSubscription });
     } catch (error: any) {
@@ -255,11 +414,62 @@ export function setupStripeRoutes(app: express.Express) {
       
       const subscription = await stripe.subscriptions.cancel(subscriptionId);
       
+      // Get the user data to access preferences
+      const user = await storage.getUser(userId);
+      if (!user) {
+        throw new Error(`User ${userId} not found for subscription cancellation`);
+      }
+      
+      // Parse the current preferences or create new ones
+      let userPreferences = {};
+      if (user.preferences) {
+        try {
+          userPreferences = JSON.parse(user.preferences);
+        } catch (e) {
+          console.error(`Error parsing preferences for user ${userId}:`, e);
+        }
+      }
+      
+      // Update the preferences with free plan
+      userPreferences = {
+        ...userPreferences,
+        subscriptionPlan: "free"
+      };
+      
       // Update user's subscription in the database
       await storage.updateUser(userId, {
         subscriptionStatus: "free",
         subscriptionEndDate: null,
+        preferences: JSON.stringify(userPreferences)
       });
+      
+      // Update session data if this is the logged-in user
+      if (req.user && (req.user as any).id === userId) {
+        (req.user as any).subscriptionStatus = "free";
+        (req.user as any).subscriptionEndDate = null;
+        
+        // Also update the preferences in the session
+        if ((req.user as any).preferences) {
+          try {
+            let sessionPreferences = JSON.parse((req.user as any).preferences);
+            sessionPreferences.subscriptionPlan = "free";
+            (req.user as any).preferences = JSON.stringify(sessionPreferences);
+          } catch (e) {
+            console.error('Error updating preferences in session:', e);
+          }
+        } else {
+          (req.user as any).preferences = JSON.stringify({ subscriptionPlan: "free" });
+        }
+        
+        // Save session to persist the changes
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session in cancel-subscription:', err);
+          } else {
+            console.log('User session updated to free after cancellation');
+          }
+        });
+      }
 
       res.status(200).json({ subscription });
     } catch (error: any) {
@@ -302,11 +512,64 @@ export function setupStripeRoutes(app: express.Express) {
               // Determine subscription type from metadata or default to monthly
               const subscriptionType = session.metadata?.billingPeriod || 'monthly';
               
+              // Get the current user data to access preferences
+              const user = await storage.getUser(parseInt(userId));
+              if (!user) {
+                console.log(`User ${userId} not found for subscription update`);
+                break;
+              }
+              
+              // Parse the current preferences or create new ones
+              let userPreferences = {};
+              if (user.preferences) {
+                try {
+                  userPreferences = JSON.parse(user.preferences);
+                } catch (e) {
+                  console.error(`Error parsing preferences for user ${userId}:`, e);
+                }
+              }
+              
+              // Update the preferences with subscription plan
+              userPreferences = {
+                ...userPreferences,
+                subscriptionPlan: subscriptionType
+              };
+              
               // Update the user with subscription details
               await storage.updateUser(parseInt(userId), {
                 subscriptionStatus: subscriptionType,
-                subscriptionEndDate: subscriptionEndDate
+                subscriptionEndDate: subscriptionEndDate,
+                preferences: JSON.stringify(userPreferences)
               });
+              
+              // If this is a request from a logged-in user and it's the same user
+              // We need to update their session as well
+              if (req.user && (req.user as any).id === parseInt(userId)) {
+                (req.user as any).subscriptionStatus = subscriptionType;
+                (req.user as any).subscriptionEndDate = subscriptionEndDate;
+                
+                // Also update the preferences in the session
+                if ((req.user as any).preferences) {
+                  try {
+                    let sessionPreferences = JSON.parse((req.user as any).preferences);
+                    sessionPreferences.subscriptionPlan = subscriptionType;
+                    (req.user as any).preferences = JSON.stringify(sessionPreferences);
+                  } catch (e) {
+                    console.error('Error updating preferences in session:', e);
+                  }
+                } else {
+                  (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+                }
+                
+                // Save session to persist changes
+                req.session.save((err) => {
+                  if (err) {
+                    console.error('Error saving session in webhook:', err);
+                  } else {
+                    console.log('User session updated with new subscription data from webhook');
+                  }
+                });
+              }
               
               console.log(`Webhook: Updated user ${userId} with subscription ${subscriptionType}`);
             }
@@ -343,10 +606,68 @@ export function setupStripeRoutes(app: express.Express) {
             const userId = subscription.metadata?.userId;
             
             if (userId) {
-              // Update the user's subscription end date
+              // Determine the subscription type based on plan interval
+              const subscriptionType = subscription.items.data[0].plan.interval === 'month' 
+                ? 'monthly' 
+                : 'yearly';
+              
+              // Get the current user data to access preferences
+              const user = await storage.getUser(parseInt(userId));
+              if (!user) {
+                console.log(`User ${userId} not found for subscription update`);
+                break;
+              }
+              
+              // Parse the current preferences or create new ones
+              let userPreferences = {};
+              if (user.preferences) {
+                try {
+                  userPreferences = JSON.parse(user.preferences);
+                } catch (e) {
+                  console.error(`Error parsing preferences for user ${userId}:`, e);
+                }
+              }
+              
+              // Update the preferences with subscription plan (might be redundant but ensures consistency)
+              userPreferences = {
+                ...userPreferences,
+                subscriptionPlan: subscriptionType
+              };
+              
+              // Update the user's subscription end date and ensure consistent subscription type
               await storage.updateUser(parseInt(userId), {
-                subscriptionEndDate: subscriptionEndDate
+                subscriptionStatus: subscriptionType,
+                subscriptionEndDate: subscriptionEndDate,
+                preferences: JSON.stringify(userPreferences)
               });
+              
+              // Update session data if this is the logged-in user
+              if (req.user && (req.user as any).id === parseInt(userId)) {
+                (req.user as any).subscriptionStatus = subscriptionType;
+                (req.user as any).subscriptionEndDate = subscriptionEndDate;
+                
+                // Also update the preferences in the session
+                if ((req.user as any).preferences) {
+                  try {
+                    let sessionPreferences = JSON.parse((req.user as any).preferences);
+                    sessionPreferences.subscriptionPlan = subscriptionType;
+                    (req.user as any).preferences = JSON.stringify(sessionPreferences);
+                  } catch (e) {
+                    console.error('Error updating preferences in session:', e);
+                  }
+                } else {
+                  (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+                }
+                
+                // Save session to persist the changes
+                req.session.save((err) => {
+                  if (err) {
+                    console.error('Error saving session in invoice payment webhook:', err);
+                  } else {
+                    console.log('User session updated with subscription data from invoice payment');
+                  }
+                });
+              }
               
               console.log(`Webhook: Updated user ${userId} subscription end date to ${subscriptionEndDate.toISOString()}`);
             } else {
@@ -375,11 +696,69 @@ export function setupStripeRoutes(app: express.Express) {
               // The subscription was updated but not canceled
               console.log(`Webhook: Subscription ${subscription.id} was updated`);
               
-              // Update subscription end date
+              // Update subscription end date and type
               const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+              const subscriptionType = subscription.items.data[0].plan.interval === 'month' 
+                ? 'monthly' 
+                : 'yearly';
+              
+              // Get the current user data to access preferences
+              const user = await storage.getUser(parseInt(userId));
+              if (!user) {
+                console.log(`User ${userId} not found for subscription update`);
+                break;
+              }
+              
+              // Parse the current preferences or create new ones
+              let userPreferences = {};
+              if (user.preferences) {
+                try {
+                  userPreferences = JSON.parse(user.preferences);
+                } catch (e) {
+                  console.error(`Error parsing preferences for user ${userId}:`, e);
+                }
+              }
+              
+              // Update the preferences with subscription plan
+              userPreferences = {
+                ...userPreferences,
+                subscriptionPlan: subscriptionType
+              };
+              
+              // Update user in database
               await storage.updateUser(parseInt(userId), {
-                subscriptionEndDate: subscriptionEndDate
+                subscriptionStatus: subscriptionType,
+                subscriptionEndDate: subscriptionEndDate,
+                preferences: JSON.stringify(userPreferences)
               });
+              
+              // Update session data if this is the logged-in user
+              if (req.user && (req.user as any).id === parseInt(userId)) {
+                (req.user as any).subscriptionStatus = subscriptionType;
+                (req.user as any).subscriptionEndDate = subscriptionEndDate;
+                
+                // Also update the preferences in the session
+                if ((req.user as any).preferences) {
+                  try {
+                    let sessionPreferences = JSON.parse((req.user as any).preferences);
+                    sessionPreferences.subscriptionPlan = subscriptionType;
+                    (req.user as any).preferences = JSON.stringify(sessionPreferences);
+                  } catch (e) {
+                    console.error('Error updating preferences in session:', e);
+                  }
+                } else {
+                  (req.user as any).preferences = JSON.stringify({ subscriptionPlan: subscriptionType });
+                }
+                
+                // Save session to persist the changes
+                req.session.save((err) => {
+                  if (err) {
+                    console.error('Error saving session in subscription update webhook:', err);
+                  } else {
+                    console.log('User session updated with new subscription data from subscription update');
+                  }
+                });
+              }
             }
           }
           break;
@@ -393,11 +772,63 @@ export function setupStripeRoutes(app: express.Express) {
           const userId = subscription.metadata?.userId;
           
           if (userId) {
+            // Get the user to access preferences
+            const user = await storage.getUser(parseInt(userId));
+            if (!user) {
+              console.log(`User ${userId} not found for subscription cancellation`);
+              break;
+            }
+            
+            // Parse the current preferences or create new ones
+            let userPreferences = {};
+            if (user.preferences) {
+              try {
+                userPreferences = JSON.parse(user.preferences);
+              } catch (e) {
+                console.error(`Error parsing preferences for user ${userId}:`, e);
+              }
+            }
+            
+            // Update the preferences with free plan
+            userPreferences = {
+              ...userPreferences,
+              subscriptionPlan: "free"
+            };
+            
             // Downgrade the user to free when subscription is fully canceled
             await storage.updateUser(parseInt(userId), {
               subscriptionStatus: "free",
-              subscriptionEndDate: null
+              subscriptionEndDate: null,
+              preferences: JSON.stringify(userPreferences)
             });
+            
+            // Update session data if this is the logged-in user
+            if (req.user && (req.user as any).id === parseInt(userId)) {
+              (req.user as any).subscriptionStatus = "free";
+              (req.user as any).subscriptionEndDate = null;
+              
+              // Also update the preferences in the session
+              if ((req.user as any).preferences) {
+                try {
+                  let sessionPreferences = JSON.parse((req.user as any).preferences);
+                  sessionPreferences.subscriptionPlan = "free";
+                  (req.user as any).preferences = JSON.stringify(sessionPreferences);
+                } catch (e) {
+                  console.error('Error updating preferences in session:', e);
+                }
+              } else {
+                (req.user as any).preferences = JSON.stringify({ subscriptionPlan: "free" });
+              }
+              
+              // Save session to persist the changes
+              req.session.save((err) => {
+                if (err) {
+                  console.error('Error saving session in subscription deletion webhook:', err);
+                } else {
+                  console.log('User session updated to free plan after subscription cancellation');
+                }
+              });
+            }
             
             console.log(`Webhook: Downgraded user ${userId} to free plan`);
           } else {
