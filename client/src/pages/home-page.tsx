@@ -18,8 +18,6 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
-import { SubscriptionDialog } from "@/components/subscription-dialog";
-import { PremiumFeatureModal } from "@/components/premium-feature-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MinimalistJournalEditor } from "@/components/minimalist-journal-editor";
 import { StreakIndicator } from "@/components/streak-indicator";
@@ -192,24 +190,10 @@ export default function HomePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
   const [viewEntryId, setViewEntryId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [location] = useLocation();
-  
-  // Listen for the custom event to open the subscription dialog
-  useEffect(() => {
-    const handleOpenSubscriptionDialog = () => {
-      setShowSubscriptionDialog(true);
-    };
-    
-    document.addEventListener('open-subscription-dialog', handleOpenSubscriptionDialog);
-    
-    return () => {
-      document.removeEventListener('open-subscription-dialog', handleOpenSubscriptionDialog);
-    };
-  }, []);
 
   // For the custom delete confirmation
   const [entryToDelete, setEntryToDelete] = useState<Entry | null>(null);
@@ -290,13 +274,6 @@ export default function HomePage() {
 
         <div className="mt-auto flex flex-col gap-2">
           <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setShowSubscriptionDialog(true)}
-          >
-            Upgrade to Pro
-          </Button>
-          <Button
             variant="ghost"
             className="w-full justify-start gap-2"
             onClick={() => logoutMutation.mutate()}
@@ -316,36 +293,10 @@ export default function HomePage() {
               <h2 className="text-3xl font-bold">My Journal</h2>
               <StreakIndicator streak={streakData.streak} className="mt-1" />
             </div>
-            {user?.subscriptionStatus === "active" ||
-            (entries &&
-              entries.filter((entry) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const entryDate = new Date(entry.createdAt);
-                entryDate.setHours(0, 0, 0, 0);
-                return entryDate.getTime() === today.getTime();
-              }).length === 0) ? (
-              <Button onClick={() => setIsEditing(true)}>
-                <PenSquare className="h-5 w-5 mr-2" />
-                New Entry
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <Button variant="outline" disabled>
-                  <PenSquare className="h-5 w-5 mr-2" />
-                  New Entry
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Daily limit reached.{" "}
-                  <button
-                    className="text-primary hover:underline"
-                    onClick={() => setShowSubscriptionDialog(true)}
-                  >
-                    Upgrade
-                  </button>
-                </p>
-              </div>
-            )}
+            <Button onClick={() => setIsEditing(true)}>
+              <PenSquare className="h-5 w-5 mr-2" />
+              New Entry
+            </Button>
           </div>
 
           {/* Search Bar */}
@@ -548,10 +499,7 @@ export default function HomePage() {
         </Dialog>
       )}
 
-      <SubscriptionDialog
-        open={showSubscriptionDialog}
-        onOpenChange={setShowSubscriptionDialog}
-      />
+
 
       {/* =====================
           Custom Confirm Dialog

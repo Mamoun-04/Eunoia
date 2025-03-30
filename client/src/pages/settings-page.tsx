@@ -6,10 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
-import { SubscriptionDialog } from "@/components/subscription-dialog";
 import { Badge } from "@/components/ui/badge";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   LogOut,
@@ -18,9 +15,7 @@ import {
   PenSquare,
   BookOpen,
   Home,
-  Trash2,
-  Sparkles,
-  CreditCard
+  Trash2
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -28,45 +23,10 @@ export default function SettingsPage() {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const { toast } = useToast();
   
-  // Check if user has premium subscription
-  const isPremium = user?.subscriptionStatus === "active";
-  
-  // Format the subscription end date if available
-  const formatSubscriptionEndDate = () => {
-    if (!user?.subscriptionEndDate) return null;
-    
-    const endDate = new Date(user.subscriptionEndDate);
-    return endDate.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-  
-  // Cancel subscription mutation
-  const cancelSubscriptionMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/cancel-subscription");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Subscription cancelled",
-        description: "Your premium access will continue until the end of your billing period.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error cancelling subscription",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // All users are premium by default now
+  const isPremium = true;
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -134,45 +94,22 @@ export default function SettingsPage() {
             
             <Separator className="my-6" />
             
-            {/* Subscription Section */}
+            {/* Premium Features Section */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold">Subscription</h2>
-                  {isPremium && (
-                    <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
-                      Premium
-                    </Badge>
-                  )}
+                  <h2 className="text-xl font-semibold">Premium Features</h2>
+                  <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
+                    Included
+                  </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {isPremium 
-                    ? `Premium access until ${formatSubscriptionEndDate()}` 
-                    : "Upgrade to unlock premium features and themes"}
+                  All premium features are now available for free
                 </p>
               </div>
-              {isPremium ? (
-                <Button 
-                  variant="outline" 
-                  onClick={() => cancelSubscriptionMutation.mutate()}
-                  disabled={cancelSubscriptionMutation.isPending}
-                >
-                  {cancelSubscriptionMutation.isPending ? (
-                    <span className="animate-spin mr-2">●</span>
-                  ) : (
-                    <CreditCard className="h-4 w-4 mr-2" />
-                  )}
-                  Cancel Subscription
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => setSubscriptionDialogOpen(true)}
-                  className="bg-gradient-to-r from-primary/80 to-primary"
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Upgrade to Premium
-                </Button>
-              )}
+              <div className="rounded-full bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
+                Active
+              </div>
             </div>
             
             <Separator className="my-6" />
@@ -236,12 +173,6 @@ export default function SettingsPage() {
       <DeleteAccountDialog 
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-      />
-      
-      {/* Subscription Dialog */}
-      <SubscriptionDialog 
-        open={subscriptionDialogOpen} 
-        onOpenChange={setSubscriptionDialogOpen}
       />
     </div>
   );
