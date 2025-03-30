@@ -12,6 +12,8 @@ import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
 import PaymentPage from "@/pages/payment-page";
+import CheckoutSuccessPage from "@/pages/checkout-success-page";
+import CheckoutCancelPage from "@/pages/checkout-cancel-page";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
@@ -47,6 +49,8 @@ function Router() {
       <ProtectedRoute path="/library" component={LibraryPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/payment" component={PaymentPage} />
+      <ProtectedRoute path="/checkout-success" component={CheckoutSuccessPage} />
+      <Route path="/checkout-cancel" component={CheckoutCancelPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} />
       <Route path="/welcome" component={WelcomeScreen} />

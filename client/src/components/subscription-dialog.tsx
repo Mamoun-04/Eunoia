@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 import {
   Dialog,
@@ -21,26 +22,83 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
+// Helper to get the origin URL for constructing redirect URLs
+const getOrigin = () => {
+  return typeof window !== 'undefined' 
+    ? window.location.origin 
+    : 'https://eunoia.replit.app';
+};
+
 export function SubscriptionDialog({ open, onOpenChange }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [stripeConfig, setStripeConfig] = useState<{
+    publishableKey: string;
+    priceIds: {
+      monthly: string;
+      yearly: string;
+    };
+  } | null>(null);
   
+  // Fetch Stripe configuration when component mounts
+  useEffect(() => {
+    async function fetchStripeConfig() {
+      try {
+        const response = await fetch('/api/stripe-config');
+        if (response.ok) {
+          const config = await response.json();
+          setStripeConfig(config);
+        } else {
+          console.error('Failed to fetch Stripe configuration');
+        }
+      } catch (error) {
+        console.error('Error fetching Stripe configuration:', error);
+      }
+    }
+    
+    fetchStripeConfig();
+  }, []);
+  
+  // Mutation for creating a checkout session
   const subscriptionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/subscribe", { plan: selectedPlan });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      toast({
-        title: "Subscription activated",
-        description: "Thank you for subscribing to Eunoia Premium!",
+      if (!user?.id) {
+        throw new Error("You must be logged in to subscribe");
+      }
+      
+      // Create success and cancel URLs with current origin
+      const origin = getOrigin();
+      const successUrl = `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${origin}/checkout-cancel`;
+      
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingPeriod: selectedPlan,
+          userId: user.id,
+          successUrl,
+          cancelUrl
+        }),
       });
-      onOpenChange(false);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create checkout session");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
     },
     onError: (error: Error) => {
       toast({
-        title: "Error activating subscription",
+        title: "Error creating subscription",
         description: error.message,
         variant: "destructive",
       });
