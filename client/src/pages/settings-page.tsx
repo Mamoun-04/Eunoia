@@ -128,7 +128,7 @@ export default function SettingsPage() {
               <ThemeToggle />
             </div>
             
-            <Separator className="my-6" /> />
+            <Separator className="my-6" />
 
             <div className="flex items-center justify-between mb-6">
               <div>
