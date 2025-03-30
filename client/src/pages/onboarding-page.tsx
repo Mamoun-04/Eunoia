@@ -41,17 +41,15 @@ export default function OnboardingPage() {
     // If last step
     if (data.step === 2) {
       // Mark onboarding as complete
-      updateData({ onboardingComplete: true });
+      updateData({ 
+        onboardingComplete: true, 
+        // Everyone gets premium now
+        subscriptionPlan: 'premium',
+        billingPeriod: 'yearly' 
+      });
       
-      // If premium subscription selected, go to payment page
-      if (data.subscriptionPlan === 'premium') {
-        // Store the redirect destination so we can redirect to home after payment
-        updateData({ paymentRedirect: '/home' });
-        setLocation('/payment');
-      } else {
-        // For free users, go directly to home
-        setLocation('/home');
-      }
+      // Go directly to home - no payment needed since everything is free
+      setLocation('/home');
       return;
     }
     
