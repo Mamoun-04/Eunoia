@@ -4,10 +4,7 @@ import { storage } from './storage';
 import { subscriptionPlans } from '@shared/schema';
 
 // Initialize Stripe with the secret test key
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-if (!STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
-}
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_51PExm5OX3dFAFDCYLW3LYZyHk9Vs7fgPbEeAOkXuCR6QJGCfI83B965uVOeX0WLtAIwCEDGP6LKxXPfQR1UwjZp800C4jJz6Xk';
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2025-02-24.acacia',
 });
@@ -42,36 +39,32 @@ export function setupStripeRoutes(app: express.Express) {
   // Create a subscription
   app.post('/api/create-subscription', async (req: Request, res: Response) => {
     try {
-      const { priceId, userId, plan } = req.body;
+      const { paymentMethodId, customerId, priceId, userId } = req.body;
       
-      // Get user
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Create or get customer
-      const customerList = await stripe.customers.list({ email: user.username + '@example.com', limit: 1 });
+      let customer;
       
-      let customerId: string;
-      
-      if (!customerList.data.length) {
-        // Create a new customer if one doesn't exist
-        const newCustomer = await stripe.customers.create({
-          email: user.username + '@example.com',
-          metadata: { userId: userId.toString() }
+      // If no customer ID is provided, create a new customer
+      if (!customerId) {
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+        
+        customer = await stripe.customers.create({
+          payment_method: paymentMethodId,
+          email: user.username + '@example.com', // Replace with actual email when available
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
         });
-        customerId = newCustomer.id;
       } else {
-        customerId = customerList.data[0].id;
+        customer = { id: customerId };
       }
 
-      // Create subscription with proper items array
+      // Create the subscription
       const subscription = await stripe.subscriptions.create({
-        customer: customerId,
+        customer: customer.id,
         items: [{ price: priceId }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
       });
 

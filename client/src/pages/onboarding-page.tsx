@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboarding } from '@/hooks/use-onboarding';
 import NewWelcomeScreen from '@/components/onboarding/new-welcome-screen';
@@ -8,75 +8,13 @@ import NewSubscriptionScreen from '@/components/onboarding/new-subscription-scre
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
+import { X } from 'lucide-react';
 
 export default function OnboardingPage() {
   const { user } = useAuth();
   const { data, updateData, resetData } = useOnboarding();
   const [, setLocation] = useLocation();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Parse URL query parameters from current location
-  const searchParams = new URLSearchParams(window.location.search);
-  const isSuccessfulCheckout = searchParams.get('success') === 'true';
-  const sessionId = searchParams.get('session_id');
-  
-  // Process Stripe checkout success if applicable
-  useEffect(() => {
-    if (isSuccessfulCheckout && sessionId && !paymentSuccess) {
-      setIsProcessingPayment(true);
-      
-      // Process the checkout session
-      fetch(`/api/subscription/process-checkout?session_id=${sessionId}`, {
-        credentials: 'include'
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            setPaymentSuccess(true);
-            toast({
-              title: "Payment Successful",
-              description: "Your premium subscription is now active!",
-              variant: "default",
-            });
-            
-            // Mark onboarding as complete and update subscription
-            updateData({ 
-              onboardingComplete: true, 
-              subscriptionPlan: 'premium' 
-            });
-            
-            // Force refresh user data to reflect new subscription status
-            queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
-            
-            // Redirect to home after a short delay
-            setTimeout(() => {
-              setLocation('/home');
-            }, 2000);
-          } else {
-            throw new Error(data.error || "Payment processing failed");
-          }
-        })
-        .catch(error => {
-          console.error("Payment verification error:", error);
-          toast({
-            title: "Payment Error",
-            description: error.message || "There was a problem processing your payment",
-            variant: "destructive",
-          });
-        })
-        .finally(() => {
-          setIsProcessingPayment(false);
-        });
-    }
-  }, [isSuccessfulCheckout, sessionId, paymentSuccess, setLocation, toast, updateData, queryClient]);
   
   // Force light theme for onboarding
   useEffect(() => {
@@ -93,8 +31,8 @@ export default function OnboardingPage() {
 
   // Initialize or retrieve step
   useEffect(() => {
-    // If coming back to onboarding and no successful payment, ensure we start at step 0
-    if (data.step > 2 && !isSuccessfulCheckout) {
+    // If coming back to onboarding, ensure we start at step 0
+    if (data.step > 2) {
       updateData({ step: 0 });
     }
   }, []);
@@ -181,49 +119,20 @@ export default function OnboardingPage() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-x-hidden">
-        {isProcessingPayment || paymentSuccess ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-full text-center px-6"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={data.step}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="h-full"
           >
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-bold mb-3">
-              {paymentSuccess ? "Payment Successful!" : "Processing Payment..."}
-            </h2>
-            <p className="text-gray-600 max-w-md mb-8">
-              {paymentSuccess 
-                ? "Your premium subscription has been activated. You'll be redirected to your dashboard shortly."
-                : "Please wait while we process your payment. This may take a few seconds..."}
-            </p>
-            
-            {paymentSuccess && (
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 2 }}
-                className="h-1 bg-green-500 rounded-full max-w-xs"
-              />
-            )}
+            {data.step === 0 && <NewWelcomeScreen onNext={handleNext} />}
+            {data.step === 1 && <BenefitsGoalsScreen onNext={handleNext} />}
+            {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
           </motion.div>
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={data.step}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
-            >
-              {data.step === 0 && <NewWelcomeScreen onNext={handleNext} />}
-              {data.step === 1 && <BenefitsGoalsScreen onNext={handleNext} />}
-              {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
-            </motion.div>
-          </AnimatePresence>
-        )}
+        </AnimatePresence>
       </div>
 
       {/* Exit Confirmation Dialog */}

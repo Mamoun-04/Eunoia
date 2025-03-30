@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useOnboarding } from '@/hooks/use-onboarding';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -64,7 +63,6 @@ type BillingPeriod = 'monthly' | 'yearly';
 
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { data, updateData } = useOnboarding();
-  const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium'>(data.subscriptionPlan || 'free');
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 
@@ -83,55 +81,11 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
     }
   };
 
-  const handleNext = async () => {
-    try {
-      // If user selected free plan, just proceed to next step
-      if (selectedPlan === 'free') {
-        onNext();
-        return;
-      }
-      
-      // For premium plans, create checkout session with Stripe
-      console.log(`Creating checkout session for ${billingPeriod} subscription`);
-      
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan: selectedPlan,
-          billingPeriod
-        }),
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to process subscription');
-      }
-
-      // For premium plans, we need to redirect to Stripe's checkout page
-      if (selectedPlan === 'premium' && data.url) {
-        console.log('Redirecting to Stripe checkout:', data.url);
-        window.location.href = data.url;
-        return; // Don't proceed to next step, as we're redirecting to Stripe
-      }
-      
-      // For free plan, proceed to next step
-      onNext();
-    } catch (error: any) {
-      console.error('Subscription error:', error);
-      toast({
-        variant: "destructive",
-        title: "Subscription Error",
-        description: error.message || "There was a problem processing your subscription"
-      });
-    }
+  const handleNext = () => {
+    onNext();
   };
 
-  const annualSavings = ((4.99 * 12) - 49.99).toFixed(2);
+  const annualSavings = ((4.99 * 12) - 39.99).toFixed(2);
 
   return (
     <div className="min-h-[calc(100vh-90px)] flex flex-col px-6 py-8 overflow-y-auto">
@@ -182,7 +136,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                     transition={{ delay: 0.1 }}
                   >
                     <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                      Save {Math.round(100 - (49.99 / (4.99 * 12)) * 100)}%
+                      Save {Math.round(100 - (39.99 / (4.99 * 12)) * 100)}%
                     </Badge>
                   </motion.div>
                 </TabsTrigger>
@@ -205,12 +159,11 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
           transition={{ type: "spring", stiffness: 300 }}
         >
           <Card 
-            className={`h-full flex flex-col cursor-pointer ${
+            className={`h-full flex flex-col ${
               selectedPlan === 'free' 
                 ? 'ring-2 ring-primary border-primary shadow-lg bg-gradient-to-br from-white to-blue-50' 
                 : 'border-border hover:border-primary/50 hover:shadow-md transition-all duration-300'
             }`}
-            onClick={() => handlePlanSelection('free')}
           >
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start">
@@ -272,10 +225,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
               <Button 
                 variant={selectedPlan === 'free' ? 'default' : 'outline'} 
                 className="w-full py-6 text-base"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePlanSelection('free');
-                }}
+                onClick={() => handlePlanSelection('free')}
               >
                 {selectedPlan === 'free' ? 'Selected' : 'Select Free Plan'}
               </Button>
@@ -291,26 +241,27 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
           transition={{ type: "spring", stiffness: 300 }}
         >
           <Card 
-            className={`h-full flex flex-col relative overflow-hidden cursor-pointer ${
+            className={`h-full flex flex-col relative overflow-hidden ${
               selectedPlan === 'premium' 
                 ? 'ring-2 ring-[#FFD700] border-[#FFD700] shadow-xl bg-gradient-to-br from-white to-yellow-50' 
-                : 'border border-amber-200 ring-1 ring-amber-100 shadow-md hover:shadow-lg hover:border-amber-300 hover:ring-amber-200 transition-all duration-300'
+                : 'border-border hover:border-primary/50 hover:shadow-md transition-all duration-300'
             }`}
-            onClick={() => handlePlanSelection('premium')}
           >
-            <motion.div 
-              className={`absolute inset-0 ${selectedPlan === 'premium' ? 'bg-[#FFD700]/5' : 'bg-amber-50/50'} z-0`}
-              initial={{ opacity: 0 }}
-              animate={{ 
-                opacity: selectedPlan === 'premium' ? [0.1, 0.15, 0.1] : [0.03, 0.08, 0.03],
-                scale: selectedPlan === 'premium' ? [1, 1.02, 1] : [1, 1.01, 1],
-              }}
-              transition={{ 
-                duration: selectedPlan === 'premium' ? 3 : 4,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
-            />
+            {selectedPlan === 'premium' && (
+              <motion.div 
+                className="absolute inset-0 bg-[#FFD700]/5 z-0"
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.15, 0.1],
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              />
+            )}
             
             <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-3 py-1 text-xs font-medium rounded-bl-md">
               RECOMMENDED
@@ -352,7 +303,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <span className="text-2xl font-bold">$49.99</span>
+                      <span className="text-2xl font-bold">$39.99</span>
                       <span className="text-gray-500 ml-1">/year</span>
                       <div className="text-green-600 text-sm mt-1 font-medium">Save ${annualSavings} per year</div>
                     </motion.div>
@@ -402,10 +353,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
               <Button 
                 variant={selectedPlan === 'premium' ? 'default' : 'outline'} 
                 className="w-full py-6 text-base"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePlanSelection('premium');
-                }}
+                onClick={() => handlePlanSelection('premium')}
               >
                 {selectedPlan === 'premium' ? 'Selected' : 'Select Premium Plan'}
               </Button>
@@ -462,6 +410,10 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
           transition={{ duration: 0.5, delay: 0.8 }}
           className="flex flex-col items-center text-sm text-gray-600 mt-6 max-w-md mx-auto"
         >
+          <p className="flex items-center mb-3">
+            <CalendarDays className="h-4 w-4 mr-2" />
+            7-day free trial, cancel anytime
+          </p>
           <div className="flex space-x-4 mt-2">
             <div className="flex items-center">
               <CreditCard className="h-4 w-4 mr-1 text-gray-500" />
