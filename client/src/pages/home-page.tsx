@@ -343,7 +343,9 @@ export default function HomePage() {
             ) : (
               // Masonry Layout with columns
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
-                {filteredEntries.map((entry) => (
+                {[...filteredEntries].sort((a, b) => 
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                ).map((entry) => (
                   <Card
                     key={entry.id}
                     className="group mb-5 break-inside-avoid overflow-hidden border border-border/40
