@@ -94,25 +94,7 @@ export default function SettingsPage() {
             
             <Separator className="my-6" />
             
-            {/* Premium Features Section */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold">Premium Features</h2>
-                  <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs">
-                    Included
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  All premium features are free for a limited time
-                </p>
-              </div>
-              <div className="rounded-full bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
-                Active
-              </div>
-            </div>
             
-            <Separator className="my-6" />
 
             <div className="flex items-center justify-between mb-6">
               <div>

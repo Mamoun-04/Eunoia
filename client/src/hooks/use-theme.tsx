@@ -112,10 +112,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Determine if user is premium based on subscription status
   const isPremium = user?.subscriptionStatus === "active";
 
-  // Available themes based on subscription status
+  // All themes are now available
   const availableThemes: ThemeType[] = [
     ...themeCategories.free,
-    ...(isPremium ? themeCategories.premium : []),
+    ...themeCategories.premium
   ];
 
   // Check if a theme is premium
