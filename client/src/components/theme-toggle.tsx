@@ -31,10 +31,6 @@ export function ThemeToggle() {
 
   // Handle theme selection
   const handleThemeSelect = (theme: ThemeType) => {
-    if (isPremiumTheme(theme) && !isPremium) {
-      setShowSubscriptionDialog(true);
-      return;
-    }
     setTheme(theme);
   };
 

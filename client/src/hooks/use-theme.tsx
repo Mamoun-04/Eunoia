@@ -125,12 +125,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Handle theme change
   const setTheme = (newTheme: ThemeType) => {
-    // If trying to set a premium theme but user is not premium
-    if (isPremiumTheme(newTheme) && !isPremium) {
-      setShowUpgradeDialog(true);
-      return;
-    }
-
+    // All themes are available
     setCurrentTheme(newTheme);
   };
 
