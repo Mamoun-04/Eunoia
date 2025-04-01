@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Router } from 'express';
 import { setupAuth } from './auth';
-import { setupStorageRoutes } from './storage';
+
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
