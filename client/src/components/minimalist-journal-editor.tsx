@@ -123,7 +123,7 @@ export function MinimalistJournalEditor({
       }
       
       const data = await response.json();
-      return data.url;
+      return data.imageUrl;
     } catch (error) {
       console.error("Image upload error:", error);
       setErrorMessage(error instanceof Error ? `Image upload failed: ${error.message}` : "Failed to upload image");
