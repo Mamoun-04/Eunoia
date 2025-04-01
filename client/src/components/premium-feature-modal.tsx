@@ -24,21 +24,21 @@ type Props = {
 export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }: Props) {
   const { toast } = useToast();
   
-  // Feature limits - renamed to feature descriptions since there are no limits now
+  // All features are free now
   const featureDescriptions = {
     image_upload: {
-      title: "Feature Information",
-      description: "You can upload unlimited images with your entries",
+      title: "Image Upload",
+      description: "Upload unlimited images with your entries",
       icon: Image,
     },
     daily_entry: {
-      title: "Feature Information",
-      description: "You can create unlimited entries per day",
+      title: "Daily Entries",
+      description: "Create unlimited entries per day",
       icon: Calendar,
     },
     word_limit: {
-      title: "Feature Information",
-      description: "Entries can be up to 1000 words each",
+      title: "Word Count",
+      description: "Write entries of any length",
       icon: FileText,
     },
   };
