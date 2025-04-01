@@ -2,8 +2,6 @@
 import { Moon, Sun, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme, ThemeType, themeCategories } from "@/hooks/use-theme";
-import { SubscriptionDialog } from "@/components/subscription-dialog";
-import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,8 +24,7 @@ const themeIcons: Record<ThemeType, React.ReactNode> = {
 };
 
 export function ThemeToggle() {
-  const { currentTheme, setTheme, isPremiumTheme, isPremium, availableThemes } = useTheme();
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const { currentTheme, setTheme, availableThemes } = useTheme();
 
   // Handle theme selection
   const handleThemeSelect = (theme: ThemeType) => {
@@ -66,22 +63,15 @@ export function ThemeToggle() {
           
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="flex items-center justify-between">
-            <span>Premium Themes</span>
-            {!isPremium && (
-              <Badge variant="outline" className="ml-2 text-xs">
-                Upgrade
-              </Badge>
-            )}
+            <span>More Themes</span>
           </DropdownMenuLabel>
           
-          {/* Premium Themes */}
+          {/* Additional Themes */}
           {themeCategories.premium.map((theme) => (
             <DropdownMenuItem
               key={theme}
               onClick={() => handleThemeSelect(theme)}
-              className={`${currentTheme === theme ? "bg-muted" : ""} ${
-                !isPremium ? "opacity-70" : ""
-              }`}
+              className={currentTheme === theme ? "bg-muted" : ""}
             >
               <div className="flex items-center gap-2">
                 {themeIcons[theme]}
@@ -91,12 +81,6 @@ export function ThemeToggle() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      
-      {/* Subscription Dialog */}
-      <SubscriptionDialog 
-        open={showSubscriptionDialog} 
-        onOpenChange={setShowSubscriptionDialog} 
-      />
     </>
   );
 }
