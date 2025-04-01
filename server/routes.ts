@@ -165,8 +165,8 @@ function setupStorageRoutes(router: Router) {
     const key = `user-uploads/${uniqueName}`;
     
     try {
-      await client.upload(key, req.file.buffer);
-      const { url } = await client.getSignedUrl(key);
+      await client.uploadText(key, req.file.buffer.toString('base64'));
+      const url = await client.getSignedUrl(key);
       res.json({ imageUrl: url });
     } catch (error) {
       console.error('Upload error:', error);
