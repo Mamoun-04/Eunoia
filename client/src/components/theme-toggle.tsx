@@ -1,4 +1,3 @@
-
 import { Moon, Sun, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme, ThemeType, themeCategories } from "@/hooks/use-theme";
@@ -46,28 +45,9 @@ export function ThemeToggle() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Theme</DropdownMenuLabel>
-          
-          {/* Free Themes */}
-          {themeCategories.free.map((theme) => (
-            <DropdownMenuItem
-              key={theme}
-              onClick={() => handleThemeSelect(theme)}
-              className={currentTheme === theme ? "bg-muted" : ""}
-            >
-              <div className="flex items-center gap-2">
-                {themeIcons[theme]}
-                <span>{formatThemeName(theme)}</span>
-              </div>
-            </DropdownMenuItem>
-          ))}
-          
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel className="flex items-center justify-between">
-            <span>More Themes</span>
-          </DropdownMenuLabel>
-          
-          {/* Additional Themes */}
-          {themeCategories.premium.map((theme) => (
+
+          {/* All themes are now free */}
+          {availableThemes.map((theme) => (
             <DropdownMenuItem
               key={theme}
               onClick={() => handleThemeSelect(theme)}

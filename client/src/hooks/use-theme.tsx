@@ -109,25 +109,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
-  // Determine if user is premium based on subscription status
-  const isPremium = user?.subscriptionStatus === "active";
-
-  // All themes are now available
-  const availableThemes: ThemeType[] = [
-    ...themeCategories.free,
-    ...themeCategories.premium
-  ];
-
-  // Check if a theme is premium
-  const isPremiumTheme = (theme: ThemeType): boolean => {
-    return themeCategories.premium.includes(theme);
-  };
-
-  // Handle theme change
-  const setTheme = (newTheme: ThemeType) => {
-    // All themes are available
-    setCurrentTheme(newTheme);
-  };
+  // All themes are available to everyone
+  const isPremium = true;
+  const availableThemes: ThemeType[] = [...themeCategories.free, ...themeCategories.premium];
+  const isPremiumTheme = () => false;
+  const setTheme = (newTheme: ThemeType) => setCurrentTheme(newTheme);
 
   // Apply the theme when the component mounts or theme changes
   useEffect(() => {

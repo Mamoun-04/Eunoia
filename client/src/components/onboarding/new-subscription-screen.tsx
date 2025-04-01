@@ -12,10 +12,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
   const { updateData } = useOnboarding();
 
   const handleNext = () => {
-    updateData({ 
-      subscriptionPlan: 'premium',
-      billingPeriod: 'yearly'
-    });
+    updateData({ subscriptionPlan: 'free' });
     onNext();
   };
 
@@ -32,7 +29,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         </div>
         <h2 className="text-3xl font-serif font-medium mb-3 bg-gradient-to-r from-amber-500 to-amber-700 bg-clip-text text-transparent">Welcome to Eunoia!</h2>
         <p className="text-lg mb-8 text-gray-600 dark:text-gray-300">
-          All premium features are free for a limited time. Start your mindful journaling journey today!
+          Start your mindful journaling journey today!
         </p>
         <Button 
           className="w-full sm:w-auto px-6 py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800"
