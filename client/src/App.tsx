@@ -12,7 +12,7 @@ import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
-import WelcomeScreen from "@/components/onboarding/welcome-screen";
+import WelcomeScreen from "@/components/onboarding/new-welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { ThemeProvider } from "@/hooks/use-theme";
