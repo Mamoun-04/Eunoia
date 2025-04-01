@@ -12,43 +12,82 @@ import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
-import WelcomeScreen from "@/components/onboarding/new-welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "./lib/protected-route";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpenText, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Lazy load the welcome screen for splash
-const SplashScreen = lazy(() => import("@/components/onboarding/new-welcome-screen"));
+// Splash screen component
+function SplashScreen() {
+  return (
+    <div className="min-h-screen bg-[#f8f7f2] flex flex-col items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <motion.div
+          animate={{ 
+            y: [0, -10, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+          className="inline-block mb-6"
+        >
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50">
+            <BookOpenText size={40} className="text-[#0000CC]" />
+          </div>
+        </motion.div>
+        
+        <h1 className="text-5xl font-serif font-bold mb-3 text-[#0000CC] tracking-tight">EUNOIA</h1>
+        
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <div className="w-12 h-1 bg-[#0000CC]/30 rounded-full"></div>
+          <Sparkles className="h-5 w-5 text-[#0000CC]" />
+          <div className="w-12 h-1 bg-[#0000CC]/30 rounded-full"></div>
+        </div>
+        
+        <p className="text-[#0000CC]/80 font-serif italic">
+          Writing the story of you.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
 
 function Router() {
   const { user, isLoading } = useAuth();
 
-  // A function to determine if we should show welcome screen or redirect to home
-  const HomeRouteComponent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-border" />
-        </div>
-      );
-    }
-    
-    // If user is logged in, show HomePage, otherwise show AuthPage
-    return user ? <HomePage /> : <AuthPage />;
-  };
+  // If loading, show loading spinner
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-border" />
+      </div>
+    );
+  }
+  
+  // If not logged in, redirect to auth
+  if (!user) {
+    return <AuthPage />;
+  }
 
   return (
     <Switch>
-      <Route path="/" component={HomeRouteComponent} />
+      <Route path="/" component={HomePage} />
       <ProtectedRoute path="/home" component={HomePage} />
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/library" component={LibraryPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} />
-      <Route path="/welcome" component={WelcomeScreen} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -56,7 +95,6 @@ function Router() {
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [showAiAssistant, setShowAiAssistant] = useState(false);
 
   useEffect(() => {
     // Show splash screen for 2.5 seconds
@@ -68,13 +106,7 @@ function App() {
   }, []);
 
   if (showSplash) {
-    return (
-      <OnboardingProvider>
-        <Suspense fallback={<div className="h-screen w-full bg-[#f8f7f2]" />}>
-          <SplashScreen onNext={() => setShowSplash(false)} />
-        </Suspense>
-      </OnboardingProvider>
-    );
+    return <SplashScreen />;
   }
 
   return (
