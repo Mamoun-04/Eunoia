@@ -12,15 +12,7 @@ export type OnboardingData = {
   selectedGoals: string[];
   customGoal?: string;
   journalingFrequency: string;
-  
-  // Subscription related
-  subscriptionPlan: "free" | "premium";
-  billingPeriod?: "monthly" | "yearly";
   onboardingComplete?: boolean;
-  paymentRedirect?: string;
-  
-  // For backward compatibility - will be removed
-  subscriptionStatus?: "monthly" | "yearly";
 };
 
 const initialData: OnboardingData = {

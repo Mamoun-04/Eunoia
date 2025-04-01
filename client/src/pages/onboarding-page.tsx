@@ -41,14 +41,7 @@ export default function OnboardingPage() {
     // If last step
     if (data.step === 2) {
       // Mark onboarding as complete
-      updateData({ 
-        onboardingComplete: true, 
-        // Everyone gets premium now
-        subscriptionPlan: 'premium',
-        billingPeriod: 'yearly' 
-      });
-      
-      // Go directly to home - no payment needed since everything is free
+      updateData({ onboardingComplete: true });
       setLocation('/home');
       return;
     }
