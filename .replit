@@ -49,3 +49,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-bc528331-b2a5-45e1-bf20-5249e27a4152"
