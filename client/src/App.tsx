@@ -55,23 +55,23 @@ function Router() {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
 
   useEffect(() => {
     // Show splash screen for 2.5 seconds
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      setShowSplash(false);
     }, 2500);
 
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
+  if (showSplash) {
     return (
       <OnboardingProvider>
         <Suspense fallback={<div className="h-screen w-full bg-[#f8f7f2]" />}>
-          <SplashScreen />
+          <SplashScreen onNext={() => setShowSplash(false)} />
         </Suspense>
       </OnboardingProvider>
     );

@@ -42,11 +42,13 @@ const floatAnimation = {
   }
 };
 
-export default function NewWelcomeScreen({ onNext }: WelcomeScreenProps) {
+export default function NewWelcomeScreen({ onNext }: { onNext?: () => void }) {
   const { updateData } = useOnboarding();
 
   const handleStart = () => {
-    onNext();
+    if (onNext) {
+      onNext();
+    }
   };
 
   return (
