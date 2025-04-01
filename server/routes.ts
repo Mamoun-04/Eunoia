@@ -13,7 +13,9 @@ import { z } from "zod";
 import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
 
 import { Client } from '@replit/object-storage';
-const storage = new Client();
+const client = new Client({
+  bucketName: process.env.BUCKET_NAME || 'default-bucket'
+});
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -163,8 +165,8 @@ function setupStorageRoutes(router: Router) {
     const key = `user-uploads/${uniqueName}`;
     
     try {
-      await storage.upload(key, req.file.buffer);
-      const imageUrl = await storage.getSignedUrl(key);
+      await client.upload(key, req.file.buffer);
+      const imageUrl = await client.getSignedUrl(key);
       res.json({ imageUrl });
     } catch (error) {
       console.error('Upload error:', error);
