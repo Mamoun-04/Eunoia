@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useOnboarding } from '@/hooks/use-onboarding';
 import NewWelcomeScreen from '@/components/onboarding/new-welcome-screen';
 import BenefitsGoalsScreen from '@/components/onboarding/benefits-goals-screen';
+import NewSubscriptionScreen from '@/components/onboarding/new-subscription-screen';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,9 +39,16 @@ export default function OnboardingPage() {
 
   const handleNext = () => {
     // If last step
-    if (data.step === 1) {
+    if (data.step === 2) {
       // Mark onboarding as complete
-      updateData({ onboardingComplete: true });
+      updateData({ 
+        onboardingComplete: true, 
+        // Everyone gets premium now
+        subscriptionPlan: 'premium',
+        billingPeriod: 'yearly' 
+      });
+      
+      // Go directly to home - no payment needed since everything is free
       setLocation('/home');
       return;
     }
@@ -103,7 +111,7 @@ export default function OnboardingPage() {
         </div>
         
         <span className="text-sm font-medium text-gray-500">
-          {data.step + 1} of 2
+          {data.step + 1} of 3
         </span>
       </div>
 
@@ -120,6 +128,7 @@ export default function OnboardingPage() {
           >
             {data.step === 0 && <NewWelcomeScreen onNext={handleNext} />}
             {data.step === 1 && <BenefitsGoalsScreen onNext={handleNext} />}
+            {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
           </motion.div>
         </AnimatePresence>
       </div>
