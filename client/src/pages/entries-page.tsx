@@ -326,19 +326,21 @@ export default function EntriesPage() {
                 <p className="text-sm text-muted-foreground">No entries yet. Start writing!</p>
               </Card>
             ) : (
-              entries.slice(0, 5).map((entry) => (
-                <Card key={entry.id} className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-lg font-semibold">{entry.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(entry.createdAt), "MMM d, yyyy")}
-                      </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {entries.slice(0, 5).map((entry) => (
+                  <Card key={entry.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold">{entry.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(entry.createdAt), "MMM d, yyyy")}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-sm line-clamp-2">{entry.content}</p>
-                </Card>
-              ))
+                    <p className="text-sm line-clamp-2">{entry.content}</p>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </div>

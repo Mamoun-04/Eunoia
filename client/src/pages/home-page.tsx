@@ -342,7 +342,7 @@ export default function HomePage() {
               </div>
             ) : (
               // Masonry Layout with columns
-              <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
+              <div className="columns-2 lg:columns-3 gap-4 [column-fill:_balance]">
                 {[...filteredEntries].sort((a, b) => 
                   new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 ).map((entry) => (
