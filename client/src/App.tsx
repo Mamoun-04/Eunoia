@@ -69,9 +69,11 @@ function App() {
 
   if (isLoading) {
     return (
-      <Suspense fallback={<div className="h-screen w-full bg-[#f8f7f2]" />}>
-        <SplashScreen />
-      </Suspense>
+      <OnboardingProvider>
+        <Suspense fallback={<div className="h-screen w-full bg-[#f8f7f2]" />}>
+          <SplashScreen />
+        </Suspense>
+      </OnboardingProvider>
     );
   }
 
