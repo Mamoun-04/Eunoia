@@ -5,6 +5,8 @@ import { Router } from 'express';
 import { storage } from "./storage";
 import { setupAuth } from './auth';
 import multer from "multer";
+import express from "express";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { z } from "zod";
@@ -168,6 +170,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   const router = Router();
   setupStorageRoutes(router);
+  
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
   app.use(router);
 
   const httpServer = createServer(app);
