@@ -22,6 +22,8 @@ import { Loader2 } from "lucide-react";
 // Lazy load the welcome screen for splash
 const SplashScreen = lazy(() => import("@/components/onboarding/new-welcome-screen"));
 
+import { useOnboarding } from "@/hooks/use-onboarding";
+
 function Router() {
   const { user, isLoading } = useAuth();
   const { data: onboardingData } = useOnboarding();
