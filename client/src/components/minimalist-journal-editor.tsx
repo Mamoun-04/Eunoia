@@ -159,9 +159,30 @@ export function MinimalistJournalEditor({
       // Upload image if there's a new one
       let finalImageUrl = imageUrl;
       if (imageFile) {
-        finalImageUrl = await uploadImage();
-        // If image upload failed but was attempted, stop the save process
-        if (!finalImageUrl && imageFile) {
+        try {
+          const formData = new FormData();
+          formData.append('image', imageFile);
+          
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to upload image');
+          }
+          
+          const data = await response.json();
+          finalImageUrl = data.imageUrl;
+          
+          if (!finalImageUrl) {
+            setErrorMessage('Failed to upload image');
+            return;
+          }
+        } catch (error) {
+          console.error('Image upload error:', error);
+          setErrorMessage('Failed to upload image');
           return;
         }
       }
