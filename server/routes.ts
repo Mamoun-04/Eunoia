@@ -12,14 +12,11 @@ import path from "path";
 import { z } from "zod";
 import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
 
+import { Client } from '@replit/object-storage';
+const storage = new Client();
+
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: 'uploads/',
-    filename: (req, file, cb) => {
-      const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-      cb(null, uniqueName);
-    }
-  }),
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     cb(null, allowedTypes.includes(file.mimetype));
@@ -157,12 +154,22 @@ function setupStorageRoutes(router: Router) {
   });
 
   // File upload route
-  router.post("/api/upload", requireAuth, upload.single("image"), (req, res) => {
+  router.post("/api/upload", requireAuth, upload.single("image"), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ imageUrl });
+    
+    const uniqueName = `${uuidv4()}${path.extname(req.file.originalname)}`;
+    const key = `user-uploads/${uniqueName}`;
+    
+    try {
+      await storage.upload(key, req.file.buffer);
+      const imageUrl = await storage.getSignedUrl(key);
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: "Failed to upload file" });
+    }
   });
 }
 
