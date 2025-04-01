@@ -19,8 +19,8 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "./lib/protected-route";
 import { Loader2 } from "lucide-react";
 
-// Lazy load the splash screen
-const SplashScreen = lazy(() => import("@/components/onboarding/splash-screen"));
+// Lazy load the welcome screen for splash
+const SplashScreen = lazy(() => import("@/components/onboarding/new-welcome-screen"));
 
 function Router() {
   const { user, isLoading } = useAuth();
