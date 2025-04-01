@@ -27,8 +27,8 @@ import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  setupAuth(app);
   const router = Router();
-  setupAuth(router);
   setupStorageRoutes(router);
   app.use(router);
 
