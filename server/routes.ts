@@ -164,7 +164,8 @@ function setupStorageRoutes(router: Router) {
     
     try {
       await client.uploadBytes(key, req.file.buffer);
-      const url = await client.getSignedUrl(key);
+      // Use a permanent URL format instead of signed URLs
+      const url = `/api/images/${key}`;
       res.json({ imageUrl: url });
     } catch (error) {
       console.error('Upload error:', error);
@@ -177,9 +178,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   const router = Router();
   setupStorageRoutes(router);
-  
-  // Serve uploaded files statically
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+  // Add route to serve images from object storage
+  router.get('/api/images/user-uploads/:filename', async (req, res) => {
+    try {
+      const key = `user-uploads/${req.params.filename}`;
+      const file = await client.getBytes(key);
+      
+      // Set cache headers for better performance
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      res.end(file);
+    } catch (error) {
+      console.error('Error serving image:', error);
+      res.status(404).json({ message: 'Image not found' });
+    }
+  });
   
   app.use(router);
 
