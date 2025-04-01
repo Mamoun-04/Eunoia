@@ -1,3 +1,4 @@
+
 import { Switch, Route } from "wouter";
 import { useState, useEffect, lazy, Suspense } from "react";
 
@@ -11,9 +12,6 @@ import LibraryPage from "./pages/library-page";
 import EntriesPage from "@/pages/entries-page";
 import SettingsPage from "@/pages/settings-page";
 import OnboardingPage from "@/pages/onboarding-page";
-import PaymentPage from "@/pages/payment-page";
-import CheckoutSuccessPage from "@/pages/checkout-success-page";
-import CheckoutCancelPage from "@/pages/checkout-cancel-page";
 import WelcomeScreen from "@/components/onboarding/welcome-screen";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
@@ -48,9 +46,6 @@ function Router() {
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/library" component={LibraryPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
-      <ProtectedRoute path="/payment" component={PaymentPage} />
-      <ProtectedRoute path="/checkout-success" component={CheckoutSuccessPage} />
-      <Route path="/checkout-cancel" component={CheckoutCancelPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} />
       <Route path="/welcome" component={WelcomeScreen} />
@@ -62,16 +57,16 @@ function Router() {
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
-  
+
   useEffect(() => {
     // Show splash screen for 2.5 seconds
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2500);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   if (isLoading) {
     return (
       <Suspense fallback={<div className="h-screen w-full bg-[#f8f7f2]" />}>
@@ -79,7 +74,7 @@ function App() {
       </Suspense>
     );
   }
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
