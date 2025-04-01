@@ -22,48 +22,26 @@ import { Loader2 } from "lucide-react";
 // Lazy load the welcome screen for splash
 const SplashScreen = lazy(() => import("@/components/onboarding/new-welcome-screen"));
 
-import { useOnboarding } from "@/hooks/use-onboarding";
-
 function Router() {
   const { user, isLoading } = useAuth();
-  const { data: onboardingData } = useOnboarding();
-  const [, setLocation] = useLocation();
 
-  // Handle initial routing based on auth and onboarding state
-  useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        // If user is logged in but hasn't completed onboarding, send to onboarding
-        if (!onboardingData.onboardingComplete) {
-          setLocation('/onboarding');
-        } else {
-          // If onboarding is complete and we're on an auth/welcome page, go home
-          if (location === '/auth' || location === '/welcome' || location === '/onboarding') {
-            setLocation('/home');
-          }
-        }
-      } else {
-        // If not logged in and trying to access protected routes, go to auth
-        if (location !== '/auth' && location !== '/welcome') {
-          setLocation('/auth');
-        }
-      }
+  // A function to determine if we should show welcome screen or redirect to home
+  const HomeRouteComponent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-border" />
+        </div>
+      );
     }
-  }, [user, isLoading, onboardingData.onboardingComplete, location]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-border" />
-      </div>
-    );
-  }
+    
+    // If user is logged in, show HomePage, otherwise show AuthPage
+    return user ? <HomePage /> : <AuthPage />;
+  };
 
   return (
     <Switch>
-      <Route path="/" component={() => {
-        return user ? <HomePage /> : <AuthPage />;
-      }} />
+      <Route path="/" component={HomeRouteComponent} />
       <ProtectedRoute path="/home" component={HomePage} />
       <ProtectedRoute path="/entries" component={EntriesPage} />
       <ProtectedRoute path="/library" component={LibraryPage} />
