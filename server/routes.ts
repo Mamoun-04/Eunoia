@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Router } from 'express';
-import { setupAuthRoutes } from './auth';
+import { setupAuth } from './auth';
 import { setupStorageRoutes } from './storage';
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
@@ -28,7 +28,7 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const router = Router();
-  setupAuthRoutes(router);
+  setupAuth(router);
   setupStorageRoutes(router);
   app.use(router);
 
