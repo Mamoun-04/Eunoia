@@ -289,17 +289,17 @@ export function MinimalistJournalEditor({
   }, [title, content, mood, category, imageUrl, errorMessage]);
 
   return (
-    <div className="space-y-3 p-2 sm:p-4">
+    <div className="space-y-3">
       {/* Sticky top bar with progress and actions */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pt-1 pb-3">
+      <div className="sticky top-0 z-10 bg-background pt-1 pb-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-bold">
             {existingEntry ? "Edit Entry" : "New Entry"}
           </h2>
           
-          <div className="flex items-center gap-2 justify-between w-full">
+          <div className="flex items-center gap-2">
             {/* Word count display with color feedback */}
-            <span className={`text-sm font-medium hidden sm:inline ${
+            <span className={`text-sm font-medium ${
               isOverLimit ? 'text-destructive' : 
               wordCount > WORD_LIMIT * 0.9 ? 'text-amber-500' : 
               'text-muted-foreground'
@@ -311,7 +311,7 @@ export function MinimalistJournalEditor({
             <Button 
               onClick={saveEntry} 
               disabled={isSaving || isUploading || isOverLimit || !title.trim() || !content.trim()}
-              className="sm:ml-2 w-full sm:w-auto"
+              className="ml-2"
             >
               {isSaving ? (
                 <>
@@ -354,7 +354,7 @@ export function MinimalistJournalEditor({
           placeholder="Entry title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-lg sm:text-xl font-semibold border-none shadow-none focus-visible:ring-0 px-1 sm:px-0 text-foreground/90 w-full"
+          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 px-0 text-foreground/90"
         />
       </div>
       
@@ -391,7 +391,7 @@ export function MinimalistJournalEditor({
           <Button
             type="button"
             variant="outline"
-            className="w-full py-4 sm:py-6 border-dashed rounded-xl"
+            className="w-full py-6 border-dashed"
             onClick={(e) => {
               // Prevent the event from bubbling up and potentially closing dialogs
               e.stopPropagation();
