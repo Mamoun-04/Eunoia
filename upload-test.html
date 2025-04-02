@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudinary Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: none;
+        }
+        .image-preview {
+            max-width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cloudinary Image Upload Test</h1>
+    
+    <div class="container">
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="image">Select Image (JPG, PNG, WebP only, max 5MB):</label>
+                <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" required>
+            </div>
+            <button type="submit">Upload Image</button>
+        </form>
+        
+        <div id="result">
+            <h3>Upload Result:</h3>
+            <pre id="resultData"></pre>
+            <div id="imagePreview"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('image');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            // Check file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size exceeds 5MB limit');
+                return;
+            }
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                // Show loading state
+                document.querySelector('button').textContent = 'Uploading...';
+                document.querySelector('button').disabled = true;
+                
+                // Make API request to upload endpoint
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Parse response
+                const result = await response.json();
+                
+                // Display result
+                const resultDiv = document.getElementById('result');
+                const resultData = document.getElementById('resultData');
+                const imagePreview = document.getElementById('imagePreview');
+                
+                if (response.ok) {
+                    resultData.textContent = JSON.stringify(result, null, 2);
+                    
+                    // Display image preview if upload successful
+                    imagePreview.innerHTML = `
+                        <h4>Image Preview:</h4>
+                        <img src="${result.imageUrl}" alt="Uploaded image" class="image-preview">
+                        <p>Width: ${result.width}px, Height: ${result.height}px</p>
+                        <p>Format: ${result.format}</p>
+                    `;
+                } else {
+                    resultData.textContent = `Error: ${result.message || 'Unknown error'}`;
+                    imagePreview.innerHTML = '';
+                }
+                
+                // Show result div
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('An error occurred during upload. Please try again.');
+            } finally {
+                // Reset button state
+                document.querySelector('button').textContent = 'Upload Image';
+                document.querySelector('button').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

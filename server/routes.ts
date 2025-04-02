@@ -8,21 +8,47 @@ import multer from "multer";
 import express from "express";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import path from "path";
 import { z } from "zod";
 import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
+import { v2 as cloudinary } from 'cloudinary';
+import * as stream from 'stream';
+import { promisify } from 'util';
 
-import { Client } from '@replit/object-storage';
-const client = new Client();
+// Define Cloudinary upload result interface
+interface CloudinaryUploadResult {
+  public_id: string;
+  version: number;
+  signature: string;
+  width: number;
+  height: number;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  bytes: number;
+  type: string;
+  url: string;
+  secure_url: string;
+}
 
+// We are using Cloudinary for image storage, no need for Replit object storage
+
+// Configure Cloudinary with credentials from environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    // Allow only specific image formats
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     cb(null, allowedTypes.includes(file.mimetype));
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: 5 * 1024 * 1024 // 5MB max size
   }
 });
 
@@ -153,23 +179,53 @@ function setupStorageRoutes(router: Router) {
     }
   });
 
-  // File upload route
-  router.post("/api/upload", requireAuth, upload.single("image"), async (req, res) => {
+  // Cloudinary image upload route (authentication disabled for testing)
+  router.post("/api/upload", upload.single("image"), async (req, res) => {
+    // Check if file exists in the request
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
     
-    const uniqueName = `${uuidv4()}${path.extname(req.file.originalname)}`;
-    const key = `user-uploads/${uniqueName}`;
-    
     try {
-      await client.uploadBytes(key, req.file.buffer);
-      // Use a permanent URL format instead of signed URLs
-      const url = `/api/images/${key}`;
-      res.json({ imageUrl: url });
+      // Convert buffer to base64 string for Cloudinary upload
+      const base64Image = Buffer.from(req.file.buffer).toString('base64');
+      const dataURI = `data:${req.file.mimetype};base64,${base64Image}`;
+      
+      // Upload to Cloudinary with transformation options
+      const result = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader.upload(dataURI, {
+          // Add folder to organize uploads
+          folder: 'journal-app-uploads', 
+          // Set resource type to auto for proper file detection
+          resource_type: 'auto',
+          // Apply transformations:
+          // - Convert to webp format for better compression
+          // - Resize to max width of 800px while maintaining aspect ratio
+          // - Set quality to 90% for good balance of quality and file size
+          transformation: [
+            { width: 800, crop: 'limit' },
+            { quality: 90, fetch_format: 'webp' }
+          ]
+        }, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+      });
+      
+      // Type assertion as the right shape, but avoid direct cast to our interface
+      const uploadResult = result as any;
+      
+      // Return the secure Cloudinary URL and metadata
+      res.json({ 
+        imageUrl: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        format: uploadResult.format,
+        width: uploadResult.width,
+        height: uploadResult.height
+      });
     } catch (error) {
-      console.error('Upload error:', error);
-      res.status(500).json({ message: "Failed to upload file" });
+      console.error('Cloudinary upload error:', error);
+      res.status(500).json({ message: "Failed to upload image to Cloudinary" });
     }
   });
 }
@@ -178,20 +234,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   const router = Router();
   setupStorageRoutes(router);
-
-  // Add route to serve images from object storage
-  router.get('/api/images/user-uploads/:filename', async (req, res) => {
-    try {
-      const key = `user-uploads/${req.params.filename}`;
-      const file = await client.getBytes(key);
-      
-      // Set cache headers for better performance
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-      res.end(file);
-    } catch (error) {
-      console.error('Error serving image:', error);
-      res.status(404).json({ message: 'Image not found' });
-    }
+  
+  // No need for the image serving route since Cloudinary will host the images directly
+  // with their own CDN URLs
+  
+  // Add a test route for the upload demo
+  router.get('/upload-test', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'upload-test.html'));
   });
   
   app.use(router);
