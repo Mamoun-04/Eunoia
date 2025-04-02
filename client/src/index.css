@@ -792,7 +792,7 @@
 }
 
 .journal-textarea {
-  @apply w-full min-h-[250px] bg-white border border-gray-100 rounded-xl p-4 sm:p-5 text-foreground placeholder:text-gray-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-20 resize-none mb-8 shadow-sm;
+  @apply w-full min-h-[200px] sm:min-h-[250px] bg-white border border-gray-100 rounded-xl p-3 sm:p-5 text-base sm:text-lg text-foreground placeholder:text-gray-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-20 resize-none mb-4 sm:mb-8 shadow-sm;
   font-family: 'Spectral', 'EB Garamond', serif;
   background-color: #fffffe;
   line-height: 1.6;
