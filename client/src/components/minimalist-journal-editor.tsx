@@ -289,9 +289,9 @@ export function MinimalistJournalEditor({
   }, [title, content, mood, category, imageUrl, errorMessage]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 p-4">
       {/* Sticky top bar with progress and actions */}
-      <div className="sticky top-0 z-10 bg-background pt-1 pb-3">
+      <div className="sticky top-0 z-10 bg-background pt-1 pb-3 -mx-4 px-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-bold">
             {existingEntry ? "Edit Entry" : "New Entry"}
@@ -391,7 +391,7 @@ export function MinimalistJournalEditor({
           <Button
             type="button"
             variant="outline"
-            className="w-full py-6 border-dashed"
+            className="w-full py-6 border-dashed rounded-xl mb-4"
             onClick={(e) => {
               // Prevent the event from bubbling up and potentially closing dialogs
               e.stopPropagation();
@@ -425,7 +425,7 @@ export function MinimalistJournalEditor({
         value={content}
         onChange={handleContentChange}
         onKeyDown={handleKeyDown}
-        className="journal-textarea min-h-[180px] resize-y p-4 text-base leading-relaxed"
+        className="journal-textarea min-h-[180px] resize-y p-4 text-base leading-relaxed w-full rounded-xl"
       />
     </div>
   );

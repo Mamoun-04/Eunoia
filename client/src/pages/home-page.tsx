@@ -473,7 +473,7 @@ export default function HomePage() {
           setIsEditing(false);
           setSelectedEntry(null);
         }}>
-          <DialogContent className="sm:max-w-[800px]">
+          <DialogContent className="w-[95%] sm:max-w-[800px] mx-auto rounded-2xl overflow-x-hidden overflow-y-auto max-h-[90vh] bg-background shadow-xl p-0">
             <MinimalistJournalEditor 
               onClose={() => {
                 setIsEditing(false);
