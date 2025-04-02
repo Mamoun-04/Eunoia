@@ -265,7 +265,7 @@ export default function EntriesPage() {
           {/* 3 Major Achievement Boxes */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
             {/* Total Entries */}
-            <Card className="rounded-lg p-5 bg-card/50 hover:bg-card/80 transition-colors border-border/50">
+            <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
                   <BookOpen className="h-5 w-5" />
@@ -281,7 +281,7 @@ export default function EntriesPage() {
             </Card>
 
             {/* Total Words */}
-            <Card className="rounded-lg p-5 bg-card/50 hover:bg-card/80 transition-colors border-border/50">
+            <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
                   <Edit className="h-5 w-5" />
@@ -297,7 +297,7 @@ export default function EntriesPage() {
             </Card>
 
             {/* Streak (Current & Longest) */}
-            <Card className="rounded-lg p-5 bg-card/50 hover:bg-card/80 transition-colors border-border/50">
+            <Card className="rounded-3xl p-6 shadow hover:shadow-md transition">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-muted-foreground">
                   <Trophy className="h-5 w-5" />
@@ -354,13 +354,9 @@ export default function EntriesPage() {
             return (
               <Link key={item.name} href={item.href}>
                 <Button
-                  variant="ghost"
+                  variant={isActive ? "default" : "ghost"}
                   size="icon"
-                  className={`flex flex-col items-center gap-1 h-auto py-2 ${
-                    isActive 
-                      ? "text-primary bg-transparent hover:bg-transparent" 
-                      : ""
-                  }`}
+                  className="flex flex-col items-center gap-1 h-auto py-2"
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs">{item.name}</span>
