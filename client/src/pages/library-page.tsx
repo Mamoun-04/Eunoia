@@ -2834,8 +2834,8 @@ export default function LibraryPage() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 border-t bg-background lg:hidden">
-        <nav className="flex justify-around p-2">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-border/50 backdrop-blur-md bg-background/80 lg:hidden">
+        <nav className="flex justify-around items-center px-6 py-3">
           {navigation.map((item) => {
             const isActive = location === item.href;
             return (
@@ -2843,14 +2843,12 @@ export default function LibraryPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={`flex flex-col items-center gap-1 h-auto py-2 ${
-                    isActive
-                      ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
-                      : ""
+                  className={`h-10 w-10 rounded-full ${
+                    isActive ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent"
                   }`}
+                  title={item.name}
                 >
                   <item.icon className="h-5 w-5" />
-                  <span className="text-xs">{item.name}</span>
                 </Button>
               </Link>
             );
