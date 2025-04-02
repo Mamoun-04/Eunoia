@@ -137,8 +137,8 @@ export default function SettingsPage() {
                   variant="ghost"
                   size="icon"
                   className={`flex flex-col items-center gap-1 h-auto py-2 ${
-                    isActive
-                      ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                    isActive 
+                      ? "text-primary bg-transparent hover:bg-transparent" 
                       : ""
                   }`}
                 >

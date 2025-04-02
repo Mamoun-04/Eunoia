@@ -452,9 +452,13 @@ export default function HomePage() {
             return (
               <Link key={item.name} href={item.href}>
                 <Button
-                  variant={isActive ? "default" : "ghost"}
+                  variant="ghost"
                   size="icon"
-                  className="flex flex-col items-center gap-1 h-auto py-2"
+                  className={`flex flex-col items-center gap-1 h-auto py-2 ${
+                    isActive 
+                      ? "text-primary bg-transparent hover:bg-transparent" 
+                      : ""
+                  }`}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs">{item.name}</span>
