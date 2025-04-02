@@ -306,7 +306,7 @@ export default function HomePage() {
               <Input
                 type="text"
                 placeholder="Search entries by title..."
-                className="pl-10 bg-[color-mix(in_srgb,var(--background-color)_10%,transparent)] border-muted focus-visible:ring-primary/40"
+                className="pl-10 bg-background/50 border-muted focus-visible:ring-primary/40"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
