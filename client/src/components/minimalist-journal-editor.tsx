@@ -27,11 +27,11 @@ export function MinimalistJournalEditor({
   const queryClient = useQueryClient();
   const { refreshStreak } = useStreak();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   // All users get premium features
   const isPremium = true;
   const WORD_LIMIT = 1000;
-
+  
   // Form state
   const [title, setTitle] = useState(existingEntry?.title || "");
   const [content, setContent] = useState(existingEntry?.content || "");
@@ -48,28 +48,28 @@ export function MinimalistJournalEditor({
   const wordCountProgress = (wordCount / WORD_LIMIT) * 100;
   const isOverLimit = wordCount > WORD_LIMIT;
   const imageSelected = !!imageFile || !!imageUrl;
-
+  
   // Debounced content update to prevent typing lag
   const [debouncedContent, setDebouncedContent] = useState(content);
-
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedContent(content);
     }, 300);
-
+    
     return () => {
       clearTimeout(handler);
     };
   }, [content]);
-
+  
   // Handle image upload
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-
+    
     try {
       const file = e.target.files[0];
       setImageFile(file);
-
+      
       // Display a preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -81,47 +81,47 @@ export function MinimalistJournalEditor({
     } catch (error) {
       console.error("Image selection error:", error);
       setErrorMessage("Image selection failed: There was an error selecting your image. Please try again.");
-
+      
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     }
   };
-
+  
   // Handle content change with limiting behavior
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
-
+    
     // Always update the content to show what user is typing
     setContent(newContent);
-
+    
     // If they're trying to type beyond the limit, warn them
     // We use inline error messages now instead of toast
     // The handleKeyDown function prevents typing beyond the limit anyway
   };
-
+  
   // Handle image upload to server
   const uploadImage = async () => {
     if (!imageFile) return null;
-
+    
     try {
       setIsUploading(true);
-
+      
       const formData = new FormData();
       formData.append("image", imageFile);
-
+      
       const response = await fetch("/api/upload", {
         method: "POST",
         credentials: "include",
         body: formData,
       });
-
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to upload image");
       }
-
+      
       const data = await response.json();
       return data.imageUrl;
     } catch (error) {
@@ -132,50 +132,50 @@ export function MinimalistJournalEditor({
       setIsUploading(false);
     }
   };
-
+  
   // Save the entry
   const saveEntry = async () => {
     try {
       setIsSaving(true);
-
+      
       // Validate title
       if (!title.trim()) {
         setErrorMessage("Title is required. Please provide a title for your entry.");
         return;
       }
-
+      
       // Validate content
       if (!content.trim()) {
         setErrorMessage("Content is required. Please write something in your journal entry.");
         return;
       }
-
+      
       // Check word count limit
       if (wordCount > WORD_LIMIT) {
         setErrorMessage(`Word limit exceeded. Please reduce your entry to ${WORD_LIMIT} words or less.`);
         return;
       }
-
+      
       // Upload image if there's a new one
       let finalImageUrl = imageUrl;
       if (imageFile) {
         try {
           const formData = new FormData();
           formData.append('image', imageFile);
-
+          
           const response = await fetch('/api/upload', {
             method: 'POST',
             credentials: 'include',
             body: formData,
           });
-
+          
           if (!response.ok) {
             throw new Error('Failed to upload image');
           }
-
+          
           const data = await response.json();
           finalImageUrl = data.imageUrl;
-
+          
           if (!finalImageUrl) {
             setErrorMessage('Failed to upload image');
             return;
@@ -186,7 +186,7 @@ export function MinimalistJournalEditor({
           return;
         }
       }
-
+      
       // Prepare entry data
       const entryData: InsertEntry = {
         title: title.trim(),
@@ -195,7 +195,7 @@ export function MinimalistJournalEditor({
         category,
         imageUrl: finalImageUrl || undefined,
       };
-
+      
       // Create or update the entry
       if (existingEntry) {
         // Update existing entry
@@ -206,19 +206,19 @@ export function MinimalistJournalEditor({
         await apiRequest("POST", "/api/entries", entryData);
         // Success is handled by closing the editor - no need for toast
       }
-
+      
       // Refresh entries list
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-
+      
       // For new entries, refresh the user streak
       if (!existingEntry) {
         await refreshStreak();
       }
-
+      
       onClose();
     } catch (error) {
       console.error("Save entry error:", error);
-
+      
       // Special handling for 403 Forbidden (daily entry limit or content limit)
       if (error instanceof Error && 'status' in error && (error as any).status === 403) {
         const message = (error as any).data?.message || "You've reached your limit. Upgrade to Premium for more features.";
@@ -226,14 +226,14 @@ export function MinimalistJournalEditor({
         showPremiumFeatureModal("Entry Limit", message);
         return;
       }
-
+      
       // Show error as an alert in the editor instead of toast
       setErrorMessage(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsSaving(false);
     }
   };
-
+  
   // State for premium feature notification
   const [premiumFeatureAlert, setPremiumFeatureAlert] = useState<{
     feature: string;
@@ -244,7 +244,7 @@ export function MinimalistJournalEditor({
     message: "",
     visible: false
   });
-
+  
   // Show premium feature alert for non-premium users
   const showPremiumFeatureModal = (feature: string, message?: string) => {
     setPremiumFeatureAlert({
@@ -252,13 +252,13 @@ export function MinimalistJournalEditor({
       message: message || "Upgrade to Premium to access this feature",
       visible: true
     });
-
+    
     // Auto-hide after 8 seconds
     setTimeout(() => {
       setPremiumFeatureAlert(prev => ({...prev, visible: false}));
     }, 8000);
   };
-
+  
   // Disable typing when over word limit
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // If they're at the limit and trying to add more content, block most keys
@@ -268,19 +268,19 @@ export function MinimalistJournalEditor({
         'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 
         'ArrowUp', 'ArrowDown', 'Home', 'End'
       ];
-
+      
       // Allow keyboard shortcuts (Ctrl/Cmd + key)
       if (e.ctrlKey || e.metaKey) {
         return;
       }
-
+      
       // Block typing if not an allowed key
       if (!allowedKeys.includes(e.key)) {
         e.preventDefault();
       }
     }
   };
-
+  
   // Clear error message when user makes changes
   useEffect(() => {
     if (errorMessage) {
@@ -296,7 +296,7 @@ export function MinimalistJournalEditor({
           <h2 className="text-2xl font-bold">
             {existingEntry ? "Edit Entry" : "New Entry"}
           </h2>
-
+          
           <div className="flex items-center gap-2">
             {/* Word count display with color feedback */}
             <span className={`text-sm font-medium ${
@@ -306,7 +306,7 @@ export function MinimalistJournalEditor({
             }`}>
               {wordCount} / {WORD_LIMIT}
             </span>
-
+            
             {/* Save button */}
             <Button 
               onClick={saveEntry} 
@@ -327,7 +327,7 @@ export function MinimalistJournalEditor({
             </Button>
           </div>
         </div>
-
+        
         {/* Word count progress bar */}
         <Progress 
           value={Math.min(wordCountProgress, 100)} 
@@ -338,16 +338,16 @@ export function MinimalistJournalEditor({
           }`}
         />
       </div>
-
+      
       {/* Error message */}
       {errorMessage && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm mb-2">
           {errorMessage}
         </div>
       )}
-
+      
       {/* No premium feature alerts needed as all features are available */}
-
+      
       {/* Title input */}
       <div>
         <Input
@@ -357,7 +357,7 @@ export function MinimalistJournalEditor({
           className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 px-0 text-foreground/90"
         />
       </div>
-
+      
       {/* Image upload section (available to all users) */}
       <div className="space-y-2 mb-2">
         {imageUrl && (
@@ -374,7 +374,7 @@ export function MinimalistJournalEditor({
               onClick={(e) => {
                 // Prevent event from bubbling up (important)
                 e.stopPropagation();
-
+                
                 setImageUrl("");
                 setImageFile(null);
                 if (fileInputRef.current) {
@@ -386,7 +386,7 @@ export function MinimalistJournalEditor({
             </Button>
           </div>
         )}
-
+        
         {!imageUrl && (
           <Button
             type="button"
@@ -395,7 +395,7 @@ export function MinimalistJournalEditor({
             onClick={(e) => {
               // Prevent the event from bubbling up and potentially closing dialogs
               e.stopPropagation();
-
+              
               if (fileInputRef.current) {
                 fileInputRef.current.click();
               }
@@ -409,7 +409,7 @@ export function MinimalistJournalEditor({
             </div>
           </Button>
         )}
-
+        
         <input
           type="file"
           ref={fileInputRef}
@@ -418,7 +418,7 @@ export function MinimalistJournalEditor({
           onChange={handleImageSelect}
         />
       </div>
-
+      
       {/* Main journal text area */}
       <Textarea
         placeholder="Write your thoughts here..."
