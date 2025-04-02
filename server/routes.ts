@@ -48,7 +48,7 @@ const upload = multer({
     cb(null, allowedTypes.includes(file.mimetype));
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB max size
+    fileSize: 10 * 1024 * 1024 // 10MB max size
   }
 });
 
