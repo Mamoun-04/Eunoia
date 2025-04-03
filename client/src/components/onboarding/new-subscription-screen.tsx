@@ -8,9 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
-// Price IDs come from environment variables
-const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID;
-const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
+// Price IDs from Stripe dashboard
+const MONTHLY_PRICE_ID = 'price_1OvCZsUT1Kb8TKU9FnFMRQOH';
+const ANNUAL_PRICE_ID = 'price_1OvCaGUT1Kb8TKU9BvwPxzQu';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
