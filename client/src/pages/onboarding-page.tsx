@@ -76,6 +76,16 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f8f7f2] flex flex-col">
+      {/* Login Link */}
+      <div className="absolute top-4 right-4">
+        <Button
+          variant="ghost"
+          className="text-gray-600 hover:text-gray-900"
+          onClick={() => setLocation('/auth')}
+        >
+          Already have an account? Login
+        </Button>
+      </div>
       {/* Top Bar */}
       <div className="p-4 flex justify-between items-center">
         {data.step > 0 && (
