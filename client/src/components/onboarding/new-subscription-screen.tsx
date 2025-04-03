@@ -20,7 +20,16 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
     // Check URL parameters for payment success
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
-      setLocation('/home');
+      // Update subscription status and redirect
+      updateData({ 
+        onboardingComplete: true,
+        subscriptionPlan: 'premium',
+        billingPeriod: 'yearly'
+      });
+      // Short delay to allow the user to see the success message
+      setTimeout(() => {
+        setLocation('/home');
+      }, 2000);
       return;
     }
 
