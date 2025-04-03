@@ -8,9 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
-// Price IDs from Stripe dashboard
-const MONTHLY_PRICE_ID = 'price_1OvCZsUT1Kb8TKU9FnFMRQOH';
-const ANNUAL_PRICE_ID = 'price_1OvCaGUT1Kb8TKU9BvwPxzQu';
+// Price IDs from Stripe dashboard (test mode)
+const MONTHLY_PRICE_ID = 'price_1OvgLKUT1Kb8TKU9H8HlRKkZ';
+const ANNUAL_PRICE_ID = 'price_1OvgLKUT1Kb8TKU9kO2Z6VYK';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
