@@ -3,8 +3,9 @@ import { useOnboarding } from '@/hooks/use-onboarding';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
+import SubscriptionSuccessScreen from './subscription-success-screen';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -13,6 +14,7 @@ interface SubscriptionScreenProps {
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { updateData } = useOnboarding();
   const scriptLoaded = useRef(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   const [, setLocation] = useLocation();
 
@@ -20,16 +22,14 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
     // Check URL parameters for payment success
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
-      // Update subscription status and redirect
+      // Update subscription status
       updateData({ 
         onboardingComplete: true,
         subscriptionPlan: 'premium',
         billingPeriod: 'yearly'
       });
-      // Short delay to allow the user to see the success message
-      setTimeout(() => {
-        setLocation('/home');
-      }, 2000);
+      // Show success screen
+      setShowSuccessScreen(true);
       return;
     }
 
@@ -59,6 +59,12 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
     }
   }, []);
 
+  // If success parameter is present, show the success screen
+  if (showSuccessScreen) {
+    return <SubscriptionSuccessScreen />;
+  }
+
+  // Otherwise show the pricing table
   return (
     <div className="min-h-[calc(100vh-90px)] flex flex-col px-6 py-4">
       <motion.div
