@@ -21,8 +21,8 @@ export async function createCheckoutSession(userId: number, priceId: string, tri
     subscription_data: {
       trial_period_days: trialDays,
     },
-    success_url: `${process.env.CLIENT_URL}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.CLIENT_URL}/onboarding`,
+    success_url: `http://localhost:5000/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `http://localhost:5000/onboarding`,
     customer_email: user.email,
     client_reference_id: user.id.toString(),
   });

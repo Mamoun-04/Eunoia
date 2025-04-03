@@ -236,6 +236,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupStorageRoutes(router);
 
   // Stripe routes
+  // Middleware for authentication check
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    next();
+  };
+
   router.post("/api/create-checkout-session", requireAuth, async (req, res) => {
     try {
       const { priceId, trialDays } = req.body;
