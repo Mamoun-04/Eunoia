@@ -9,8 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
 // Price IDs come from environment variables
-const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID || import.meta.env.STRIPE_MONTHLY_PRICE_ID;
-const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID || import.meta.env.STRIPE_YEARLY_PRICE_ID;
+const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID;
+const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -28,6 +28,15 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
   };
 
   const handleSubscribe = async (priceId: string, planType: string) => {
+    if (!priceId) {
+      toast({
+        title: "Error",
+        description: "Subscription price not configured",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!user) {
       toast({
         title: "Error",
