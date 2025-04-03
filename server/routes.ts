@@ -234,6 +234,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   const router = Router();
   setupStorageRoutes(router);
+
+  // Stripe routes
+  router.post("/api/create-checkout-session", requireAuth, async (req, res) => {
+    try {
+      const { priceId, trialDays } = req.body;
+      const session = await createCheckoutSession(req.user!.id, priceId, trialDays);
+      res.json({ sessionId: session.id });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  router.post("/api/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    try {
+      const event = stripe.webhooks.constructEvent(
+        req.body,
+        sig!,
+        process.env.STRIPE_WEBHOOK_SECRET!
+      );
+      await handleWebhook(event);
+      res.json({ received: true });
+    } catch (error) {
+      res.status(400).send(`Webhook Error: ${error.message}`);
+    }
+  });
   
   // No need for the image serving route since Cloudinary will host the images directly
   // with their own CDN URLs
