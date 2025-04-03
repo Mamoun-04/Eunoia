@@ -64,6 +64,7 @@ function SplashScreen() {
 
 function Router() {
   const { user, isLoading } = useAuth();
+  const [location] = useLocation();
 
   // If loading, show loading spinner
   if (isLoading) {
@@ -77,6 +78,11 @@ function Router() {
   // If not logged in, redirect to auth
   if (!user) {
     return <AuthPage />;
+  }
+
+  // After login/registration, if user hasn't completed onboarding, redirect to onboarding
+  if (!user.onboardingComplete && location !== '/onboarding') {
+    return <OnboardingPage />;
   }
 
   return (
