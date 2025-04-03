@@ -61,14 +61,21 @@ export function PremiumFeatureModal({ open, onOpenChange, feature, onSubscribe }
         <div className="flex flex-col gap-4 py-4">
           <div className="flex items-center gap-2 text-sm">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span>All premium features are free for a limited time!</span>
+            <span>Early Access: Premium features included!</span>
           </div>
           
-          <Separator />
+          <div className="text-sm text-muted-foreground mt-2">
+            Join our early access program and experience premium features at no cost. Your feedback helps shape the future of Eunoia.
+          </div>
           
-          <div className="flex justify-end">
+          <Separator className="my-4" />
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Maybe later
+            </Button>
             <Button onClick={() => onOpenChange(false)}>
-              Got it
+              Start using
             </Button>
           </div>
         </div>
