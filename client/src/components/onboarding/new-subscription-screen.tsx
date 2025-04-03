@@ -23,7 +23,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         transition={{ duration: 0.5 }}
         className="text-center max-w-lg mx-auto space-y-8"
       >
-        <div className="relative">
+        <div className="relative flex justify-center items-center w-full">
           <motion.div 
             className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 to-amber-700/20 rounded-full blur"
             animate={{ 
