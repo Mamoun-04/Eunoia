@@ -79,6 +79,11 @@ function Router() {
     return <AuthPage />;
   }
 
+  // Check if onboarding is not complete
+  if (user && !user.onboardingComplete && location !== '/onboarding') {
+    return <OnboardingPage />;
+  }
+
   return (
     <Switch>
       <Route path="/" component={HomePage} />
