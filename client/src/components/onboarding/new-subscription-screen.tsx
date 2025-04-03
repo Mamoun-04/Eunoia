@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useRef } from 'react';
+import { useLocation } from 'wouter';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -13,7 +14,16 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
   const { updateData } = useOnboarding();
   const scriptLoaded = useRef(false);
 
+  const [, setLocation] = useLocation();
+
   useEffect(() => {
+    // Check URL parameters for payment success
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      setLocation('/home');
+      return;
+    }
+
     if (!scriptLoaded.current) {
       const script = document.createElement('script');
       script.src = 'https://js.stripe.com/v3/pricing-table.js';
