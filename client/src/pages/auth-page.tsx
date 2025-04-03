@@ -126,10 +126,7 @@ function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const { loginMutation } = useAuth();
   
   const form = useForm({
-    resolver: zodResolver(z.object({
-      username: z.string().min(4, "Username must be at least 4 characters"),
-      password: z.string().min(8, "Password must be at least 8 characters")
-    })),
+    resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
   });
 
   const handleSubmit = async (data: any) => {
@@ -196,10 +193,8 @@ function RegisterForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
   const { registerMutation } = useAuth();
   
-  // Create registration schema with password confirmation
-  const registrationSchema = z.object({
-    username: z.string().min(4, "Username must be at least 4 characters"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+  // Extended schema with confirmPassword
+  const extendedSchema = insertUserSchema.extend({
     confirmPassword: z.string().min(1, "Please confirm your password"),
   }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

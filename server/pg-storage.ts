@@ -4,45 +4,9 @@ import * as schema from '@shared/schema';
 import { IStorage } from './storage';
 import session from "express-session";
 import { createInsertSchema } from "drizzle-zod";
-import { eq, and, gte, lte, count, or } from 'drizzle-orm';
+import { eq, and, gte, lte, count } from 'drizzle-orm';
 import { User, InsertUser, Entry, InsertEntry, SavedLesson, InsertSavedLesson } from '@shared/schema';
 import pgSessionStore from 'connect-pg-simple';
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-
-/**
- * Mask an email address for privacy
- * Example: j***@example.com
- */
-function maskEmail(email: string): string {
-  if (!email) return '';
-  const [username, domain] = email.split('@');
-  
-  if (username.length <= 1) {
-    return `${username}***@${domain}`;
-  }
-  
-  return `${username.charAt(0)}***@${domain}`;
-}
-
-/**
- * Mask a phone number for privacy
- * Example: ***-***-1234
- */
-function maskPhone(phone: string): string {
-  if (!phone) return '';
-  
-  // Keep only digits
-  const digits = phone.replace(/\D/g, '');
-  
-  // If less than 4 digits, mask everything
-  if (digits.length <= 4) {
-    return '*'.repeat(digits.length);
-  }
-  
-  // Otherwise, show only last 4 digits
-  return `***-***-${digits.slice(-4)}`;
-}
 
 const { Pool } = pg;
 
@@ -80,19 +44,12 @@ export class PgStorage implements IStorage {
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username TEXT NOT NULL UNIQUE,
-          email TEXT UNIQUE,
-          phone TEXT UNIQUE,
           password TEXT NOT NULL,
           subscription_status TEXT NOT NULL DEFAULT 'free',
           subscription_end_date TIMESTAMP,
           preferences TEXT,
           current_streak INTEGER DEFAULT 0,
-          last_activity_date TIMESTAMP,
-          is_verified BOOLEAN DEFAULT FALSE,
-          verification_token TEXT,
-          verification_expires TIMESTAMP,
-          reset_token TEXT,
-          reset_expires TIMESTAMP
+          last_activity_date TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS entries (
@@ -144,26 +101,6 @@ export class PgStorage implements IStorage {
       throw error;
     }
   }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    try {
-      const users = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
-      return users.length ? users[0] : undefined;
-    } catch (error) {
-      console.error('Error getting user by email:', error);
-      throw error;
-    }
-  }
-  
-  async getUserByPhone(phone: string): Promise<User | undefined> {
-    try {
-      const users = await db.select().from(schema.users).where(eq(schema.users.phone, phone)).limit(1);
-      return users.length ? users[0] : undefined;
-    } catch (error) {
-      console.error('Error getting user by phone:', error);
-      throw error;
-    }
-  }
 
   async createUser(user: InsertUser): Promise<User> {
     try {
@@ -172,13 +109,10 @@ export class PgStorage implements IStorage {
       
       const [newUser] = await db.insert(schema.users).values({
         username: user.username,
-        email: user.email,
-        phone: user.phone,
         password: user.password,
         preferences: preferencesString,
         subscriptionStatus: 'active', // All users automatically get premium status
-        currentStreak: 0,
-        isVerified: false
+        currentStreak: 0
       } as any).returning();
       
       return newUser;
@@ -497,198 +431,6 @@ export class PgStorage implements IStorage {
       return result[0]?.count || 0;
     } catch (error) {
       console.error('Error getting user daily image count:', error);
-      throw error;
-    }
-  }
-  
-  // Verification and password reset methods
-  async createVerificationToken(userId: number): Promise<string> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) throw new Error('User not found');
-      
-      // Generate a random token
-      const token = randomBytes(32).toString('hex');
-      
-      // Set token expiration to 24 hours from now
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24);
-      
-      // Update the user with the verification token
-      await db.update(schema.users)
-        .set({
-          verificationToken: token,
-          verificationExpires: expiresAt
-        })
-        .where(eq(schema.users.id, userId));
-      
-      return token;
-    } catch (error) {
-      console.error('Error creating verification token:', error);
-      throw error;
-    }
-  }
-  
-  async verifyUser(verificationToken: string): Promise<boolean> {
-    try {
-      // Find user with the given verification token
-      const users = await db.select()
-        .from(schema.users)
-        .where(eq(schema.users.verificationToken, verificationToken))
-        .limit(1);
-      
-      if (!users.length) return false;
-      
-      const user = users[0];
-      
-      // Check if token is expired
-      const now = new Date();
-      if (!user.verificationExpires || new Date(user.verificationExpires) < now) {
-        return false;
-      }
-      
-      // Mark user as verified and clear the token
-      await db.update(schema.users)
-        .set({
-          isVerified: true,
-          verificationToken: null,
-          verificationExpires: null
-        })
-        .where(eq(schema.users.id, user.id));
-      
-      return true;
-    } catch (error) {
-      console.error('Error verifying user:', error);
-      throw error;
-    }
-  }
-  
-  async createPasswordResetToken(identifier: string): Promise<string | null> {
-    try {
-      // Find user by email, phone, or username
-      const users = await db.select()
-        .from(schema.users)
-        .where(
-          or(
-            eq(schema.users.email, identifier),
-            eq(schema.users.phone, identifier),
-            eq(schema.users.username, identifier)
-          )
-        )
-        .limit(1);
-      
-      if (!users.length) return null;
-      
-      const user = users[0];
-      
-      // Generate a random token
-      const token = randomBytes(32).toString('hex');
-      
-      // Set token expiration to 1 hour from now
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1);
-      
-      // Update the user with the reset token
-      await db.update(schema.users)
-        .set({
-          resetToken: token,
-          resetExpires: expiresAt
-        })
-        .where(eq(schema.users.id, user.id));
-      
-      return token;
-    } catch (error) {
-      console.error('Error creating password reset token:', error);
-      throw error;
-    }
-  }
-  
-  async validateResetToken(resetToken: string): Promise<number | null> {
-    try {
-      // Find user with the given reset token
-      const users = await db.select()
-        .from(schema.users)
-        .where(eq(schema.users.resetToken, resetToken))
-        .limit(1);
-      
-      if (!users.length) return null;
-      
-      const user = users[0];
-      
-      // Check if token is expired
-      const now = new Date();
-      if (!user.resetExpires || new Date(user.resetExpires) < now) {
-        return null;
-      }
-      
-      return user.id;
-    } catch (error) {
-      console.error('Error validating reset token:', error);
-      throw error;
-    }
-  }
-  
-  async resetPassword(userId: number, newPassword: string): Promise<boolean> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) return false;
-      
-      // Hash the new password
-      const scryptAsync = promisify(scrypt);
-      const salt = randomBytes(16).toString("hex");
-      const buf = (await scryptAsync(newPassword, salt, 64)) as Buffer;
-      const hashedPassword = `${buf.toString("hex")}.${salt}`;
-      
-      // Update the user with the new password and clear reset token
-      await db.update(schema.users)
-        .set({
-          password: hashedPassword,
-          resetToken: null,
-          resetExpires: null
-        })
-        .where(eq(schema.users.id, userId));
-      
-      return true;
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      throw error;
-    }
-  }
-  
-  async findUserByIdentifier(identifier: string): Promise<{ 
-    userId: number;
-    username: string;
-    email?: string;
-    phone?: string; 
-    isVerified: boolean;
-  } | null> {
-    try {
-      // Find user by email, phone, or username
-      const users = await db.select()
-        .from(schema.users)
-        .where(
-          or(
-            eq(schema.users.email, identifier),
-            eq(schema.users.phone, identifier),
-            eq(schema.users.username, identifier)
-          )
-        )
-        .limit(1);
-      
-      if (!users.length) return null;
-      
-      const user = users[0];
-      
-      // Return masked information
-      return {
-        userId: user.id,
-        username: user.username,
-        email: user.email ? maskEmail(user.email) : undefined,
-        phone: user.phone ? maskPhone(user.phone) : undefined,
-        isVerified: user.isVerified ?? false
-      };
-    } catch (error) {
-      console.error('Error finding user by identifier:', error);
       throw error;
     }
   }

@@ -7,27 +7,9 @@ const MemoryStore = createMemoryStore(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, data: Partial<User>): Promise<User>;
   deleteUser(id: number, feedback?: string): Promise<void>;
-  
-  // Verification and password reset methods
-  createVerificationToken(userId: number): Promise<string>;
-  verifyUser(verificationToken: string): Promise<boolean>;
-  createPasswordResetToken(identifier: string): Promise<string | null>;
-  validateResetToken(resetToken: string): Promise<number | null>;
-  resetPassword(userId: number, newPassword: string): Promise<boolean>;
-  
-  // Account lookup method
-  findUserByIdentifier(identifier: string): Promise<{ 
-    userId: number;
-    username: string;
-    email?: string;
-    phone?: string;
-    isVerified: boolean;
-  } | null>;
   
   createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
   getEntries(userId: number): Promise<Entry[]>;
@@ -80,18 +62,6 @@ export class MemStorage implements IStorage {
       (user) => user.username === username
     );
   }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email
-    );
-  }
-  
-  async getUserByPhone(phone: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.phone === phone
-    );
-  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
@@ -103,18 +73,11 @@ export class MemStorage implements IStorage {
       
     const user: User = {
       username: insertUser.username,
-      email: insertUser.email || null,
-      phone: insertUser.phone || null,
       password: insertUser.password,
       id,
       preferences: preferencesString,
       currentStreak: 0,
-      lastActivityDate: null,
-      isVerified: false,
-      verificationToken: null,
-      verificationExpires: null,
-      resetToken: null,
-      resetExpires: null
+      lastActivityDate: null
     };
     this.users.set(id, user);
     return user;
@@ -127,138 +90,6 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...data };
     this.users.set(id, updatedUser);
     return updatedUser;
-  }
-  
-  // Verification and password reset methods
-  async createVerificationToken(userId: number): Promise<string> {
-    const user = await this.getUser(userId);
-    if (!user) throw new Error('User not found');
-    
-    // Generate a random token
-    const token = Math.random().toString(36).substring(2, 15) + 
-                  Math.random().toString(36).substring(2, 15);
-    
-    // Set token expiration to 24 hours from now
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
-    
-    // Update the user with the verification token
-    await this.updateUser(userId, {
-      verificationToken: token,
-      verificationExpires: expiresAt
-    });
-    
-    return token;
-  }
-  
-  async verifyUser(verificationToken: string): Promise<boolean> {
-    // Find user with the given verification token
-    const user = Array.from(this.users.values()).find(
-      (user) => user.verificationToken === verificationToken
-    );
-    
-    if (!user) return false;
-    
-    // Check if token is expired
-    const now = new Date();
-    if (!user.verificationExpires || new Date(user.verificationExpires) < now) {
-      return false;
-    }
-    
-    // Mark user as verified and clear the token
-    await this.updateUser(user.id, {
-      isVerified: true,
-      verificationToken: null,
-      verificationExpires: null
-    });
-    
-    return true;
-  }
-  
-  async createPasswordResetToken(identifier: string): Promise<string | null> {
-    // Find user by email, phone, or username
-    const user = Array.from(this.users.values()).find(
-      (user) => 
-        user.email === identifier || 
-        user.phone === identifier || 
-        user.username === identifier
-    );
-    
-    if (!user) return null;
-    
-    // Generate a random token
-    const token = Math.random().toString(36).substring(2, 15) + 
-                  Math.random().toString(36).substring(2, 15);
-    
-    // Set token expiration to 1 hour from now
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
-    
-    // Update the user with the reset token
-    await this.updateUser(user.id, {
-      resetToken: token,
-      resetExpires: expiresAt
-    });
-    
-    return token;
-  }
-  
-  async validateResetToken(resetToken: string): Promise<number | null> {
-    // Find user with the given reset token
-    const user = Array.from(this.users.values()).find(
-      (user) => user.resetToken === resetToken
-    );
-    
-    if (!user) return null;
-    
-    // Check if token is expired
-    const now = new Date();
-    if (!user.resetExpires || new Date(user.resetExpires) < now) {
-      return null;
-    }
-    
-    return user.id;
-  }
-  
-  async resetPassword(userId: number, newPassword: string): Promise<boolean> {
-    const user = await this.getUser(userId);
-    if (!user) return false;
-    
-    // Update the user with the new password and clear reset token
-    await this.updateUser(userId, {
-      password: newPassword,
-      resetToken: null,
-      resetExpires: null
-    });
-    
-    return true;
-  }
-  
-  async findUserByIdentifier(identifier: string): Promise<{ 
-    userId: number;
-    username: string;
-    email?: string;
-    phone?: string; 
-    isVerified: boolean;
-  } | null> {
-    // Find user by email, phone, or username
-    const user = Array.from(this.users.values()).find(
-      (user) => 
-        user.email === identifier || 
-        user.phone === identifier || 
-        user.username === identifier
-    );
-    
-    if (!user) return null;
-    
-    // Return information
-    return {
-      userId: user.id,
-      username: user.username,
-      email: user.email || undefined,
-      phone: user.phone || undefined,
-      isVerified: user.isVerified || false
-    };
   }
 
   async createEntry(userId: number, insertEntry: InsertEntry): Promise<Entry> {
