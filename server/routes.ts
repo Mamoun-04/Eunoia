@@ -13,7 +13,6 @@ import { insertEntrySchema, insertSavedLessonSchema } from "@shared/schema";
 import { v2 as cloudinary } from 'cloudinary';
 import * as stream from 'stream';
 import { promisify } from 'util';
-import Stripe from 'stripe';
 
 // Define Cloudinary upload result interface
 interface CloudinaryUploadResult {
@@ -38,11 +37,6 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Setup Stripe with the secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
 });
 
 // Configure multer for file uploads
@@ -182,49 +176,6 @@ function setupStorageRoutes(router: Router) {
       });
     } catch (error) {
       res.status(400).json({ message: "Failed to delete user" });
-    }
-  });
-
-  // Stripe checkout session creation route
-  router.post("/api/create-checkout-session", requireAuth, async (req, res) => {
-    try {
-      const { priceId, userId, planType } = req.body;
-      
-      if (!priceId) {
-        return res.status(400).json({ message: "Price ID is required" });
-      }
-      
-      // Make sure the user is only able to access their own data
-      if (userId !== req.user!.id) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      // Create a Stripe checkout session
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price: priceId, // This should be the actual Stripe price ID
-            quantity: 1,
-          },
-        ],
-        mode: 'subscription',
-        success_url: `${process.env.APP_URL || 'http://localhost:3000'}/onboarding?success=true`,
-        cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/onboarding`,
-        metadata: {
-          userId: userId.toString(),
-          planType: planType
-        },
-        client_reference_id: userId.toString(),
-      });
-      
-      res.json({ id: session.id });
-    } catch (error) {
-      console.error('Stripe checkout error:', error);
-      res.status(500).json({ 
-        message: "Failed to create checkout session",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
     }
   });
 

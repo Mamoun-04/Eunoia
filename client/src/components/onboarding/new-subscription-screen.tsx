@@ -1,11 +1,8 @@
 
 import { useOnboarding } from '@/hooks/use-onboarding';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'wouter';
-import SubscriptionSuccessScreen from './subscription-success-screen';
+import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -13,72 +10,33 @@ interface SubscriptionScreenProps {
 
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { updateData } = useOnboarding();
-  const scriptLoaded = useRef(false);
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
-  const [, setLocation] = useLocation();
+  const handleNext = () => {
+    updateData({ subscriptionPlan: 'free' });
+    onNext();
+  };
 
-  useEffect(() => {
-    // Check URL parameters for payment success
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
-      // Update subscription status
-      updateData({ 
-        onboardingComplete: true,
-        subscriptionPlan: 'premium',
-        billingPeriod: 'yearly'
-      });
-      // Show success screen
-      setShowSuccessScreen(true);
-      return;
-    }
-
-    if (!scriptLoaded.current) {
-      const script = document.createElement('script');
-      script.src = 'https://js.stripe.com/v3/pricing-table.js';
-      script.async = true;
-      
-      script.onload = () => {
-        const pricingTable = document.createElement('stripe-pricing-table');
-        pricingTable.setAttribute('pricing-table-id', 'prctbl_1R9saQFYtWG5sSMUmvLeSfXm');
-        pricingTable.setAttribute('publishable-key', 'pk_test_51QkZILFYtWG5sSMULAzOVF4WmPiRbYdcXGFw44KYbXIRHlIe8KKItA1GjnO5W8qzh53nd8JaSgEETqClSbBqifQv00h3uKBhyT');
-        
-        const container = document.getElementById('stripe-pricing-container');
-        if (container) {
-          container.innerHTML = '';
-          container.appendChild(pricingTable);
-        }
-      };
-
-      document.body.appendChild(script);
-      scriptLoaded.current = true;
-
-      return () => {
-        document.body.removeChild(script);
-      };
-    }
-  }, []);
-
-  // If success parameter is present, show the success screen
-  if (showSuccessScreen) {
-    return <SubscriptionSuccessScreen />;
-  }
-
-  // Otherwise show the pricing table
   return (
-    <div className="min-h-[calc(100vh-90px)] flex flex-col px-6 py-4">
+    <div className="min-h-[calc(100vh-90px)] flex flex-col items-center justify-center px-6 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col flex-grow w-full"
+        className="text-center max-w-lg mx-auto"
       >
-        <div id="stripe-pricing-container" className="flex-grow flex items-center justify-center"></div>
-
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 max-w-lg mx-auto text-center">
-          By subscribing, you agree to our Terms of Service and Privacy Policy. 
-          You can cancel your subscription anytime from your account settings.
+        <div className="flex justify-center mb-6">
+          <Sparkles className="h-16 w-16 text-amber-500" />
+        </div>
+        <h2 className="text-3xl font-serif font-medium mb-3 bg-gradient-to-r from-amber-500 to-amber-700 bg-clip-text text-transparent">Welcome to Eunoia!</h2>
+        <p className="text-lg mb-8 text-gray-600 dark:text-gray-300">
+          Start your mindful journaling journey today!
         </p>
+        <Button 
+          className="w-full sm:w-auto px-6 py-4 text-lg bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800"
+          onClick={handleNext}
+        >
+          Start Your Journey
+        </Button>
       </motion.div>
     </div>
   );
