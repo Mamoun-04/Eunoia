@@ -74,13 +74,13 @@ function Router() {
     );
   }
   
-  // If not logged in, redirect to auth
+  // If not logged in, show auth page
   if (!user) {
     return <AuthPage />;
   }
 
-  // Check if onboarding is not complete
-  if (user && !user.onboardingComplete && location !== '/onboarding') {
+  // If logged in but onboarding not complete, redirect to onboarding
+  if (!user.onboardingComplete && location.pathname !== '/auth') {
     return <OnboardingPage />;
   }
 
