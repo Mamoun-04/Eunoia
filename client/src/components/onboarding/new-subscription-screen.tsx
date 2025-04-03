@@ -1,8 +1,9 @@
+
 import { useOnboarding } from '@/hooks/use-onboarding';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -10,17 +11,33 @@ interface SubscriptionScreenProps {
 
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { updateData } = useOnboarding();
+  const scriptLoaded = useRef(false);
 
   useEffect(() => {
-    // Load Stripe.js
-    const script = document.createElement('script');
-    script.src = 'https://js.stripe.com/v3/pricing-table.js';
-    script.async = true;
-    document.body.appendChild(script);
+    if (!scriptLoaded.current) {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/pricing-table.js';
+      script.async = true;
+      
+      script.onload = () => {
+        const pricingTable = document.createElement('stripe-pricing-table');
+        pricingTable.setAttribute('pricing-table-id', 'prctbl_1R9saQFYtWG5sSMUmvLeSfXm');
+        pricingTable.setAttribute('publishable-key', 'pk_test_51QkZILFYtWG5sSMULAzOVF4WmPiRbYdcXGFw44KYbXIRHlIe8KKItA1GjnO5W8qzh53nd8JaSgEETqClSbBqifQv00h3uKBhyT');
+        
+        const container = document.getElementById('stripe-pricing-container');
+        if (container) {
+          container.innerHTML = '';
+          container.appendChild(pricingTable);
+        }
+      };
 
-    return () => {
-      document.body.removeChild(script);
-    };
+      document.body.appendChild(script);
+      scriptLoaded.current = true;
+
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
   }, []);
 
   const handleSkip = () => {
@@ -36,10 +53,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         transition={{ duration: 0.5 }}
         className="text-center w-full max-w-4xl mx-auto"
       >
-        <stripe-pricing-table 
-          pricing-table-id="prctbl_1R9saQFYtWG5sSMUmvLeSfXm"
-          publishable-key="pk_test_51QkZILFYtWG5sSMULAz0VF4WmPiRbYdcXGFw44KYbXIRHlle8KKItAlGjn0SW8qzh53nd8JaSgEETqCl5bBqifQv00h3uKBhyT"
-        ></stripe-pricing-table>
+        <div id="stripe-pricing-container" className="w-full mb-6"></div>
 
         <div className="mt-4">
           <Button 
