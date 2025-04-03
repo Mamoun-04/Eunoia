@@ -39,7 +39,6 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         <stripe-pricing-table 
           pricing-table-id="prctbl_1R9saQFYtWG5sSMUmvLeSfXm"
           publishable-key="pk_test_51QkZILFYtWG5sSMULAz0VF4WmPiRbYdcXGFw44KYbXIRHlle8KKItAlGjn0SW8qzh53nd8JaSgEETqCl5bBqifQv00h3uKBhyT"
-          client-reference-id={user?.id?.toString()}
         ></stripe-pricing-table>
 
         <div className="mt-4">
