@@ -78,15 +78,6 @@ function setupStorageRoutes(router: Router) {
 
   router.get("/api/entries", requireAuth, async (req, res) => {
     try {
-      // Verify user exists and matches session
-      const user = await storage.getUser(req.user!.id);
-      if (!user || user.id !== req.user!.id) {
-        req.logout((err) => {
-          if (err) console.error("Logout error:", err);
-        });
-        return res.status(401).json({ message: "Invalid session" });
-      }
-      
       const entries = await storage.getEntries(req.user!.id);
       res.json(entries);
     } catch (error) {

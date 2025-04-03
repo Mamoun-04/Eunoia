@@ -15,7 +15,7 @@ export default function OnboardingPage() {
   const { data, updateData, resetData } = useOnboarding();
   const [, setLocation] = useLocation();
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-
+  
   // Force light theme for onboarding
   useEffect(() => {
     document.documentElement.classList.add('light');
@@ -40,16 +40,19 @@ export default function OnboardingPage() {
   const handleNext = () => {
     // If last step
     if (data.step === 2) {
-      // Only mark onboarding complete if user chose a subscription or trial
-      if (data.subscriptionPlan === 'premium' || data.subscriptionPlan === 'trial') {
-        updateData({ onboardingComplete: true });
-        setLocation('/home');
-        return;
-      }
-      // Otherwise stay on subscription screen
+      // Mark onboarding as complete
+      updateData({ 
+        onboardingComplete: true, 
+        // Everyone gets premium now
+        subscriptionPlan: 'premium',
+        billingPeriod: 'yearly' 
+      });
+      
+      // Go directly to home - no payment needed since everything is free
+      setLocation('/home');
       return;
     }
-
+    
     // Otherwise, move to next step
     updateData({ step: data.step + 1 });
   };
@@ -102,11 +105,11 @@ export default function OnboardingPage() {
           </Button>
         )}
         {data.step === 0 && <div className="w-10"></div>}
-
+        
         <div className="w-full max-w-[200px] mx-4">
           <Progress value={progressPercentage} className="h-2" />
         </div>
-
+        
         <span className="text-sm font-medium text-gray-500">
           {data.step + 1} of 3
         </span>
@@ -128,20 +131,6 @@ export default function OnboardingPage() {
             {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Login Link */}
-      <div className="pb-8 pt-4 text-center">
-        <Button
-          variant="link"
-          className="text-primary/80 hover:text-primary font-medium"
-          onClick={() => {
-            resetData();
-            setLocation('/auth');
-          }}
-        >
-          Already have an account? Sign in →
-        </Button>
       </div>
 
       {/* Exit Confirmation Dialog */}

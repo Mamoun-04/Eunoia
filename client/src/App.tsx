@@ -74,14 +74,9 @@ function Router() {
     );
   }
   
-  // If not logged in, show auth page
+  // If not logged in, redirect to auth
   if (!user) {
     return <AuthPage />;
-  }
-
-  // If logged in but onboarding not complete, redirect to onboarding
-  if (!user.onboardingComplete && location.pathname !== '/auth') {
-    return <OnboardingPage />;
   }
 
   return (

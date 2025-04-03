@@ -14,11 +14,10 @@ export type OnboardingData = {
   journalingFrequency: string;
   
   // Subscription related
-  subscriptionPlan: "free" | "premium" | "trial";
+  subscriptionPlan: "free" | "premium";
   billingPeriod?: "monthly" | "yearly";
   onboardingComplete?: boolean;
   paymentRedirect?: string;
-  trialEndDate?: Date;
   
   // For backward compatibility - will be removed
   subscriptionStatus?: "monthly" | "yearly";
