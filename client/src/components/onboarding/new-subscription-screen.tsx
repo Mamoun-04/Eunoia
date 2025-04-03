@@ -15,20 +15,35 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<'trial' | 'paid'>('paid');
 
-  const handleStripeRedirect = () => {
+  const handleStripeRedirect = async () => {
     const stripeParams = {
       priceId: isAnnual ? 'price_annual' : 'price_monthly',
       mode: 'subscription',
       trialDays: selectedPlan === 'trial' ? 7 : 0
     };
     
-    updateData({ 
-      subscriptionPlan: 'premium',
-      billingPeriod: isAnnual ? 'yearly' : 'monthly',
-      paymentRedirect: JSON.stringify(stripeParams)
-    });
-    
-    onNext();
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(stripeParams)
+      });
+      
+      const { url } = await response.json();
+      
+      updateData({ 
+        subscriptionPlan: 'premium',
+        billingPeriod: isAnnual ? 'yearly' : 'monthly',
+        paymentRedirect: JSON.stringify(stripeParams)
+      });
+      
+      // Redirect to Stripe
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+    }
   };
 
   return (
