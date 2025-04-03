@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -46,11 +47,11 @@ export function DeleteAccountDialog({
       setIsDeleting(true);
       
       // Send the delete request with feedback
-      const response = await apiRequest("POST", "/api/delete-account", { reason, feedback });
+      const response = await apiRequest("DELETE", "/api/user", { reason, feedback });
       
       if (response.ok) {
         // Clear any client-side state
-        localStorage.removeItem('theme');
+        localStorage.clear();
         sessionStorage.clear();
         
         toast({
