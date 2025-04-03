@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useOnboarding } from '@/hooks/use-onboarding';
 import { Button } from '@/components/ui/button';
@@ -10,8 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
 // Price IDs come from environment variables
-const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID_MONTHLY;
-const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID_ANNUAL;
+const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID;
+const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
 
 interface SubscriptionScreenProps {
   onNext: () => void;
@@ -40,11 +39,11 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
 
     try {
       setIsLoading(priceId);
-      
+
       // Initialize Stripe
       const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
       if (!stripe) throw new Error("Failed to load Stripe");
-      
+
       // Create checkout session on server
       const response = await apiRequest(
         'POST',
@@ -55,23 +54,23 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
           planType
         }
       );
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to create checkout session');
       }
-      
+
       const session = await response.json();
-      
+
       // Redirect to Stripe Checkout
       const result = await stripe.redirectToCheckout({
         sessionId: session.id
       });
-      
+
       if (result.error) {
         throw new Error(result.error.message || 'Failed to redirect to checkout');
       }
-      
+
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast({
@@ -101,7 +100,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
         <p className="text-lg mb-8 text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
           Enhance your journaling experience with premium features and take your mindfulness journey to the next level.
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
           {/* Monthly Plan */}
           <motion.div 
@@ -123,7 +122,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                 Flexible plan with all premium features
               </p>
             </div>
-            
+
             <ul className="space-y-3 text-sm text-left mb-6 flex-grow">
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
@@ -138,7 +137,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                 <span>Upload images with your entries</span>
               </li>
             </ul>
-            
+
             <Button 
               className="w-full bg-amber-500 hover:bg-amber-600 text-white"
               onClick={() => handleSubscribe(MONTHLY_PRICE_ID, 'monthly')}
@@ -147,7 +146,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
               {isLoading === MONTHLY_PRICE_ID ? 'Processing...' : 'Subscribe Monthly'}
             </Button>
           </motion.div>
-          
+
           {/* Annual Plan - Best Value */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -160,7 +159,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
             <div className="absolute -right-12 top-7 bg-amber-500 text-white text-xs font-bold py-1 px-12 transform rotate-45">
               BEST VALUE
             </div>
-            
+
             <div className="text-left mb-6">
               <h3 className="font-semibold text-xl mb-2 flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-amber-500" />
@@ -174,7 +173,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                 Save $9.89 compared to monthly
               </p>
             </div>
-            
+
             <ul className="space-y-3 text-sm text-left mb-6 flex-grow">
               <li className="flex items-start">
                 <Check className="h-5 w-5 text-green-500 mr-2 shrink-0" />
@@ -193,7 +192,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
                 <span>Priority support</span>
               </li>
             </ul>
-            
+
             <Button 
               className="w-full bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white shadow-lg relative overflow-hidden group"
               onClick={() => handleSubscribe(ANNUAL_PRICE_ID, 'annual')}
@@ -206,7 +205,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
             </Button>
           </motion.div>
         </div>
-        
+
         <div className="mt-4">
           <Button 
             variant="ghost" 
@@ -218,7 +217,7 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
-        
+
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-8 max-w-lg mx-auto">
           By subscribing, you agree to our Terms of Service and Privacy Policy. 
           You can cancel your subscription anytime from your account settings.
