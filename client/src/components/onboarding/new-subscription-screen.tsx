@@ -9,8 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
 // Price IDs come from environment variables
-const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID;
-const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID;
+const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID || import.meta.env.STRIPE_MONTHLY_PRICE_ID;
+const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID || import.meta.env.STRIPE_YEARLY_PRICE_ID;
 
 interface SubscriptionScreenProps {
   onNext: () => void;
