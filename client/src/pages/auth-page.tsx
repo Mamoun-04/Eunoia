@@ -126,7 +126,10 @@ function LoginForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const { loginMutation } = useAuth();
   
   const form = useForm({
-    resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
+    resolver: zodResolver(z.object({
+      username: z.string().min(4, "Username must be at least 4 characters"),
+      password: z.string().min(8, "Password must be at least 8 characters")
+    })),
   });
 
   const handleSubmit = async (data: any) => {
