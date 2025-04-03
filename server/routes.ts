@@ -252,3 +252,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+
+
+// Stripe checkout endpoint
+router.post("/api/create-checkout-session", requireAuth, async (req, res) => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(500).json({ message: "Stripe key not configured" });
+  }
+
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  
+  try {
+    const { priceId, mode, trialDays } = req.body;
+    
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      subscription_data: trialDays ? {
+        trial_period_days: trialDays
+      } : undefined,
+      success_url: `${process.env.APP_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.APP_URL}/onboarding`,
+      client_reference_id: req.user!.id.toString(),
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ message: "Failed to create checkout session" });
+  }
+});
