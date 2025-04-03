@@ -14,14 +14,11 @@ export function ProtectedRoute({ component: Component, path }: ProtectedRoutePro
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        setLocation("/auth");
-      } else if (!user.onboardingComplete && location !== "/onboarding") {
-        setLocation("/onboarding");
-      }
+    // Only redirect if we're certain there's no user and loading is complete
+    if (!isLoading && !user) {
+      setLocation("/auth");
     }
-  }, [user, isLoading, setLocation, location]);
+  }, [user, isLoading, setLocation]);
 
   // This prevents the component from rendering at all if the user is not logged in
   // and the authentication check is complete
