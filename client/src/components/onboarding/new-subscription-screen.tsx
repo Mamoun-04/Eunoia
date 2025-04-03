@@ -10,7 +10,7 @@ interface SubscriptionScreenProps {
   onNext: () => void;
 }
 
-const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY!);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProps) {
   const { updateData } = useOnboarding();
