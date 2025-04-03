@@ -46,16 +46,16 @@ export default function NewSubscriptionScreen({ onNext }: SubscriptionScreenProp
   };
 
   return (
-    <div className="min-h-[calc(100vh-90px)] flex flex-col items-center justify-center px-6 py-10">
+    <div className="min-h-[calc(100vh-90px)] flex flex-col px-6 py-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center w-full max-w-4xl mx-auto"
+        className="flex flex-col flex-grow w-full"
       >
-        <div id="stripe-pricing-container" className="w-full mb-6"></div>
+        <div id="stripe-pricing-container" className="flex-grow"></div>
 
-        <div className="mt-4">
+        <div className="mt-4 text-center">
           <Button 
             variant="ghost" 
             onClick={handleSkip}
