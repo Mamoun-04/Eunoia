@@ -78,9 +78,13 @@ function setupStorageRoutes(router: Router) {
 
   router.get("/api/entries", requireAuth, async (req, res) => {
     try {
-      const entries = await storage.getEntries(req.user!.id);
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      const entries = await storage.getEntries(req.user.id);
       res.json(entries);
     } catch (error) {
+      console.error('Error fetching entries:', error);
       res.status(400).json({ message: "Failed to get entries" });
     }
   });
