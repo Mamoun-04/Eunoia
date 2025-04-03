@@ -12,10 +12,17 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
+  email: text("email").unique(),
+  phone: text("phone").unique(),
   password: text("password").notNull(),
   preferences: text("preferences"), // Stored as JSON string
   currentStreak: integer("current_streak").default(0),
   lastActivityDate: timestamp("last_activity_date"),
+  isVerified: boolean("is_verified").default(false),
+  verificationToken: text("verification_token"),
+  verificationExpires: timestamp("verification_expires"),
+  resetToken: text("reset_token"),
+  resetExpires: timestamp("reset_expires"),
 });
 
 export const entries = pgTable("entries", {
@@ -47,13 +54,24 @@ export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export const insertUserSchema = createInsertSchema(users)
   .pick({
     username: true,
+    email: true,
+    phone: true,
     password: true,
   })
   .extend({
     username: z.string().min(4, "Username must be at least 4 characters"),
+    email: z.string().email("Invalid email format").optional(),
+    phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format").optional(),
     password: z.string().min(8, "Password must be at least 8 characters"),
     preferences: userPreferencesSchema.optional(),
-  });
+  })
+  .refine(
+    (data) => data.username || data.email || data.phone,
+    {
+      message: "At least one of username, email, or phone is required",
+      path: ["identity"],
+    }
+  );
 
 export const insertEntrySchema = createInsertSchema(entries).pick({
   title: true,

@@ -10,40 +10,6 @@ import pgSessionStore from 'connect-pg-simple';
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 
-/**
- * Mask an email address for privacy
- * Example: j***@example.com
- */
-function maskEmail(email: string): string {
-  if (!email) return '';
-  const [username, domain] = email.split('@');
-  
-  if (username.length <= 1) {
-    return `${username}***@${domain}`;
-  }
-  
-  return `${username.charAt(0)}***@${domain}`;
-}
-
-/**
- * Mask a phone number for privacy
- * Example: ***-***-1234
- */
-function maskPhone(phone: string): string {
-  if (!phone) return '';
-  
-  // Keep only digits
-  const digits = phone.replace(/\D/g, '');
-  
-  // If less than 4 digits, mask everything
-  if (digits.length <= 4) {
-    return '*'.repeat(digits.length);
-  }
-  
-  // Otherwise, show only last 4 digits
-  return `***-***-${digits.slice(-4)}`;
-}
-
 const { Pool } = pg;
 
 // Create a PostgreSQL connection pool
@@ -61,6 +27,23 @@ const sessionStore = new PgSessionStore({
   tableName: 'session', // Default table name
   createTableIfMissing: true,
 });
+
+// Helper functions to mask sensitive information
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return email;
+  
+  const maskedLocal = local.length > 2 
+    ? `${local.charAt(0)}${'*'.repeat(local.length - 2)}${local.charAt(local.length - 1)}`
+    : local;
+  
+  return `${maskedLocal}@${domain}`;
+}
+
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return phone;
+  return `${'*'.repeat(phone.length - 4)}${phone.slice(-4)}`;
+}
 
 export class PgStorage implements IStorage {
   sessionStore: session.Store;
