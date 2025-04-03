@@ -77,13 +77,16 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f8f7f2] flex flex-col">
       {/* Login Link */}
-      <div className="absolute top-4 right-4">
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-10">
         <Button
-          variant="ghost"
-          className="text-gray-600 hover:text-gray-900"
-          onClick={() => setLocation('/auth')}
+          variant="link"
+          className="text-primary/80 hover:text-primary font-medium"
+          onClick={() => {
+            resetData();
+            setLocation('/auth');
+          }}
         >
-          Already have an account? Login
+          Already have an account? Sign in →
         </Button>
       </div>
       {/* Top Bar */}
