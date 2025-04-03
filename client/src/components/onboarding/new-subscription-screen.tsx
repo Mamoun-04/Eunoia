@@ -9,10 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
-// Price IDs should come from your Stripe dashboard
-// Replace these with your actual Stripe price IDs from your dashboard
-const MONTHLY_PRICE_ID = 'price_1OvCZsUT1Kb8TKU9FnFMRQOH';
-const ANNUAL_PRICE_ID = 'price_1OvCaGUT1Kb8TKU9BvwPxzQu';
+// Price IDs come from environment variables
+const MONTHLY_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID_MONTHLY;
+const ANNUAL_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID_ANNUAL;
 
 interface SubscriptionScreenProps {
   onNext: () => void;
