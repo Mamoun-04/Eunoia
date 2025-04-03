@@ -76,19 +76,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f8f7f2] flex flex-col">
-      {/* Login Link */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-        <Button
-          variant="link"
-          className="text-primary/80 hover:text-primary font-medium"
-          onClick={() => {
-            resetData();
-            setLocation('/auth');
-          }}
-        >
-          Already have an account? Sign in →
-        </Button>
-      </div>
       {/* Top Bar */}
       <div className="p-4 flex justify-between items-center">
         {data.step > 0 && (
@@ -141,6 +128,20 @@ export default function OnboardingPage() {
             {data.step === 2 && <NewSubscriptionScreen onNext={handleNext} />}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Login Link */}
+      <div className="pb-8 pt-4 text-center">
+        <Button
+          variant="link"
+          className="text-primary/80 hover:text-primary font-medium"
+          onClick={() => {
+            resetData();
+            setLocation('/auth');
+          }}
+        >
+          Already have an account? Sign in →
+        </Button>
       </div>
 
       {/* Exit Confirmation Dialog */}
